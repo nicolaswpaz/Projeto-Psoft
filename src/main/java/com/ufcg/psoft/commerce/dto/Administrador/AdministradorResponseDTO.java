@@ -1,4 +1,4 @@
-package com.ufcg.psoft.commerce.dto.Adiministrador;
+package com.ufcg.psoft.commerce.dto.Administrador;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.ufcg.psoft.commerce.model.Administrador;

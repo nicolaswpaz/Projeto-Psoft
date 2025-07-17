@@ -1,7 +1,7 @@
 package com.ufcg.psoft.commerce.service.administrador;
 
 
-import com.ufcg.psoft.commerce.dto.Adiministrador.AdministradorResponseDTO;
+import com.ufcg.psoft.commerce.dto.Administrador.AdministradorResponseDTO;
 import com.ufcg.psoft.commerce.dto.Administrador.AdministradorPostPutRequestDTO;
 import org.springframework.stereotype.Service;
 
