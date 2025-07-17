@@ -1,4 +1,4 @@
-package com.ufcg.psoft.commerce.dto;
+package com.ufcg.psoft.commerce.dto.Ativo;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.ufcg.psoft.commerce.model.Ativo;
@@ -41,9 +41,15 @@ public class AtivoResponseDTO {
 
     @JsonProperty("disponibilidade")
     @NotBlank(message = "Disponibilidade obrigatória")
-    private boolean disponibilidade;
+    private boolean disponivel;
 
     public AtivoResponseDTO(Ativo ativo){
+
         this.id = ativo.getId();
+        this.nome = ativo.getNome();
+        this.tipo = ativo.getTipoAtivo();
+        this.descricao = ativo.getDescricao();
+        this.disponivel = ativo.isDisponivel();
+        this.cotacao = ativo.getCotacao();
     }
 }

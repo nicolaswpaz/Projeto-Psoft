@@ -1,4 +1,4 @@
-package com.ufcg.psoft.commerce.dto;
+package com.ufcg.psoft.commerce.dto.Ativo;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AtivoPostPuRequestDTO {
+public class AtivoPostPutRequestDTO {
 
     @JsonProperty("nome")
     @NotBlank(message = "Nome obrigatório")
@@ -25,7 +25,7 @@ public class AtivoPostPuRequestDTO {
     @NotBlank(message = "Descrição obrigatória")
     private String descricao;
 
-    @JsonProperty("disponibilidade")
+    @JsonProperty("disponivel")
     @NotBlank(message = "Disponibilidade obrigatória")
-    private boolean disponibilidade;
+    private boolean disponivel;
 }

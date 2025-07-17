@@ -13,10 +13,10 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Adiministrador extends Usuario{
+public class Administrador extends Usuario{
 
     @JsonProperty("matricula")
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String matricula;
 
 }

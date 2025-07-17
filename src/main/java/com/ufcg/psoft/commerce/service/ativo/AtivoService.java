@@ -1,22 +1,21 @@
 package com.ufcg.psoft.commerce.service.ativo;
 
-import com.ufcg.psoft.commerce.dto.AtivoPostPutRequestDTO;
-import com.ufcg.psoft.commerce.dto.AtivoResponseDTO;
-import com.ufcg.psoft.commerce.model.Ativo;
+import com.ufcg.psoft.commerce.dto.Ativo.AtivoPostPutRequestDTO;
+import com.ufcg.psoft.commerce.dto.Ativo.AtivoResponseDTO;
 
 import java.util.List;
 
 public interface AtivoService {
 
-    AtivoResponseDTO alterar(Long id, String codigoAcesso, AtivoPostPutRequestDTO clientePostPutRequestDTO);
+    AtivoResponseDTO criar(String matriculaAdmin, AtivoPostPutRequestDTO ativoPostPutRequestDTO);
 
-    List<AtivoResponseDTO> listar();
+    AtivoResponseDTO alterar(String matriculaAdmin, Long id, AtivoPostPutRequestDTO ativoPostPutRequestDTO);
+
+    void remover(String matriculaAdmin, Long id);
 
     AtivoResponseDTO recuperar(Long id);
 
-    AtivoResponseDTO criar(AtivoPostPutRequestDTO clientePostPutRequestDTO);
-
-    void remover(Long id, String codigoAcesso);
+    List<AtivoResponseDTO> listar();
 
     List<AtivoResponseDTO> listarPorNome(String nome);
 }

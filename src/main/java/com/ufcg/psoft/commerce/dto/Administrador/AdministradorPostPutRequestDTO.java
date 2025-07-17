@@ -1,4 +1,4 @@
-package com.ufcg.psoft.commerce.dto.Adiministrador;
+package com.ufcg.psoft.commerce.dto.Administrador;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AdiministradoPostPutRequestDTO {
+public class AdministradorPostPutRequestDTO {
 
     @JsonProperty("nome")
     @NotBlank(message = "Nome obrigatorio")

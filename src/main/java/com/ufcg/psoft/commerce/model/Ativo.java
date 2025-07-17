@@ -8,6 +8,8 @@ import lombok.*;
 @Entity
 @Data
 @Builder
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "ativos")

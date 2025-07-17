@@ -1,7 +1,7 @@
 package com.ufcg.psoft.commerce.dto.Adiministrador;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.ufcg.psoft.commerce.model.Adiministrador;
+import com.ufcg.psoft.commerce.model.Administrador;
 import com.ufcg.psoft.commerce.model.Endereco;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AdministradorRespondeDTO {
+public class AdministradorResponseDTO {
 
     @JsonProperty("id")
     @Id
@@ -31,7 +31,7 @@ public class AdministradorRespondeDTO {
     @NotBlank(message = "Endereco obrigatorio")
     private Endereco endereco;
 
-    public AdministradorRespondeDTO(Adiministrador adimin) {
+    public AdministradorResponseDTO(Administrador adimin) {
         this.id = adimin.getId();
         this.nome = adimin.getNome();
         this.endereco = adimin.getEndereco();

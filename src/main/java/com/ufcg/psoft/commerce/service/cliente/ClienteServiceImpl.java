@@ -1,7 +1,7 @@
 package com.ufcg.psoft.commerce.service.cliente;
 
-import com.ufcg.psoft.commerce.exception.ClienteNaoExisteException;
-import com.ufcg.psoft.commerce.exception.CodigoDeAcessoInvalidoException;
+import com.ufcg.psoft.commerce.exception.Cliente.ClienteNaoExisteException;
+import com.ufcg.psoft.commerce.exception.Cliente.CodigoDeAcessoInvalidoException;
 import com.ufcg.psoft.commerce.repository.ClienteRepository;
 import com.ufcg.psoft.commerce.dto.Cliente.ClientePostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.Cliente.ClienteResponseDTO;
