@@ -23,10 +23,9 @@ public class AdministradorPostPutRequestDTO {
     @NotBlank(message = "Endereco obrigatorio")
     private String endereco;
 
-    @JsonProperty("codigo")
-    @NotNull(message = "Codigo de acesso obrigatorio")
-    @Pattern(regexp = "^\\d{6}$", message = "Codigo de acesso deve ter exatamente 6 digitos numericos")
-    private String codigo;
+    @JsonProperty("cpf")
+    @NotBlank(message = "Cpf obrigatorio")
+    private String cpf;
 
     @JsonProperty("Matricula")
     @NotNull(message = "Matricula para acesso obrigatorio")

@@ -3,25 +3,17 @@ package com.ufcg.psoft.commerce.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
-<<<<<<< HEAD
-import lombok.*;
-=======
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
->>>>>>> refs/remotes/origin/us-1
-
-import java.util.Objects;
 
 @Entity
 @Data
-<<<<<<< HEAD
-=======
 @SuperBuilder
->>>>>>> refs/remotes/origin/us-1
 @NoArgsConstructor
 @AllArgsConstructor
+@Inheritance(strategy = InheritanceType.JOINED)
 public abstract class Usuario {
 
     @JsonProperty("id")
@@ -40,9 +32,4 @@ public abstract class Usuario {
     @JsonProperty("cpf")
     @Column(nullable = false)
     private String cpf;
-
-    @JsonIgnore
-    @Column(nullable = false)
-    private String codigo;
-
 }

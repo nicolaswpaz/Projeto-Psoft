@@ -30,11 +30,8 @@ public class ClienteResponseDTO {
 
     @JsonProperty("endereco")
     @NotBlank(message = "Endereco obrigatorio")
-<<<<<<< HEAD
-    private Endereco endereco;
-=======
+
     private EnderecoResponseDTO endereco;
->>>>>>> refs/remotes/origin/us-1
 
     public ClienteResponseDTO(Cliente cliente) {
         this.id = cliente.getId();

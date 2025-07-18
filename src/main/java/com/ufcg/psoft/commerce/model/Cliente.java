@@ -15,14 +15,13 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 public class Cliente extends Usuario {
 
-<<<<<<< HEAD
-    @JsonProperty("Plano")
-    private Plano plano = new Plano();
-=======
     @JsonProperty("id")
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
+
+    @JsonProperty("Plano")
+    private Plano plano = new Plano();
 
     @JsonProperty("nome")
     @Column(nullable = false)
@@ -31,7 +30,10 @@ public class Cliente extends Usuario {
     @JsonProperty("endereco")
     @Column(nullable = false)
     private Endereco endereco;
->>>>>>> refs/remotes/origin/us-1
+
+    @JsonIgnore
+    @Column(nullable = false)
+    private String codigo;
 
     @JsonIgnore
     private Conta conta = new Conta();
