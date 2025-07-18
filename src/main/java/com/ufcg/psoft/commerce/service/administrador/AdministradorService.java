@@ -6,4 +6,6 @@ import com.ufcg.psoft.commerce.dto.Administrador.AdministradorResponseDTO;
 public interface AdministradorService {
 
     AdministradorResponseDTO criar(AdministradorPostPutRequestDTO adiministradorPostPutRequestDTO);
+
+
 }

@@ -8,8 +8,6 @@ import lombok.*;
 @Entity
 @Data
 @Builder
-@Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "ativos")
@@ -32,5 +30,5 @@ public class Ativo {
     private String descricao;
 
     @JsonProperty("disponivel")
-    private boolean disponivel;
+    private boolean disponivel = true; //decidir o padrão
 }

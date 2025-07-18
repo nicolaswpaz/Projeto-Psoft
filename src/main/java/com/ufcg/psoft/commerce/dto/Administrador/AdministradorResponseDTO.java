@@ -31,6 +31,7 @@ public class AdministradorResponseDTO {
     @NotBlank(message = "Endereco obrigatorio")
     private Endereco endereco;
 
+
     public AdministradorResponseDTO(Administrador admin) {
         this.id = admin.getId();
         this.nome = admin.getNome();

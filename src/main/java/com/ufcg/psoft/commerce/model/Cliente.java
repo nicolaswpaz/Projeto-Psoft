@@ -15,20 +15,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class Cliente extends Usuario {
 
-    @JsonProperty("id")
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private Long id;
-
-    @JsonProperty("nome")
-    @Column(nullable = false)
-    private String nome;
-
-    @JsonProperty("endereco")
-    @Column(nullable = false)
-    private String endereco;
+    @JsonProperty("Plano")
+    private Plano plano = new Plano();
 
     @JsonIgnore
-    @Column(nullable = false)
-    private String codigo;
+    private Conta conta = new Conta();
 }

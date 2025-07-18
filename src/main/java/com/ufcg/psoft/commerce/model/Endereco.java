@@ -8,7 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Entity
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -28,12 +28,9 @@ public class Endereco {
     private String bairro;
 
     @JsonProperty("complemento")
-    @Column(nullable = false)
     private String complemento;
 
     @JsonProperty("numero")
     @Column(nullable = false)
     private int numero;
-
-
 }

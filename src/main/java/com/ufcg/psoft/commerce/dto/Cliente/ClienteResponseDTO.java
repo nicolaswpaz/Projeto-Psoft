@@ -2,6 +2,7 @@ package com.ufcg.psoft.commerce.dto.Cliente;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.ufcg.psoft.commerce.model.Cliente;
+import com.ufcg.psoft.commerce.model.Endereco;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -28,7 +29,7 @@ public class ClienteResponseDTO {
 
     @JsonProperty("endereco")
     @NotBlank(message = "Endereco obrigatorio")
-    private String endereco;
+    private Endereco endereco;
 
     public ClienteResponseDTO(Cliente cliente) {
         this.id = cliente.getId();
