@@ -8,9 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@RestController
 public class AdministradorController {
     @Autowired
-    private AdministradorService administradorService;
+    AdministradorService administradorService;
 
     @PostMapping
     public ResponseEntity<AdministradorResponseDTO> criarAdministrador(@RequestBody AdministradorPostPutRequestDTO dto) {
