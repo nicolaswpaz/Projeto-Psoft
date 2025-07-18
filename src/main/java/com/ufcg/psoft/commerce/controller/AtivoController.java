@@ -1,6 +1,7 @@
 package com.ufcg.psoft.commerce.controller;
 
 import com.ufcg.psoft.commerce.dto.Ativo.AtivoPostPutRequestDTO;
+import com.ufcg.psoft.commerce.service.administrador.AdministradorService;
 import com.ufcg.psoft.commerce.service.ativo.AtivoService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;

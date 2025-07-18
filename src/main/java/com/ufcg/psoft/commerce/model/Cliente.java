@@ -4,13 +4,13 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Data
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Cliente extends Usuario {
@@ -26,7 +26,7 @@ public class Cliente extends Usuario {
 
     @JsonProperty("endereco")
     @Column(nullable = false)
-    private String endereco;
+    private Endereco endereco;
 
     @JsonIgnore
     @Column(nullable = false)
