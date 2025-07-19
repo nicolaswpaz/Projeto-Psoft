@@ -2,7 +2,7 @@ package com.ufcg.psoft.commerce.exception;
 
 public class CommerceException extends RuntimeException {
     public CommerceException() {
-        super("Erro inesperado no Pits A!");
+        super("Erro inesperado no P$oft Wallet!");
     }
 
     public CommerceException(String message) {

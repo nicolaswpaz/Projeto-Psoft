@@ -1,4 +1,4 @@
-package com.ufcg.psoft.commerce.dto;
+package com.ufcg.psoft.commerce.dto.Administrador;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ClientePostPutRequestDTO {
+public class AdministradorPostPutRequestDTO {
 
     @JsonProperty("nome")
     @NotBlank(message = "Nome obrigatorio")
@@ -23,8 +23,11 @@ public class ClientePostPutRequestDTO {
     @NotBlank(message = "Endereco obrigatorio")
     private String endereco;
 
-    @JsonProperty("codigo")
-    @NotNull(message = "Codigo de acesso obrigatorio")
-    @Pattern(regexp = "^\\d{6}$", message = "Codigo de acesso deve ter exatamente 6 digitos numericos")
-    private String codigo;
+    @JsonProperty("cpf")
+    @NotBlank(message = "Cpf obrigatorio")
+    private String cpf;
+
+    @JsonProperty("Matricula")
+    @NotNull(message = "Matricula para acesso obrigatorio")
+    private String matricula;
 }

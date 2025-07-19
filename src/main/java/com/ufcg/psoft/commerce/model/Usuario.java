@@ -13,28 +13,23 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Cliente extends Usuario {
+@Inheritance(strategy = InheritanceType.JOINED)
+public abstract class Usuario {
 
     @JsonProperty("id")
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
-    @JsonProperty("Plano")
-    private Plano plano = new Plano();
-
     @JsonProperty("nome")
     @Column(nullable = false)
     private String nome;
 
+    @Embedded
     @JsonProperty("endereco")
-    @Column(nullable = false)
     private Endereco endereco;
 
-    @JsonIgnore
+    @JsonProperty("cpf")
     @Column(nullable = false)
-    private String codigo;
-
-    @JsonIgnore
-    private Conta conta = new Conta();
+    private String cpf;
 }

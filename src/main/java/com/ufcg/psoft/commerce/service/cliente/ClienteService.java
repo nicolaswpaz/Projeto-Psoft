@@ -1,7 +1,7 @@
 package com.ufcg.psoft.commerce.service.cliente;
 
-import com.ufcg.psoft.commerce.dto.ClientePostPutRequestDTO;
-import com.ufcg.psoft.commerce.dto.ClienteResponseDTO;
+import com.ufcg.psoft.commerce.dto.Cliente.ClientePostPutRequestDTO;
+import com.ufcg.psoft.commerce.dto.Cliente.ClienteResponseDTO;
 
 import java.util.List;
 
