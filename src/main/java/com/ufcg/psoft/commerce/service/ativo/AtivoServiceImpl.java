@@ -80,4 +80,32 @@ public class AtivoServiceImpl implements AtivoService{
                 .map(AtivoResponseDTO::new)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public AtivoResponseDTO tornarDisponivel(String matriculaAdmin, Long ativoId) {
+        Administrador admin = administradorRepository.findByMatricula(matriculaAdmin)
+                .orElseThrow(() -> new RuntimeException("Administrador não encontrado!"));
+
+        Ativo ativo = ativoRepository.findById(ativoId).orElseThrow(AtivoNaoExisteException::new);
+
+        ativo.setDisponivel(true);
+
+        ativoRepository.save(ativo);
+
+        return modelMapper.map(ativo, AtivoResponseDTO.class);
+    }
+
+    @Override
+    public AtivoResponseDTO tornarIndisponivel(String matriculaAdmin, Long ativoId) {
+        Administrador admin = administradorRepository.findByMatricula(matriculaAdmin)
+                .orElseThrow(() -> new RuntimeException("Administrador não encontrado!"));
+
+        Ativo ativo = ativoRepository.findById(ativoId).orElseThrow(AtivoNaoExisteException::new);
+
+        ativo.setDisponivel(false);
+
+        ativoRepository.save(ativo);
+
+        return modelMapper.map(ativo, AtivoResponseDTO.class);
+    }
 }

@@ -18,4 +18,9 @@ public interface AtivoService {
     List<AtivoResponseDTO> listar();
 
     List<AtivoResponseDTO> listarPorNome(String nome);
+
+    AtivoResponseDTO tornarDisponivel(String matriculaAdmin, Long ativoId);
+
+    AtivoResponseDTO tornarIndisponivel(String matriculaAdmin, Long ativoId);
+
 }

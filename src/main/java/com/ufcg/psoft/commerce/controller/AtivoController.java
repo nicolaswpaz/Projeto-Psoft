@@ -49,6 +49,26 @@ public class AtivoController {
                 .body("");
     }
 
+    @PutMapping("/{ativoId}/disponibilizar")
+    public ResponseEntity<?> tornarAtivoDisponivel(
+            @RequestParam String matriculaAdmin,
+            @PathVariable Long ativoId
+    ) {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ativoService.tornarDisponivel(matriculaAdmin, ativoId));
+    }
+
+    @PutMapping("/{ativoId}/indisponibilizar")
+    public ResponseEntity<?> tornarAtivoIndisponivel(
+            @RequestParam String matriculaAdmin,
+            @PathVariable Long ativoId
+    ) {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ativoService.tornarIndisponivel(matriculaAdmin, ativoId));
+    }
+
     public ResponseEntity<?> listarAtivos(@RequestParam(required = false, defaultValue = "") String nome){
         if (nome != null && !nome.isEmpty()){
             return ResponseEntity

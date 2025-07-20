@@ -20,21 +20,21 @@ public class Cliente extends Usuario {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
-    @JsonProperty("Plano")
-    private Plano plano = new Plano();
+    //@JsonProperty("Plano")
+    //private Plano plano = new Plano();
 
     @JsonProperty("nome")
     @Column(nullable = false)
     private String nome;
 
-    @JsonProperty("endereco")
-    @Column(nullable = false)
-    private Endereco endereco;
+    //@JsonProperty("endereco")
+    //@Column(nullable = false)
+    //private Endereco endereco;
 
     @JsonIgnore
     @Column(nullable = false)
     private String codigo;
 
-    @JsonIgnore
-    private Conta conta = new Conta();
+    //@JsonIgnore
+    //private Conta conta = new Conta();
 }
