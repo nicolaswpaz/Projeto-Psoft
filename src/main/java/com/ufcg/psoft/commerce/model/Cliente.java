@@ -2,6 +2,7 @@ package com.ufcg.psoft.commerce.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.ufcg.psoft.commerce.model.enums.Plano;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,21 +21,23 @@ public class Cliente extends Usuario {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
-    //@JsonProperty("Plano")
-    //private Plano plano = new Plano();
+    @JsonProperty("Plano")
+    private Plano plano;
 
     @JsonProperty("nome")
     @Column(nullable = false)
     private String nome;
 
-    //@JsonProperty("endereco")
-    //@Column(nullable = false)
-    //private Endereco endereco;
+   /* @JsonProperty("endereco")
+    @Column(nullable = false)
+    private Endereco endereco;*/
 
     @JsonIgnore
     @Column(nullable = false)
     private String codigo;
 
-    //@JsonIgnore
-    //private Conta conta = new Conta();
+    @ManyToOne
+    @JoinColumn(name = "conta")
+    @JsonIgnore
+    private Conta conta;
 }

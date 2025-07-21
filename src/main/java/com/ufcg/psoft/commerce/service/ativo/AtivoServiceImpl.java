@@ -133,4 +133,5 @@ public class AtivoServiceImpl implements AtivoService{
 
         return modelMapper.map(ativo, AtivoResponseDTO.class);
     }
+
 }
