@@ -23,4 +23,6 @@ public interface AtivoService {
 
     AtivoResponseDTO tornarIndisponivel(String matriculaAdmin, Long ativoId);
 
+    AtivoResponseDTO atualizarCotacao(String matriculaAdmin, Long idAtivo, double valor);
+
 }
