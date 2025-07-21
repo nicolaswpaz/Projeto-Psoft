@@ -1,6 +1,6 @@
 package com.ufcg.psoft.commerce.model;
 
-import com.ufcg.psoft.commerce.model.interfaces.TipoAtivo;
+import com.ufcg.psoft.commerce.model.interfaces.TipoAtivoInterface;
 
-public class TesouroDireto implements TipoAtivo {
+public class TesouroDireto implements TipoAtivoInterface {
 }

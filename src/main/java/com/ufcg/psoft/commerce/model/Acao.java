@@ -1,6 +1,6 @@
 package com.ufcg.psoft.commerce.model;
 
-import com.ufcg.psoft.commerce.model.interfaces.TipoAtivo;
+import com.ufcg.psoft.commerce.model.interfaces.TipoAtivoInterface;
 
-public class Acao implements TipoAtivo {
+public class Acao implements TipoAtivoInterface {
 }

@@ -7,6 +7,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import com.ufcg.psoft.commerce.model.enums.TipoPlano;
+import com.ufcg.psoft.commerce.model.Endereco;
 
 @Entity
 @Data
@@ -20,21 +22,19 @@ public class Cliente extends Usuario {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
-    @JsonProperty("Plano")
-    private Plano plano = new Plano();
+    @Enumerated(EnumType.STRING)
+    @JsonProperty("tipoPlano")
+    private TipoPlano plano;
 
     @JsonProperty("nome")
     @Column(nullable = false)
     private String nome;
 
-    @JsonProperty("endereco")
-    @Column(nullable = false)
-    private Endereco endereco;
-
     @JsonIgnore
     @Column(nullable = false)
     private String codigo;
 
-    @JsonIgnore
-    private Conta conta = new Conta();
+  //  Feature Futura
+  //  @JsonIgnore
+  //  private Conta conta = new Conta();
 }

@@ -1,7 +1,7 @@
 package com.ufcg.psoft.commerce.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.ufcg.psoft.commerce.model.interfaces.TipoAtivo;
+import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -23,6 +23,7 @@ public class Ativo {
     @JsonProperty("cotacao")
     private String cotacao;
 
+    @Enumerated(EnumType.STRING)
     @JsonProperty("tipoAtivo")
     private TipoAtivo tipoAtivo;
 
