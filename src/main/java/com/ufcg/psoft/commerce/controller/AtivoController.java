@@ -1,7 +1,6 @@
 package com.ufcg.psoft.commerce.controller;
 
 import com.ufcg.psoft.commerce.dto.Ativo.AtivoPostPutRequestDTO;
-import com.ufcg.psoft.commerce.service.administrador.AdministradorService;
 import com.ufcg.psoft.commerce.service.ativo.AtivoService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +46,34 @@ public class AtivoController {
         return ResponseEntity
                 .status(HttpStatus.NO_CONTENT)
                 .body("");
+    }
+
+    @PutMapping("/{ativoId}/disponibilizar")
+    public ResponseEntity<?> tornarAtivoDisponivel(
+            @RequestParam String matriculaAdmin,
+            @PathVariable Long ativoId
+    ) {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ativoService.tornarDisponivel(matriculaAdmin, ativoId));
+    }
+
+    @PutMapping("/{ativoId}/indisponibilizar")
+    public ResponseEntity<?> tornarAtivoIndisponivel(
+            @RequestParam String matriculaAdmin,
+            @PathVariable Long ativoId
+    ) {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ativoService.tornarIndisponivel(matriculaAdmin, ativoId));
+    }
+
+    @PutMapping("/{idAtivo}/cotacao")
+    public ResponseEntity<?> atualizarCotacao(@RequestParam String matriculaAdmin,
+                                              @RequestParam Long idAtivo, @PathVariable double novoValor) {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ativoService.atualizarCotacao(matriculaAdmin, idAtivo, novoValor));
     }
 
     public ResponseEntity<?> listarAtivos(@RequestParam(required = false, defaultValue = "") String nome){

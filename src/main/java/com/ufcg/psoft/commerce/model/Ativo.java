@@ -1,7 +1,7 @@
 package com.ufcg.psoft.commerce.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.ufcg.psoft.commerce.model.interfaces.TipoAtivo;
+import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -30,5 +30,16 @@ public class Ativo {
     private String descricao;
 
     @JsonProperty("disponivel")
-    private boolean disponivel = true; //decidir o padrão
+    private Boolean disponivel;
+
+    @PrePersist
+    public void setDefaultValues() {
+        if (disponivel == null) {
+            disponivel = true;
+        }
+    }
+
+    public Boolean isDisponivel(){
+        return disponivel;
+    }
 }

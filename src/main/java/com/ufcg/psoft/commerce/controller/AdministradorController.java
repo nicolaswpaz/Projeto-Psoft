@@ -2,8 +2,10 @@ package com.ufcg.psoft.commerce.controller;
 
 import com.ufcg.psoft.commerce.dto.Administrador.AdministradorPostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.Administrador.AdministradorResponseDTO;
+import com.ufcg.psoft.commerce.dto.Ativo.AtivoResponseDTO;
 import com.ufcg.psoft.commerce.model.Administrador;
 import com.ufcg.psoft.commerce.service.administrador.AdministradorService;
+import com.ufcg.psoft.commerce.service.ativo.AtivoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -45,4 +47,6 @@ public class AdministradorController {
         Administrador admin = administradorService.getAdmin();
         return ResponseEntity.ok(admin);
     }
+
+
 }
