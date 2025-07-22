@@ -1,6 +1,6 @@
 package com.ufcg.psoft.commerce.model.enums;
 
-public enum Plano {
+public enum TipoPlano {
     NORMAL,
     PREMIUM;
 }
