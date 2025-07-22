@@ -39,7 +39,6 @@ public class Cliente extends Usuario {
     private String codigo;
 
     @ManyToOne
-    @JoinColumn("conta")
     @JsonIgnore
     private Conta conta;
 }

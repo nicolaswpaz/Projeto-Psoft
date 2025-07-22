@@ -134,4 +134,9 @@ public class AtivoServiceImpl implements AtivoService{
         return modelMapper.map(ativo, AtivoResponseDTO.class);
     }
 
+    @Override
+    public List<AtivoResponseDTO> listarAtivosDisponiveisPorPlano(Long clienteId) {
+        return List.of();
+    }
+
 }
