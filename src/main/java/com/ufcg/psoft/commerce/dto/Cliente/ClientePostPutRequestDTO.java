@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import com.ufcg.psoft.commerce.model.Endereco;
 
 @Data
 @Builder
@@ -21,7 +22,7 @@ public class ClientePostPutRequestDTO {
 
     @JsonProperty("endereco")
     @NotBlank(message = "Endereco obrigatorio")
-    private String endereco;
+    private Endereco endereco;
 
     @JsonProperty("codigo")
     @NotNull(message = "Codigo de acesso obrigatorio")

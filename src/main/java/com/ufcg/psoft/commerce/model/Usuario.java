@@ -25,9 +25,10 @@ public abstract class Usuario {
     @Column(nullable = false)
     private String nome;
 
-    @Embedded
     @JsonProperty("endereco")
-    private Endereco endereco;
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "endereco_id", referencedColumnName = "id", nullable = false, unique = true)
+    private Endereco endereco; // Referência ao objeto Endereco
 
     @JsonProperty("cpf")
     @Column(nullable = false)

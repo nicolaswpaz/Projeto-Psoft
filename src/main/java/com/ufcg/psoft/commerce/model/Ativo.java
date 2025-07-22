@@ -23,6 +23,7 @@ public class Ativo {
     @JsonProperty("cotacao")
     private String cotacao;
 
+    @Enumerated(EnumType.STRING)
     @JsonProperty("tipoAtivo")
     private TipoAtivo tipoAtivo;
 

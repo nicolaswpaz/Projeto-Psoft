@@ -2,6 +2,7 @@ package com.ufcg.psoft.commerce.service.cliente;
 
 import com.ufcg.psoft.commerce.exception.Cliente.ClienteNaoExisteException;
 import com.ufcg.psoft.commerce.exception.Cliente.CodigoDeAcessoInvalidoException;
+import com.ufcg.psoft.commerce.model.Endereco;
 import com.ufcg.psoft.commerce.repository.ClienteRepository;
 import com.ufcg.psoft.commerce.dto.Cliente.ClientePostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.Cliente.ClienteResponseDTO;
@@ -13,6 +14,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.ufcg.psoft.commerce.repository.EnderecoRepository;
+
 @Service
 public class ClienteServiceImpl implements ClienteService {
 
@@ -20,6 +23,8 @@ public class ClienteServiceImpl implements ClienteService {
     ClienteRepository clienteRepository;
     @Autowired
     ModelMapper modelMapper;
+    @Autowired
+    private EnderecoRepository enderecoRepository;
 
     @Override
     public ClienteResponseDTO alterar(Long id, String codigoAcesso, ClientePostPutRequestDTO clientePostPutRequestDTO) {
@@ -35,6 +40,12 @@ public class ClienteServiceImpl implements ClienteService {
     @Override
     public ClienteResponseDTO criar(ClientePostPutRequestDTO clientePostPutRequestDTO) {
         Cliente cliente = modelMapper.map(clientePostPutRequestDTO, Cliente.class);
+        if (cliente.getEndereco() != null && cliente.getEndereco().getId() == null) {
+            Endereco novoEndereco = cliente.getEndereco();
+            // O EnderecoRepository.save() vai gerar o ID para o novo endereço.
+            novoEndereco = enderecoRepository.save(novoEndereco);
+            cliente.setEndereco(novoEndereco); // Garante que o objeto Endereco tenha o ID gerado
+        }
         clienteRepository.save(cliente);
         return modelMapper.map(cliente, ClienteResponseDTO.class);
     }
