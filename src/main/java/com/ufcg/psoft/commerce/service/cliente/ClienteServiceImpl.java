@@ -26,7 +26,10 @@ public class ClienteServiceImpl implements ClienteService {
     ModelMapper modelMapper;
     @Autowired
     EnderecoRepository enderecoRepository;
+    @Autowired
+    AdministradorService administradorService;
 
+    @Override
     public Cliente autenticar(Long id, String codigoAcesso) {
         Cliente cliente = clienteRepository.findById(id)
                 .orElseThrow(ClienteNaoExisteException::new);
@@ -56,6 +59,8 @@ public class ClienteServiceImpl implements ClienteService {
     public ClienteResponseDTO alterar(Long id, String codigoAcesso, ClientePostPutRequestDTO clientePostPutRequestDTO) {
         Cliente cliente = autenticar(id, codigoAcesso);
 
+        clientePostPutRequestDTO.setEndereco(salvarEnderecoSeNovo(clientePostPutRequestDTO.getEndereco()));
+
         modelMapper.map(clientePostPutRequestDTO, cliente);
         clienteRepository.save(cliente);
         return modelMapper.map(cliente, ClienteResponseDTO.class);
@@ -69,13 +74,15 @@ public class ClienteServiceImpl implements ClienteService {
     }
 
     @Override
-    public ClienteResponseDTO recuperar(Long id) {
-        Cliente cliente = clienteRepository.findById(id).orElseThrow(ClienteNaoExisteException::new);
+    public ClienteResponseDTO recuperar(Long id, String codigoAcesso) {
+        Cliente cliente = autenticar(id, codigoAcesso);
         return new ClienteResponseDTO(cliente);
     }
 
     @Override
-    public List<ClienteResponseDTO> listarPorNome(String nome) {
+    public List<ClienteResponseDTO> listarPorNome(String nome, String matriculaAdmin) {
+        administradorService.autenticar(matriculaAdmin);
+
         List<Cliente> clientes = clienteRepository.findByNomeContaining(nome);
         return clientes.stream()
                 .map(ClienteResponseDTO::new)
@@ -83,7 +90,8 @@ public class ClienteServiceImpl implements ClienteService {
     }
 
     @Override
-    public List<ClienteResponseDTO> listar() {
+    public List<ClienteResponseDTO> listar(String matriculaAdmin) {
+        administradorService.autenticar(matriculaAdmin);
 
         List<Cliente> clientes = clienteRepository.findAll();
         return clientes.stream()

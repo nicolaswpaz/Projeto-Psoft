@@ -24,6 +24,7 @@ public class AdministradorServiceImpl implements AdministradorService {
     @Autowired
     ModelMapper modelMapper;
 
+    @Override
     public Administrador autenticar(String matricula) {
         if (getAdmin()== null) {
             throw new IllegalStateException("Administrador não cadastrado no sistema.");

@@ -25,24 +25,20 @@ public class ClienteController {
 
     @GetMapping("/{id}")
     public ResponseEntity<?> recuperarCliente(
-            @PathVariable Long id) {
+            @PathVariable Long id,
+            @RequestParam String codigo) {
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(clienteService.recuperar(id));
+                .body(clienteService.recuperar(id, codigo));
     }
 
     @GetMapping("")
     public ResponseEntity<?> listarClientes(
-            @RequestParam(required = false, defaultValue = "") String nome) {
+            @RequestParam String matriculaAdmin) {
 
-        if (nome != null && !nome.isEmpty()) {
-            return ResponseEntity
-                    .status(HttpStatus.OK)
-                    .body(clienteService.listarPorNome(nome));
-        }
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(clienteService.listar());
+                .body(clienteService.listar(matriculaAdmin));
     }
 
     @PostMapping()
