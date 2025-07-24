@@ -6,6 +6,7 @@ import com.ufcg.psoft.commerce.dto.Ativo.AtivoResponseDTO;
 import com.ufcg.psoft.commerce.model.Administrador;
 import com.ufcg.psoft.commerce.service.administrador.AdministradorService;
 import com.ufcg.psoft.commerce.service.ativo.AtivoService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,25 +18,27 @@ public class AdministradorController {
     AdministradorService administradorService;
 
     @PostMapping
-    public ResponseEntity<?> criarAdministrador(@RequestBody AdministradorPostPutRequestDTO dto) {
-        AdministradorResponseDTO response = administradorService.criar(dto);
+    public ResponseEntity<?> criarAdministrador(
+            @RequestBody AdministradorPostPutRequestDTO administradorPostPutRequestDTO) {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(administradorService.criar(dto));
+                .body(administradorService.criar(administradorPostPutRequestDTO));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<?> atualizarAdministrador(
             @PathVariable Long id,
-            @RequestBody AdministradorPostPutRequestDTO dto,
-            @RequestParam String matricula
+            @RequestParam String matricula,
+            @RequestBody @Valid AdministradorPostPutRequestDTO administradorPostPutRequestDTO
     ) {
-        Administrador adminAtualizado = administradorService.atualizarAdmin(dto, matricula);
-        return ResponseEntity.ok(adminAtualizado);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(administradorService.atualizarAdmin(administradorPostPutRequestDTO, matricula));
     }
 
     @DeleteMapping
-    public ResponseEntity<?> removerAdministrador(@RequestParam String matricula) {
+    public ResponseEntity<?> removerAdministrador(
+            @RequestParam String matricula) {
         administradorService.removerAdmin(matricula);
         return ResponseEntity
                 .status(HttpStatus.NO_CONTENT)
@@ -44,9 +47,8 @@ public class AdministradorController {
 
     @GetMapping("/{id}")
     public ResponseEntity<?> buscarAdministrador(@PathVariable Long id) {
-        Administrador admin = administradorService.getAdmin();
-        return ResponseEntity.ok(admin);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(administradorService.getAdmin());
     }
-
-
 }

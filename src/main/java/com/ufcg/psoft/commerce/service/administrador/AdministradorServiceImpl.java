@@ -3,8 +3,13 @@ package com.ufcg.psoft.commerce.service.administrador;
 
 import com.ufcg.psoft.commerce.dto.Administrador.AdministradorResponseDTO;
 import com.ufcg.psoft.commerce.dto.Administrador.AdministradorPostPutRequestDTO;
+import com.ufcg.psoft.commerce.exception.Administrador.MatriculaInvalidaException;
+import com.ufcg.psoft.commerce.exception.Cliente.ClienteNaoExisteException;
+import com.ufcg.psoft.commerce.exception.Cliente.CodigoDeAcessoInvalidoException;
 import com.ufcg.psoft.commerce.model.Administrador;
+import com.ufcg.psoft.commerce.model.Cliente;
 import com.ufcg.psoft.commerce.repository.AdministradorRepository;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,43 +21,49 @@ public class AdministradorServiceImpl implements AdministradorService {
     @Autowired
     private AdministradorRepository administradorRepository;
 
-    @Override
-    public AdministradorResponseDTO criar(AdministradorPostPutRequestDTO dto) {
-        Optional<Administrador> adminExistente = administradorRepository.findTopBy();
-        if (adminExistente.isPresent()) {
-            throw new IllegalStateException("Já existe um administrador cadastrado no sistema.");
+    @Autowired
+    ModelMapper modelMapper;
+
+    public Administrador autenticar(String matricula) {
+        if (getAdmin()== null) {
+            throw new IllegalStateException("Administrador não cadastrado no sistema.");
         }
 
-        Administrador novoAdmin = Administrador.builder()
-                .nome(dto.getNome())
-                .cpf(dto.getCpf())
-                .matricula(dto.getMatricula())
-                .build();
+        Administrador administrador = getAdmin();
 
-        Administrador adminSalvo = administradorRepository.save(novoAdmin);
-        return new AdministradorResponseDTO(adminSalvo);
+        if (!administrador.getMatricula().equals(matricula)) {
+            throw new MatriculaInvalidaException();
+        }
+
+        return administrador;
     }
 
     @Override
-    public Administrador atualizarAdmin(AdministradorPostPutRequestDTO dto, String matricula) {
-        Administrador admin = administradorRepository.findTopBy()
-                .orElseThrow(() -> new IllegalArgumentException("Administrador não encontrado."));
+    public AdministradorResponseDTO criar(AdministradorPostPutRequestDTO dto) {
+        Administrador administradorExistente = getAdmin();
 
-        if (!admin.getMatricula().equals(matricula)) {
-            throw new IllegalArgumentException("Matrícula incorreta.");
+        if (administradorExistente != null) {
+            throw new IllegalStateException("Já existe um administrador cadastrado no sistema.");
         }
 
-        admin.setNome(dto.getNome());
-        admin.setCpf(dto.getCpf());
-        admin.setMatricula(dto.getMatricula());
+        Administrador admin = modelMapper.map(dto, Administrador.class);
+        Administrador adminSalvo = administradorRepository.save(admin);
 
-        return administradorRepository.save(admin);
+        return modelMapper.map(adminSalvo, AdministradorResponseDTO.class);
+    }
+
+    @Override
+    public AdministradorResponseDTO atualizarAdmin(AdministradorPostPutRequestDTO administradorPostPutRequestDTO, String matricula) {
+        Administrador admin = autenticar(matricula);
+
+        modelMapper.map(administradorPostPutRequestDTO, admin);
+        administradorRepository.save(admin);
+        return modelMapper.map(admin, AdministradorResponseDTO.class);
     }
 
     @Override
     public void removerAdmin(String matricula) {
-        Administrador admin = administradorRepository.findByMatricula(matricula)
-                .orElseThrow(() -> new IllegalArgumentException("Administrador não encontrado com a matrícula fornecida."));
+        Administrador admin =  autenticar(matricula);
 
         administradorRepository.delete(admin);
     }
