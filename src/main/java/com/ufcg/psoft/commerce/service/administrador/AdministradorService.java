@@ -8,7 +8,7 @@ public interface AdministradorService {
 
     AdministradorResponseDTO criar(AdministradorPostPutRequestDTO administradorPostPutRequestDTO);
 
-    Administrador atualizarAdmin(AdministradorPostPutRequestDTO administradorPostPutRequestDTO, String matricula);
+    AdministradorResponseDTO atualizarAdmin(AdministradorPostPutRequestDTO administradorPostPutRequestDTO, String matricula);
 
     void removerAdmin(String matricula);
 

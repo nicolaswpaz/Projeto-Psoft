@@ -1,6 +1,9 @@
 package com.ufcg.psoft.commerce.controller;
 
 import com.ufcg.psoft.commerce.dto.Cliente.ClientePostPutRequestDTO;
+import com.ufcg.psoft.commerce.dto.Cliente.ClienteResponseDTO;
+import com.ufcg.psoft.commerce.exception.Cliente.ClienteNaoExisteException;
+import com.ufcg.psoft.commerce.service.administrador.AdministradorService;
 import com.ufcg.psoft.commerce.service.ativo.AtivoServiceImpl;
 import com.ufcg.psoft.commerce.service.cliente.ClienteService;
 import jakarta.validation.Valid;
