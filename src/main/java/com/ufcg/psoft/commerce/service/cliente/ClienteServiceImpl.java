@@ -59,8 +59,6 @@ public class ClienteServiceImpl implements ClienteService {
     public ClienteResponseDTO alterar(Long id, String codigoAcesso, ClientePostPutRequestDTO clientePostPutRequestDTO) {
         Cliente cliente = autenticar(id, codigoAcesso);
 
-        clientePostPutRequestDTO.setEndereco(salvarEnderecoSeNovo(clientePostPutRequestDTO.getEndereco()));
-
         modelMapper.map(clientePostPutRequestDTO, cliente);
         clienteRepository.save(cliente);
         return modelMapper.map(cliente, ClienteResponseDTO.class);
@@ -97,11 +95,5 @@ public class ClienteServiceImpl implements ClienteService {
         return clientes.stream()
                 .map(ClienteResponseDTO::new)
                 .collect(Collectors.toList());
-    }
-
-    @Override
-    public ClienteResponseDTO recuperar(Long id) {
-        Cliente cliente = clienteRepository.findById(id).orElseThrow(ClienteNaoExisteException::new);
-        return new ClienteResponseDTO(cliente);
     }
 }
