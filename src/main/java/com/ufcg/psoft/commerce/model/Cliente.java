@@ -19,22 +19,9 @@ import com.ufcg.psoft.commerce.model.Endereco;
 @AllArgsConstructor
 public class Cliente extends Usuario {
 
-    @JsonProperty("id")
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private Long id;
-
     @Enumerated(EnumType.STRING)
     @JsonProperty("tipoPlano")
     private TipoPlano plano;
-
-    @JsonProperty("nome")
-    @Column(nullable = false)
-    private String nome;
-
-    @JsonProperty("endereco")
-    @Column(nullable = false)
-    private Endereco endereco;
 
     @JsonIgnore
     @Column(nullable = false)

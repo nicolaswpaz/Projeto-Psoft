@@ -3,8 +3,12 @@ package com.ufcg.psoft.commerce.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.ufcg.psoft.commerce.dto.Cliente.ClienteResponseDTO;
+import com.ufcg.psoft.commerce.dto.Endereco.EnderecoResponseDTO;
 import com.ufcg.psoft.commerce.model.Cliente;
+import com.ufcg.psoft.commerce.model.Endereco;
 import com.ufcg.psoft.commerce.repository.ClienteRepository;
+import com.ufcg.psoft.commerce.repository.EnderecoRepository;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -32,31 +36,57 @@ public class ClienteTestAula {
     @Autowired
     ClienteRepository clienteRepository;
 
+    @Autowired
+    EnderecoRepository enderecoRepository;
+
     ObjectMapper objectMapper = new ObjectMapper();
 
     List<ClienteResponseDTO> clientesDTO = new ArrayList<>();
 
     @BeforeEach
+    @Transactional
     void setup() {
         // Object Mapper suporte para LocalDateTime
         objectMapper.registerModule(new JavaTimeModule());
+
+        //enderecos fictícios para os testes
+
+        Endereco endereco1 = enderecoRepository.save(Endereco.builder()
+                .numero("123")
+                .cep("58400-000")
+                .rua("Rua 123")
+                .complemento("")
+                .bairro("bairro 1")
+                .build()
+        );
+
+        Endereco endereco2 = enderecoRepository.save(Endereco.builder()
+                .bairro("bairro 2")
+                .complemento("")
+                .numero("234")
+                .rua("Rua 234")
+                .cep("40028922")
+                .build()
+        );
         Cliente cliente1 = clienteRepository.save(Cliente.builder()
                 .nome("Cliente")
-                .endereco("Rua 123")
+                .endereco(endereco1)
                 .codigo("123456")
+                .cpf("12345678914")
                 .build()
         );
 
         Cliente cliente2 = clienteRepository.save(Cliente.builder()
                 .nome("Clienta")
-                .endereco("Rua 234")
+                .endereco(endereco2)
                 .codigo("123456")
+                .cpf("12345678910")
                 .build()
         );
 
         ClienteResponseDTO r1 = ClienteResponseDTO.builder()
                 .nome(cliente1.getNome())
-                .endereco(cliente1.getEndereco())
+                .endereco(new EnderecoResponseDTO(cliente1.getEndereco())) //gera o objeto EnderecoResponseDTO a partir do objeto Endereco
                 .id(cliente1.getId())
                 .build();
 

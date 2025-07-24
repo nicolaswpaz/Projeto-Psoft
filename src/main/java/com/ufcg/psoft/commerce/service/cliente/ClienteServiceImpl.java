@@ -98,4 +98,10 @@ public class ClienteServiceImpl implements ClienteService {
                 .map(ClienteResponseDTO::new)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public ClienteResponseDTO recuperar(Long id) {
+        Cliente cliente = clienteRepository.findById(id).orElseThrow(ClienteNaoExisteException::new);
+        return new ClienteResponseDTO(cliente);
+    }
 }
