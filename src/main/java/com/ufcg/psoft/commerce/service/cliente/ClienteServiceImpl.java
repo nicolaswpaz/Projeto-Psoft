@@ -42,7 +42,7 @@ public class ClienteServiceImpl implements ClienteService {
         Cliente cliente = modelMapper.map(clientePostPutRequestDTO, Cliente.class);
         if (cliente.getEndereco() != null && cliente.getEndereco().getId() == null) {
             Endereco novoEndereco = cliente.getEndereco();
-            // O EnderecoRepository.save() vai gerar o ID para o novo endereço.
+
             novoEndereco = enderecoRepository.save(novoEndereco);
             cliente.setEndereco(novoEndereco); // Garante que o objeto Endereco tenha o ID gerado
         }

@@ -37,5 +37,5 @@ public class Endereco {
 
     @JsonProperty("numero")
     @Column(nullable = false)
-    private int numero;
+    private String numero;
 }
