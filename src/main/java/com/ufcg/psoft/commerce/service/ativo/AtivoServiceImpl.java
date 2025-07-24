@@ -3,9 +3,10 @@ package com.ufcg.psoft.commerce.service.ativo;
 import com.ufcg.psoft.commerce.dto.Ativo.AtivoPostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.Ativo.AtivoResponseDTO;
 import com.ufcg.psoft.commerce.exception.Ativo.AtivoNaoExisteException;
+import com.ufcg.psoft.commerce.model.Acao;
 import com.ufcg.psoft.commerce.model.Administrador;
 import com.ufcg.psoft.commerce.model.Ativo;
-import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
+import com.ufcg.psoft.commerce.model.Criptomoeda;
 import com.ufcg.psoft.commerce.repository.AdministradorRepository;
 import com.ufcg.psoft.commerce.repository.AtivoRepository;
 import org.modelmapper.ModelMapper;
@@ -117,7 +118,7 @@ public class AtivoServiceImpl implements AtivoService{
 
         Ativo ativo = ativoRepository.findById(idAtivo).orElseThrow(AtivoNaoExisteException::new);
 
-        if (!(ativo.getTipoAtivo() == TipoAtivo.ACAO || ativo.getTipoAtivo() == TipoAtivo.CRIPTOMOEDA)) {
+        if (!(ativo.getTipoAtivo() instanceof Acao || ativo.getTipoAtivo() instanceof Criptomoeda)) {
             throw new IllegalArgumentException("Somente ativos do tipo Ação ou Criptomoeda podem ter a cotação atualizada");
         }
 
