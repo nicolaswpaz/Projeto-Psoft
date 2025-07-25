@@ -76,6 +76,7 @@ public class AtivoController {
                 .body(ativoService.atualizarCotacao(matriculaAdmin, idAtivo, novoValor));
     }
 
+    @GetMapping
     public ResponseEntity<?> listarAtivos(@RequestParam(required = false, defaultValue = "") String nome){
         if (nome != null && !nome.isEmpty()){
             return ResponseEntity

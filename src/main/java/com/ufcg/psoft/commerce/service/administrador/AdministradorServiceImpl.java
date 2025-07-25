@@ -34,9 +34,9 @@ public class AdministradorServiceImpl implements AdministradorService {
 
         if (!administrador.getMatricula().equals(matricula)) {
             throw new MatriculaInvalidaException();
+        } else {
+            return administrador;
         }
-
-        return administrador;
     }
 
     @Override

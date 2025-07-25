@@ -22,7 +22,6 @@ public class ClientePostPutRequestDTO {
     @NotBlank(message = "Nome obrigatorio")
     private String nome;
 
-
     @JsonProperty("endereco")
     @NotNull(message = "Endereco obrigatorio")
     @Valid

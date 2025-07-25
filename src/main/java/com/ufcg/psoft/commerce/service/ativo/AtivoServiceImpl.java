@@ -8,6 +8,7 @@ import com.ufcg.psoft.commerce.model.Ativo;
 import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
 import com.ufcg.psoft.commerce.repository.AdministradorRepository;
 import com.ufcg.psoft.commerce.repository.AtivoRepository;
+import com.ufcg.psoft.commerce.service.administrador.AdministradorService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,15 +23,14 @@ public class AtivoServiceImpl implements AtivoService{
     AtivoRepository ativoRepository;
 
     @Autowired
-    AdministradorRepository administradorRepository;
+    AdministradorService administradorService;
 
     @Autowired
     ModelMapper modelMapper;
 
     @Override
     public AtivoResponseDTO criar(String matriculaAdmin, AtivoPostPutRequestDTO ativoPostPutRequestDTO) {
-        Administrador admin = administradorRepository.findByMatricula(matriculaAdmin)
-                .orElseThrow(() -> new RuntimeException("Administrador não encontrado!"));
+        Administrador admin = administradorService.autenticar(matriculaAdmin);
 
         Ativo ativo = modelMapper.map(ativoPostPutRequestDTO, Ativo.class);
         ativoRepository.save(ativo);
@@ -39,8 +39,7 @@ public class AtivoServiceImpl implements AtivoService{
 
     @Override
     public AtivoResponseDTO alterar(String matriculaAdmin, Long id, AtivoPostPutRequestDTO ativoPostPutRequestDTO) {
-        Administrador admin = administradorRepository.findByMatricula(matriculaAdmin)
-                .orElseThrow(() -> new RuntimeException("Administrador não encontrado!"));
+        Administrador admin = administradorService.autenticar(matriculaAdmin);
 
         Ativo ativo = ativoRepository.findById(id).orElseThrow(AtivoNaoExisteException::new);
 
@@ -52,8 +51,7 @@ public class AtivoServiceImpl implements AtivoService{
 
     @Override
     public void remover(String matriculaAdmin, Long id) {
-        Administrador admin = administradorRepository.findByMatricula(matriculaAdmin)
-                .orElseThrow(() -> new RuntimeException("Administrador não encontrado!"));
+        Administrador admin = administradorService.autenticar(matriculaAdmin);
 
         Ativo ativo = ativoRepository.findById(id).orElseThrow(AtivoNaoExisteException::new);
 
@@ -84,8 +82,7 @@ public class AtivoServiceImpl implements AtivoService{
 
     @Override
     public AtivoResponseDTO tornarDisponivel(String matriculaAdmin, Long ativoId) {
-        Administrador admin = administradorRepository.findByMatricula(matriculaAdmin)
-                .orElseThrow(() -> new RuntimeException("Administrador não encontrado!"));
+        Administrador admin = administradorService.autenticar(matriculaAdmin);
 
         Ativo ativo = ativoRepository.findById(ativoId).orElseThrow(AtivoNaoExisteException::new);
 
@@ -98,8 +95,7 @@ public class AtivoServiceImpl implements AtivoService{
 
     @Override
     public AtivoResponseDTO tornarIndisponivel(String matriculaAdmin, Long ativoId) {
-        Administrador admin = administradorRepository.findByMatricula(matriculaAdmin)
-                .orElseThrow(() -> new RuntimeException("Administrador não encontrado!"));
+        Administrador admin = administradorService.autenticar(matriculaAdmin);
 
         Ativo ativo = ativoRepository.findById(ativoId).orElseThrow(AtivoNaoExisteException::new);
 
@@ -112,8 +108,7 @@ public class AtivoServiceImpl implements AtivoService{
 
     @Override
     public AtivoResponseDTO atualizarCotacao(String matriculaAdmin, Long idAtivo, double valor) {
-        Administrador admin = administradorRepository.findByMatricula(matriculaAdmin)
-                .orElseThrow(() -> new RuntimeException("Administrador não encontrado!"));
+        Administrador admin = administradorService.autenticar(matriculaAdmin);
 
         Ativo ativo = ativoRepository.findById(idAtivo).orElseThrow(AtivoNaoExisteException::new);
 
