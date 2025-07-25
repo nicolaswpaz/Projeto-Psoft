@@ -2,6 +2,7 @@ package com.ufcg.psoft.commerce.repository;
 
 import com.ufcg.psoft.commerce.model.Ativo;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
@@ -10,4 +11,5 @@ public interface AtivoRepository extends JpaRepository<Ativo, Long> {
     List<Ativo> findByNomeContaining(String nome);
 
     List<Ativo> findByDisponivelTrue();
+
 }

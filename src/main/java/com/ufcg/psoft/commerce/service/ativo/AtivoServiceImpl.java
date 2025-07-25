@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class AtivoServiceImpl implements AtivoService{
+public class AtivoServiceImpl implements AtivoService {
 
     @Autowired
     AtivoRepository ativoRepository;
@@ -131,8 +131,11 @@ public class AtivoServiceImpl implements AtivoService{
     }
 
     @Override
-    public List<AtivoResponseDTO> listarAtivosDisponiveisPorPlano(Long clienteId) {
-        return List.of();
-    }
+    public List<AtivoResponseDTO> listarAtivosDisponiveis() {
+        List<Ativo> ativos = ativoRepository.findByDisponivelTrue();
 
+        return ativos.stream()
+                .map(AtivoResponseDTO::new)
+                .collect(Collectors.toList());
+    }
 }
