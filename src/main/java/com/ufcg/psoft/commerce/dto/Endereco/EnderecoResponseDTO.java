@@ -25,7 +25,7 @@ public class EnderecoResponseDTO {
     private String complemento;
 
     @JsonProperty("numero")
-    private int numero;
+    private String numero;
 
     public EnderecoResponseDTO(Endereco endereco) {
         this.cep = endereco.getCep();

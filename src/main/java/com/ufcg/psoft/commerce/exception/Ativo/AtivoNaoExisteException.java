@@ -1,5 +1,7 @@
 package com.ufcg.psoft.commerce.exception.Ativo;
 
-public class AtivoNaoExisteException extends RuntimeException {
-    public AtivoNaoExisteException() {super("O ativo consultado não existe!");}
+import com.ufcg.psoft.commerce.exception.CommerceException;
+
+public class AtivoNaoExisteException extends CommerceException {
+    public AtivoNaoExisteException() {super("O ativo consultado nao existe!");}
 }

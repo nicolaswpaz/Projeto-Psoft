@@ -2,6 +2,7 @@ package com.ufcg.psoft.commerce.dto.Ativo;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,18 +15,18 @@ import lombok.NoArgsConstructor;
 public class AtivoPostPutRequestDTO {
 
     @JsonProperty("nome")
-    @NotBlank(message = "Nome obrigatório")
+    @NotBlank(message = "Nome obrigatorio")
     private String nome;
 
     @JsonProperty("cotacao")
-    @NotBlank(message = "Cotação obrigatória")
+    @NotBlank(message = "Cotacao obrigatoria")
     private String cotacao;
 
     @JsonProperty("descricao")
-    @NotBlank(message = "Descrição obrigatória")
+    @NotBlank(message = "Descricao obrigatoria")
     private String descricao;
 
     @JsonProperty("disponivel")
-    @NotBlank(message = "Disponibilidade obrigatória")
+    @NotNull(message = "Disponibilidade obrigatoria")
     private boolean disponivel;
 }

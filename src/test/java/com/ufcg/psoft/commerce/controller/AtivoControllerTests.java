@@ -1,0 +1,411 @@
+package com.ufcg.psoft.commerce.controller;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.ufcg.psoft.commerce.dto.Administrador.AdministradorPostPutRequestDTO;
+import com.ufcg.psoft.commerce.dto.Ativo.AtivoPostPutRequestDTO;
+import com.ufcg.psoft.commerce.dto.Ativo.AtivoResponseDTO;
+import com.ufcg.psoft.commerce.dto.Cliente.ClientePostPutRequestDTO;
+import com.ufcg.psoft.commerce.dto.Cliente.ClienteResponseDTO;
+import com.ufcg.psoft.commerce.dto.Endereco.EnderecoResponseDTO;
+import com.ufcg.psoft.commerce.exception.CustomErrorType;
+import com.ufcg.psoft.commerce.model.Administrador;
+import com.ufcg.psoft.commerce.model.Ativo;
+import com.ufcg.psoft.commerce.model.Cliente;
+import com.ufcg.psoft.commerce.model.Endereco;
+import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
+import com.ufcg.psoft.commerce.repository.AdministradorRepository;
+import com.ufcg.psoft.commerce.repository.AtivoRepository;
+import com.ufcg.psoft.commerce.repository.ClienteRepository;
+import com.ufcg.psoft.commerce.repository.EnderecoRepository;
+import org.junit.jupiter.api.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.Arrays;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+@DisplayName("Testes do controlador de Ativos")
+public class AtivoControllerTests {
+
+    final String URI_ATIVOS = "/ativos";
+
+    @Autowired
+    MockMvc driver;
+
+    @Autowired
+    AtivoRepository ativoRepository;
+    Ativo ativo;
+    AtivoPostPutRequestDTO ativoPostPutRequestDTO;
+
+    @Autowired
+    AdministradorRepository administradorRepository;
+    Administrador administrador;
+    AdministradorPostPutRequestDTO administradorPostPutRequestDTO;
+
+    ObjectMapper objectMapper = new ObjectMapper();
+
+    @BeforeEach
+    void setup() {
+        // Object Mapper suporte para LocalDateTime
+        objectMapper.registerModule(new JavaTimeModule());
+
+        administrador = administradorRepository.save(Administrador.builder()
+                .matricula("admin123")
+                .nome("Admin Teste")
+                .cpf("11122233344")
+                .endereco(Endereco.builder()
+                        .cep("12345678")
+                        .bairro("Um lugar aí")
+                        .rua("Avenida Qualquer")
+                        .numero("15")
+                        .build())
+                .build()
+        );
+
+        administradorPostPutRequestDTO = AdministradorPostPutRequestDTO.builder()
+                .matricula(administrador.getMatricula())
+                .nome(administrador.getNome())
+                .cpf(administrador.getCpf())
+                .enderecoDTO(new EnderecoResponseDTO(administrador.getEndereco()))
+                .build();
+
+        ativo = ativoRepository.save(Ativo.builder()
+                .nome("Ativo 1")
+                .tipoAtivo(TipoAtivo.ACAO)
+                .disponivel(true)
+                .descricao("Descrição do ativo 1")
+                .cotacao("1.00")
+                .build()
+        );
+
+        ativoPostPutRequestDTO = AtivoPostPutRequestDTO.builder()
+                .nome(ativo.getNome())
+                //.tipoAtivo(ativo.getTipoAtivo())
+                .disponivel(ativo.getDisponivel())
+                .descricao(ativo.getDescricao())
+                .cotacao(ativo.getCotacao())
+                .build();
+    }
+
+    @AfterEach
+    void tearDown() {
+        ativoRepository.deleteAll();
+        administradorRepository.deleteAll();
+    }
+
+    @Nested
+    @DisplayName("Conjunto de casos de verificação de nome ao alterar Ativo")
+    class AtivoAlteracaoNome {
+
+        @Test
+        @DisplayName("Quando alteramos o nome do ativo com dados válidos (exige Admin)")
+        void quandoAlteramosNomeDoAtivoValido() throws Exception {
+
+            // Arrange
+            ativoPostPutRequestDTO.setNome("Ativo de teste alterado");
+
+            //Act
+            String responseJsonString = driver.perform(put(URI_ATIVOS + "/" + ativo.getId())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            // Adiciona a matricula do administrador como um parâmetro de requisição
+                            .param("matriculaAdmin", administrador.getMatricula())
+                            .content(objectMapper.writeValueAsString(ativoPostPutRequestDTO)))
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            AtivoResponseDTO resultado = objectMapper.readValue(responseJsonString, AtivoResponseDTO.class);
+
+            assertEquals("Ativo de teste alterado", resultado.getNome());
+        }
+
+        @Test
+        @DisplayName("Quando alteramos o nome do ativo para nulo (exige Admin)")
+        void quandoAlteramosNomeDoAtivoNulo() throws Exception {
+
+            // Arrange
+            ativoPostPutRequestDTO.setNome(null);
+
+            // Act
+            String responseJsonString = driver.perform(put(URI_ATIVOS + "/" + ativo.getId())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            // Adiciona a matricula do administrador
+                            .param("matriculaAdmin", administrador.getMatricula())
+                            .content(objectMapper.writeValueAsString(ativoPostPutRequestDTO)))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType resultado = objectMapper.readValue(responseJsonString, CustomErrorType.class);
+
+            // Assert
+            assertEquals("Nome obrigatorio", resultado.getErrors().get(0));
+
+        }
+
+        @Test
+        @DisplayName("Quando alteramos o nome do ativo para vazio (exige Admin)")
+        void quandoAlteramosNomeDoAtivoVazio() throws Exception {
+            // Arrange
+            ativoPostPutRequestDTO.setNome("");
+
+            // Act
+            String responseJsonString = driver.perform(put(URI_ATIVOS + "/" + ativo.getId())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            // Adiciona a matricula do administrador
+                            .param("matriculaAdmin", administrador.getMatricula())
+                            .content(objectMapper.writeValueAsString(ativoPostPutRequestDTO)))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType resultado = objectMapper.readValue(responseJsonString, CustomErrorType.class);
+
+            // Assert
+            assertAll(
+                    () -> assertEquals("Erros de validacao encontrados", resultado.getMessage()),
+                    () -> assertEquals("Nome obrigatorio", resultado.getErrors().get(0))
+            );
+        }
+    }
+
+    @Nested
+    @DisplayName("Conjunto de casos de verificação dos fluxos básicos API Rest")
+    class AtivoVerificacaoFluxosBasicosApiRest {
+
+        @Test
+        @DisplayName("Quando buscamos por todos ativos salvos")
+        void quandoBuscamosPorTodosAtivosSalvos() throws Exception {
+            // Arrange
+            // Já temos 1 ativo do setup(), vamos adicionar mais 2
+            Ativo ativo2 = Ativo.builder()
+                    .nome("Ativo Secundario")
+                    .tipoAtivo(TipoAtivo.ACAO)
+                    .disponivel(true)
+                    .descricao("Descrição do ativo secundário")
+                    .cotacao("20.00")
+                    .build();
+            Ativo ativo3 = Ativo.builder()
+                    .nome("Outro Ativo")
+                    .tipoAtivo(TipoAtivo.CRIPTOMOEDA)
+                    .disponivel(false)
+                    .descricao("Descrição de outro ativo")
+                    .cotacao("30000.00")
+                    .build();
+            ativoRepository.saveAll(Arrays.asList(ativo2, ativo3));
+
+            // Act
+            String responseJsonString = driver.perform(get(URI_ATIVOS))
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            List<AtivoResponseDTO> resultado = objectMapper.readValue(responseJsonString, new TypeReference<>() {
+            });
+
+            // Assert
+            assertEquals(3, resultado.size());
+        }
+
+        @Test
+        @DisplayName("Quando buscamos um ativo salvo pelo id")
+        void quandoBuscamosPorUmAtivoSalvo() throws Exception {
+            // Act
+            String responseJsonString = driver.perform(get(URI_ATIVOS + "/" + ativo.getId()))
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            AtivoResponseDTO resultado = objectMapper.readValue(responseJsonString, AtivoResponseDTO.class);
+
+            // Assert
+            assertEquals(ativo.getNome(), resultado.getNome());
+
+        }
+
+        @Test
+        @DisplayName("Quando buscamos um ativo inexistente")
+        void quandoBuscamosPorUmAtivoInexistente() throws Exception {
+            // Act
+            String responseJsonString = driver.perform(get(URI_ATIVOS + "/" + 999999999)
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType resultado = objectMapper.readValue(responseJsonString, CustomErrorType.class);
+
+            // Assert
+            assertEquals("O ativo consultado nao existe!", resultado.getMessage());
+        }
+
+        @Test
+        @DisplayName("Quando criamos um novo ativo com dados válidos")
+        void quandoCriarAtivoValido() throws Exception {
+            // Arrange
+            AtivoPostPutRequestDTO novoAtivoDTO = AtivoPostPutRequestDTO.builder()
+                    .nome("Novo ativo valido")
+                    //.tipoAtivo(TipoAtivo.ACAO)
+                    .disponivel(false)
+                    .descricao("Descricao do novo ativo")
+                    .cotacao("75.50")
+                    .build();
+
+            // Act
+            String responseJsonString = driver.perform(post(URI_ATIVOS)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            // Adiciona a matricula do administrador, pois criar exige admin
+                            .param("matriculaAdmin", administrador.getMatricula())
+                            .content(objectMapper.writeValueAsString(novoAtivoDTO)))
+                    .andExpect(status().isCreated())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            AtivoResponseDTO resultado = objectMapper.readValue(responseJsonString, AtivoResponseDTO.class);
+
+            // Assert
+            assertEquals(novoAtivoDTO.getNome(), resultado.getNome());
+        }
+
+        @Test
+        @DisplayName("Quando alteramos o ativo com dados válidos")
+        void quandoAlteramosAtivoValido() throws Exception {
+            // Arrange
+            Long ativoId = ativo.getId();
+            // Altera o nome no DTO que será enviado
+            ativoPostPutRequestDTO.setNome("Ativo Principal Alterado");
+            ativoPostPutRequestDTO.setCotacao("55.50");
+
+            // Act
+            String responseJsonString = driver.perform(put(URI_ATIVOS + "/" + ativo.getId())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            // Adiciona a matricula do administrador, pois alterar exige admin
+                            .param("matriculaAdmin", administrador.getMatricula())
+                            .content(objectMapper.writeValueAsString(ativoPostPutRequestDTO)))
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            AtivoResponseDTO resultado = objectMapper.readValue(responseJsonString, AtivoResponseDTO.class);
+
+            // Assert
+            assertAll(
+                    () -> assertEquals(ativoId, resultado.getId()),
+                    () -> assertEquals("Ativo Principal Alterado", resultado.getNome()),
+                    () -> assertEquals("55.50", resultado.getCotacao())
+            );
+        }
+
+        @Test
+        @DisplayName("Quando alteramos o ativo inexistente")
+        void quandoAlteramosAtivoInexistente() throws Exception {
+            // Act
+            String responseJsonString = driver.perform(put(URI_ATIVOS + "/" + 99999L)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            // Adiciona a matricula do administrador
+                            .param("matriculaAdmin", administrador.getMatricula())
+                            .content(objectMapper.writeValueAsString(ativoPostPutRequestDTO)))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType resultado = objectMapper.readValue(responseJsonString, CustomErrorType.class);
+
+            // Assert
+            assertEquals("O ativo consultado nao existe!", resultado.getMessage());
+        }
+
+        @Test
+        @DisplayName("Quando alteramos o ativo com matrícula do admin inválida")
+        void quandoAlteramosAtivoComMatriculaInvalida() throws Exception {
+            // Arrange
+            Long ativoId = ativo.getId();
+            ativoPostPutRequestDTO.setNome("Ativo admin inválido");
+
+            // Act
+            String responseJsonString = driver.perform(put(URI_ATIVOS + "/" + ativoId)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .param("matriculaAdmin", "matricula_invalida")
+                            .content(objectMapper.writeValueAsString(ativoPostPutRequestDTO)))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType resultado = objectMapper.readValue(responseJsonString, CustomErrorType.class);
+
+            // Assert
+            assertEquals("Autenticacao falhou!", resultado.getMessage());
+        }
+
+        @Test
+        @DisplayName("Quando excluímos um ativo salvo")
+        void quandoExcluimosAtivoValido() throws Exception {
+            // Act
+            String responseJsonString = driver.perform(delete(URI_ATIVOS + "/" + ativo.getId())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            // Adiciona a matricula do administrador, pois remover exige admin
+                            .param("matriculaAdmin", administrador.getMatricula()))
+                    .andExpect(status().isNoContent())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            // Assert
+            assertTrue(responseJsonString.isBlank());
+            assertFalse(ativoRepository.existsById(ativo.getId()));
+        }
+
+
+        @Test
+        @DisplayName("Quando excluímos um ativo inexistente")
+        void quandoExcluimosAtivoInexistente() throws Exception {
+            // Act
+            String responseJsonString = driver.perform(delete(URI_ATIVOS + "/" + 999999L)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            // Adiciona a matricula do administrador
+                            .param("matriculaAdmin", administrador.getMatricula()))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType resultado = objectMapper.readValue(responseJsonString, CustomErrorType.class);
+
+            // Assert
+            assertEquals("O ativo consultado nao existe!", resultado.getMessage());
+        }
+
+        @Test
+        @DisplayName("Quando tentamos autenticar um administrador com matrícula inválida")
+        void quandoAutenticamosAdminComMatriculaInvalida() throws Exception {
+            // Arrange
+            Long ativoId = ativo.getId();
+            String matriculaInvalida = "matricula_fake";
+            ativoPostPutRequestDTO.setNome("Alteração com matrícula inválida");
+
+            // Act
+            String responseJsonString = driver.perform(put(URI_ATIVOS + "/" + ativoId)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .param("matriculaAdmin", matriculaInvalida)
+                            .content(objectMapper.writeValueAsString(ativoPostPutRequestDTO)))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType resultado = objectMapper.readValue(responseJsonString, CustomErrorType.class);
+
+            // Assert
+            assertEquals("Autenticacao falhou!", resultado.getMessage());
+        }
+    }
+}
