@@ -1,5 +1,6 @@
 package com.ufcg.psoft.commerce.service.cliente;
 
+import com.ufcg.psoft.commerce.dto.Ativo.AtivoResponseDTO;
 import com.ufcg.psoft.commerce.dto.Cliente.ClientePostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.Cliente.ClienteResponseDTO;
 import com.ufcg.psoft.commerce.model.Cliente;
@@ -21,4 +22,6 @@ public interface ClienteService {
     List<ClienteResponseDTO> listarPorNome(String nome, String matriculaAdmin);
 
     List<ClienteResponseDTO> listar(String matriculaAdmin);
+
+    List<AtivoResponseDTO> listarAtivosDisponiveisPorPlano(Long idCliente, String codigoAcesso);
 }

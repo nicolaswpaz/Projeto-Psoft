@@ -68,4 +68,12 @@ public class ClienteController {
                 .status(HttpStatus.NO_CONTENT)
                 .body("");
     }
+
+    @GetMapping("/{id}/ativos-disponiveis")
+    public ResponseEntity<?> listarAtivosDisponiveisPorPlano(@PathVariable Long id, @RequestParam String codigo) {
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(clienteService.listarAtivosDisponiveisPorPlano(id, codigo));
+    }
 }
