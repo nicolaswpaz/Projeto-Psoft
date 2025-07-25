@@ -23,23 +23,23 @@ public class AtivoResponseDTO {
     private Long id;
 
     @JsonProperty("nome")
-    @NotBlank(message = "Nome obrigatório")
+    @NotBlank(message = "Nome obrigatorio")
     private String nome;
 
     @JsonProperty("cotacao")
-    @NotBlank(message = "Cotação obrigatória")
+    @NotBlank(message = "Cotacao obrigatoria")
     private String cotacao;
 
     @JsonProperty("tipo")
-    @NotBlank(message = "Tipo obrigatório")
+    @NotBlank(message = "Tipo obrigatorio")
     private TipoAtivo tipo;
 
     @JsonProperty("descricao")
-    @NotBlank(message = "Descrição obrigatória")
+    @NotBlank(message = "Descricao obrigatoria")
     private String descricao;
 
     @JsonProperty("disponibilidade")
-    @NotBlank(message = "Disponibilidade obrigatória")
+    @NotBlank(message = "Disponibilidade obrigatoria")
     private boolean disponivel;
 
     public AtivoResponseDTO(Ativo ativo){

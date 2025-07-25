@@ -1,7 +1,9 @@
 package com.ufcg.psoft.commerce.dto.Administrador;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.ufcg.psoft.commerce.dto.Endereco.EnderecoResponseDTO;
 import com.ufcg.psoft.commerce.model.Administrador;
+import com.ufcg.psoft.commerce.model.Cliente;
 import com.ufcg.psoft.commerce.model.Endereco;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -27,14 +29,11 @@ public class AdministradorResponseDTO {
     @NotBlank(message = "Nome obrigatorio")
     private String nome;
 
-    @JsonProperty("endereco")
-    @NotBlank(message = "Endereco obrigatorio")
-    private Endereco endereco;
-
+    private EnderecoResponseDTO endereco;
 
     public AdministradorResponseDTO(Administrador admin) {
         this.id = admin.getId();
         this.nome = admin.getNome();
-        this.endereco = admin.getEndereco();
+        this.endereco = new EnderecoResponseDTO(admin.getEndereco());
     }
 }
