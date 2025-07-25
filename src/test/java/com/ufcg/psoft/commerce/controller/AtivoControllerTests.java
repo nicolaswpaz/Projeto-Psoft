@@ -6,19 +6,11 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.ufcg.psoft.commerce.dto.Administrador.AdministradorPostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.Ativo.AtivoPostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.Ativo.AtivoResponseDTO;
-import com.ufcg.psoft.commerce.dto.Cliente.ClientePostPutRequestDTO;
-import com.ufcg.psoft.commerce.dto.Cliente.ClienteResponseDTO;
 import com.ufcg.psoft.commerce.dto.Endereco.EnderecoResponseDTO;
 import com.ufcg.psoft.commerce.exception.CustomErrorType;
-import com.ufcg.psoft.commerce.model.Administrador;
-import com.ufcg.psoft.commerce.model.Ativo;
-import com.ufcg.psoft.commerce.model.Cliente;
-import com.ufcg.psoft.commerce.model.Endereco;
-import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
+import com.ufcg.psoft.commerce.model.*;
 import com.ufcg.psoft.commerce.repository.AdministradorRepository;
 import com.ufcg.psoft.commerce.repository.AtivoRepository;
-import com.ufcg.psoft.commerce.repository.ClienteRepository;
-import com.ufcg.psoft.commerce.repository.EnderecoRepository;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -83,7 +75,7 @@ public class AtivoControllerTests {
 
         ativo = ativoRepository.save(Ativo.builder()
                 .nome("Ativo 1")
-                .tipoAtivo(TipoAtivo.ACAO)
+                .tipoAtivo(new Acao())
                 .disponivel(true)
                 .descricao("Descrição do ativo 1")
                 .cotacao("1.00")
@@ -192,14 +184,14 @@ public class AtivoControllerTests {
             // Já temos 1 ativo do setup(), vamos adicionar mais 2
             Ativo ativo2 = Ativo.builder()
                     .nome("Ativo Secundario")
-                    .tipoAtivo(TipoAtivo.ACAO)
+                    .tipoAtivo(new Acao())
                     .disponivel(true)
                     .descricao("Descrição do ativo secundário")
                     .cotacao("20.00")
                     .build();
             Ativo ativo3 = Ativo.builder()
                     .nome("Outro Ativo")
-                    .tipoAtivo(TipoAtivo.CRIPTOMOEDA)
+                    .tipoAtivo(new Criptomoeda())
                     .disponivel(false)
                     .descricao("Descrição de outro ativo")
                     .cotacao("30000.00")

@@ -1,7 +1,6 @@
 package com.ufcg.psoft.commerce.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.ufcg.psoft.commerce.model.interfaces.TipoAtivo;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -23,14 +22,14 @@ public class Ativo {
     @JsonProperty("cotacao")
     private String cotacao;
 
-    @JsonProperty("tipoAtivo")
-    private TipoAtivo tipoAtivo;
-
     @JsonProperty("descricao")
     private String descricao;
 
     @JsonProperty("disponivel")
     private Boolean disponivel;
+
+    @Transient
+    private AtivoStrategy tipoAtivo;
 
     @PrePersist
     public void setDefaultValues() {
@@ -41,5 +40,12 @@ public class Ativo {
 
     public Boolean isDisponivel(){
         return disponivel;
+    }
+
+    public String getTipoAtivo() {
+        if (this.tipoAtivo != null) {
+            return this.tipoAtivo.getNomeTipo();
+        }
+        return "Desconhecido";
     }
 }

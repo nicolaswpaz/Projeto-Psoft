@@ -1,6 +1,8 @@
 package com.ufcg.psoft.commerce.model;
 
-import com.ufcg.psoft.commerce.model.interfaces.TipoAtivo;
-
-public class Acao implements TipoAtivo {
+public class Acao extends AtivoStrategy{
+    @Override
+    public String getNomeTipo() {
+        return "Acao";
+    }
 }

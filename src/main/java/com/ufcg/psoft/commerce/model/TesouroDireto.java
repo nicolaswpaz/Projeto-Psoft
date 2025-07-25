@@ -1,6 +1,8 @@
 package com.ufcg.psoft.commerce.model;
 
-import com.ufcg.psoft.commerce.model.interfaces.TipoAtivo;
-
-public class TesouroDireto implements TipoAtivo {
+public class TesouroDireto extends AtivoStrategy{
+    @Override
+    public String getNomeTipo() {
+        return "Tesouro_Direto";
+    }
 }
