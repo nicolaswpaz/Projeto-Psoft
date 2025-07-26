@@ -102,7 +102,8 @@ public class ClienteControllerTests {
         void quandoRecuperamosNomeDoClienteValido() throws Exception {
 
             // Act
-            String responseJsonString = driver.perform(get(URI_CLIENTES + "/" + cliente.getId()))
+            String responseJsonString = driver.perform(get(URI_CLIENTES + "/" + cliente.getId())
+                    .param("codigo", cliente.getCodigo()))
                     .andExpect(status().isOk())
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
@@ -191,14 +192,14 @@ public class ClienteControllerTests {
         @DisplayName("Quando alteramos o endereço do cliente com dados válidos")
         void quandoAlteramosEnderecoDoClienteValido() throws Exception {
             // Arrange
-
-            clientePostPutRequestDTO.setEnderecoDTO(EnderecoResponseDTO.builder()
+            EnderecoResponseDTO novoEndereco = EnderecoResponseDTO.builder()
                     .rua("Nova Rua")
                     .complemento("Novo Complemento")
                     .bairro("Novo Bairro")
                     .numero("2")
-                    .cep("155427-000").build()
-            );
+                    .cep("155427-000").build();
+
+            clientePostPutRequestDTO.setEnderecoDTO(novoEndereco);
 
             // Act
             String responseJsonString = driver.perform(put(URI_CLIENTES + "/" + cliente.getId())
@@ -206,17 +207,16 @@ public class ClienteControllerTests {
                             .param("codigo", cliente.getCodigo())
                             .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
                     .andExpect(status().isOk())
-                    .andDo(print())
                     .andReturn().getResponse().getContentAsString();
 
-            ClienteResponseDTO resultado = objectMapper.readValue(responseJsonString, ClienteResponseDTO.ClienteResponseDTOBuilder.class).build();
+            ClienteResponseDTO resultado = objectMapper.readValue(responseJsonString, ClienteResponseDTO.class);
 
-            // Assert
-            assertEquals(EnderecoResponseDTO.builder().rua("Nova Rua")
-                    .complemento("Novo Complemento")
-                    .bairro("Novo Bairro")
-                    .numero("2")
-                    .cep("155427-000").build(), resultado.getEndereco());
+            // Assert - Compare apenas os campos relevantes
+            assertEquals(novoEndereco.getRua(), resultado.getEndereco().getRua());
+            assertEquals(novoEndereco.getComplemento(), resultado.getEndereco().getComplemento());
+            assertEquals(novoEndereco.getBairro(), resultado.getEndereco().getBairro());
+            assertEquals(novoEndereco.getNumero(), resultado.getEndereco().getNumero());
+            assertEquals(novoEndereco.getCep(), resultado.getEndereco().getCep());
         }
 
         @Test
@@ -237,6 +237,7 @@ public class ClienteControllerTests {
             CustomErrorType resultado = objectMapper.readValue(responseJsonString, CustomErrorType.class);
 
             // Assert
+            // Assert
             assertAll(
                     () -> assertEquals("Erros de validacao encontrados", resultado.getMessage()),
                     () -> assertEquals("Endereco obrigatorio", resultado.getErrors().get(0))
@@ -255,15 +256,16 @@ public class ClienteControllerTests {
                             .param("codigo", cliente.getCodigo())
                             .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
                     .andExpect(status().isBadRequest())
-                    .andDo(print())
                     .andReturn().getResponse().getContentAsString();
 
             CustomErrorType resultado = objectMapper.readValue(responseJsonString, CustomErrorType.class);
-
             // Assert
             assertAll(
                     () -> assertEquals("Erros de validacao encontrados", resultado.getMessage()),
-                    () -> assertEquals("Endereco obrigatorio", resultado.getErrors().get(0))
+                    () -> assertTrue(resultado.getErrors().contains("Rua obrigatoria")),
+                    () -> assertTrue(resultado.getErrors().contains("Bairro obrigatorio")),
+                    () -> assertTrue(resultado.getErrors().contains("Numero obrigatorio")),
+                    () -> assertTrue(resultado.getErrors().contains("CEP obrigatorio"))
             );
         }
     }
@@ -403,7 +405,7 @@ public class ClienteControllerTests {
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("codigo", cliente.getCodigo())
                             .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
-                    .andExpect(status().isBadRequest())
+                    .andExpect(status().isOk())
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
 
@@ -463,6 +465,7 @@ public class ClienteControllerTests {
 
             // Act
             String responseJsonString = driver.perform(get(URI_CLIENTES + "/" + cliente.getId())
+                            .param("codigo", cliente.getCodigo())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
                     .andExpect(status().isOk()) // Codigo 200

@@ -1,6 +1,7 @@
 package com.ufcg.psoft.commerce.service.cliente;
 
 import com.ufcg.psoft.commerce.dto.Ativo.AtivoResponseDTO;
+import com.ufcg.psoft.commerce.dto.Endereco.EnderecoResponseDTO;
 import com.ufcg.psoft.commerce.exception.Cliente.ClienteNaoExisteException;
 import com.ufcg.psoft.commerce.exception.Cliente.CodigoDeAcessoInvalidoException;
 import com.ufcg.psoft.commerce.model.Endereco;
@@ -11,9 +12,12 @@ import com.ufcg.psoft.commerce.dto.Cliente.ClienteResponseDTO;
 import com.ufcg.psoft.commerce.model.Cliente;
 import com.ufcg.psoft.commerce.service.administrador.AdministradorService;
 import com.ufcg.psoft.commerce.service.ativo.AtivoService;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,12 +30,16 @@ public class ClienteServiceImpl implements ClienteService {
 
     @Autowired
     ClienteRepository clienteRepository;
+
     @Autowired
     ModelMapper modelMapper;
+
     @Autowired
     EnderecoRepository enderecoRepository;
+
     @Autowired
     AdministradorService administradorService;
+
     @Autowired
     AtivoService ativoService;
 
@@ -46,33 +54,71 @@ public class ClienteServiceImpl implements ClienteService {
         return cliente;
     }
 
-    public Endereco salvarEnderecoSeNovo(Endereco endereco) {
-        if (endereco != null && endereco.getId() == null) {
-            return enderecoRepository.save(endereco);
-        }
-        return endereco;
-    }
-
     @Override
+    @Transactional
     public ClienteResponseDTO criar(ClientePostPutRequestDTO clientePostPutRequestDTO) {
+        // Mapeia o DTO para a entidade Cliente
         Cliente cliente = modelMapper.map(clientePostPutRequestDTO, Cliente.class);
 
-        clienteRepository.save(cliente);
+        // Processa o endereço
+        if (clientePostPutRequestDTO.getEnderecoDTO() != null) {
+            Endereco endereco = modelMapper.map(clientePostPutRequestDTO.getEnderecoDTO(), Endereco.class);
+            endereco = enderecoRepository.save(endereco);
+            cliente.setEndereco(endereco);
+        }
+
+        // Salva o cliente
+        cliente = clienteRepository.save(cliente);
         return modelMapper.map(cliente, ClienteResponseDTO.class);
     }
 
     @Override
+    @Transactional
     public ClienteResponseDTO alterar(Long id, String codigoAcesso, ClientePostPutRequestDTO clientePostPutRequestDTO) {
+        // Recupera o cliente existente
         Cliente cliente = autenticar(id, codigoAcesso);
 
-        modelMapper.map(clientePostPutRequestDTO, cliente);
-        clienteRepository.save(cliente);
-        return modelMapper.map(cliente, ClienteResponseDTO.class);
+        // Atualiza os campos básicos (exceto endereço)
+        cliente.setNome(clientePostPutRequestDTO.getNome());
+        cliente.setCpf(clientePostPutRequestDTO.getCpf());
+        cliente.setCodigo(clientePostPutRequestDTO.getCodigo());
+        cliente.setPlano(clientePostPutRequestDTO.getPlano());
+
+        // Atualiza o endereço
+        if (clientePostPutRequestDTO.getEnderecoDTO() != null) {
+            atualizarEndereco(cliente, clientePostPutRequestDTO.getEnderecoDTO());
+        }
+
+        // Salva as alterações
+        cliente = clienteRepository.save(cliente);
+        return new ClienteResponseDTO(cliente);
+    }
+
+    private void atualizarEndereco(Cliente cliente, @NotNull(message = "Endereco obrigatorio") @Valid EnderecoResponseDTO enderecoDTO) {
+        Endereco endereco = cliente.getEndereco();
+
+        if (endereco == null) {
+            // Cria novo endereço se não existir
+            endereco = modelMapper.map(enderecoDTO, Endereco.class);
+        } else {
+            // Atualiza endereço existente
+            modelMapper.map(enderecoDTO, endereco);
+        }
+
+        // Salva o endereço (novo ou atualizado)
+        endereco = enderecoRepository.save(endereco);
+        cliente.setEndereco(endereco);
     }
 
     @Override
+    @Transactional
     public void remover(Long id, String codigoAcesso) {
         Cliente cliente = autenticar(id, codigoAcesso);
+
+        // Remove o endereço associado se existir
+        if (cliente.getEndereco() != null) {
+            enderecoRepository.delete(cliente.getEndereco());
+        }
 
         clienteRepository.delete(cliente);
     }
@@ -104,7 +150,7 @@ public class ClienteServiceImpl implements ClienteService {
     }
 
     @Override
-    public List<AtivoResponseDTO> listarAtivosDisponiveisPorPlano(Long idCliente, String codigoAcesso){
+    public List<AtivoResponseDTO> listarAtivosDisponiveisPorPlano(Long idCliente, String codigoAcesso) {
         Cliente cliente = clienteRepository.findById(idCliente)
                 .orElseThrow(ClienteNaoExisteException::new);
 
@@ -115,11 +161,11 @@ public class ClienteServiceImpl implements ClienteService {
         List<AtivoResponseDTO> ativosFiltrados = new ArrayList<>();
         List<AtivoResponseDTO> ativosDisponiveis = ativoService.listarAtivosDisponiveis();
 
-        for(AtivoResponseDTO ativo : ativosDisponiveis){
-            if(cliente.getPlano() == TipoPlano.PREMIUM){
+        for(AtivoResponseDTO ativo : ativosDisponiveis) {
+            if(cliente.getPlano() == TipoPlano.PREMIUM) {
                 ativosFiltrados.add(ativo);
-            }else{
-                if(ativo.getTipo().name().equals("TESOURO_DIRETO")){
+            } else {
+                if(ativo.getTipo().name().equals("TESOURO_DIRETO")) {
                     ativosFiltrados.add(ativo);
                 }
             }

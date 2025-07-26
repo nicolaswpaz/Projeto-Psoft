@@ -24,11 +24,12 @@ public class ClientePostPutRequestDTO {
     private String nome;
 
     @JsonProperty("endereco")
+    @NotNull(message = "Endereco obrigatorio")
     @Valid
     private EnderecoResponseDTO enderecoDTO;
 
     @JsonProperty("codigo")
-    @NotNull(message = "Codigo de acesso obrigatorio")
+    @NotBlank(message = "Codigo de acesso obrigatorio")
     @Pattern(regexp = "^\\d{6}$", message = "Codigo de acesso deve ter exatamente 6 digitos numericos")
     private String codigo;
 

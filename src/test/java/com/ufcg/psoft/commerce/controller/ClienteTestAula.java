@@ -51,23 +51,21 @@ public class ClienteTestAula {
 
         //enderecos fictícios para os testes
 
-        Endereco endereco1 = enderecoRepository.save(Endereco.builder()
+        Endereco endereco1 = /*enderecoRepository.save(*/Endereco.builder()
                 .numero("123")
                 .cep("58400-000")
                 .rua("Rua 123")
                 .complemento("")
                 .bairro("bairro 1")
-                .build()
-        );
+                .build();
 
-        Endereco endereco2 = enderecoRepository.save(Endereco.builder()
+        Endereco endereco2 = /*enderecoRepository.save(*/Endereco.builder()
                 .bairro("bairro 2")
                 .complemento("")
                 .numero("234")
                 .rua("Rua 234")
                 .cep("40028922")
-                .build()
-        );
+                .build();
         Cliente cliente1 = clienteRepository.save(Cliente.builder()
                 .nome("Cliente")
                 .endereco(endereco1)

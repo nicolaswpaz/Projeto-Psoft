@@ -9,7 +9,9 @@ import com.ufcg.psoft.commerce.model.enums.TipoPlano;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -30,7 +32,6 @@ public class ClienteResponseDTO {
     private String nome;
 
     @JsonProperty("endereco")
-    @NotBlank(message = "Endereco obrigatorio")
     private EnderecoResponseDTO endereco;
 
     @JsonProperty("plano")
@@ -39,11 +40,16 @@ public class ClienteResponseDTO {
     public ClienteResponseDTO(Cliente cliente) {
         this.id = cliente.getId();
         this.nome = cliente.getNome();
-        this.endereco = new EnderecoResponseDTO(cliente.getEndereco());
-        if (cliente.getPlano() != null) {
-            this.plano = cliente.getPlano();
-        } else{
-            this.plano = TipoPlano.NORMAL;
-        }
+
+        //Tratando endereço
+        this.endereco = cliente.getEndereco() != null
+                ? new EnderecoResponseDTO(cliente.getEndereco())
+                : null;
+
+
+        //Tratando Plano
+        this.plano = cliente.getPlano() != null
+                ? cliente.getPlano()
+                : TipoPlano.NORMAL;
     }
 }

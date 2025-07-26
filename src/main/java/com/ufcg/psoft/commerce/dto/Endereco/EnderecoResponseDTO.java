@@ -6,6 +6,8 @@ import com.ufcg.psoft.commerce.model.Endereco;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,20 +22,20 @@ public class EnderecoResponseDTO {
     @JsonProperty("id")
     private Long id;
 
-    @JsonProperty("cep")
-    private String cep;
-
-    @JsonProperty("rua")
+    @NotBlank(message = "Rua obrigatoria")
     private String rua;
 
-    @JsonProperty("bairro")
+    @NotBlank(message = "Bairro obrigatorio")
     private String bairro;
 
-    @JsonProperty("complemento")
-    private String complemento;
-
-    @JsonProperty("numero")
+    @NotBlank(message = "Numero obrigatorio")
     private String numero;
+
+    @NotBlank(message = "CEP obrigatorio")
+    @Pattern(regexp = "^\\d{5}-?\\d{3}$", message = "CEP invalido")
+    private String cep;
+
+    private String complemento;
 
     public EnderecoResponseDTO(Endereco endereco) {
         this.cep = endereco.getCep();

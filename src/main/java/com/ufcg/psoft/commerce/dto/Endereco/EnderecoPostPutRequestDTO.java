@@ -2,6 +2,7 @@ package com.ufcg.psoft.commerce.dto.Endereco;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,23 +13,18 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EnderecoPostPutRequestDTO {
-
-    @JsonProperty("cep")
-    @NotBlank(message = "CEP obrigatorio")
-    private String cep;
-
-    @JsonProperty("rua")
-    @NotBlank(message = "Rua obrigatoria")
+    @NotBlank(message = "Rua obrigatória")
     private String rua;
 
-    @JsonProperty("bairro")
-    @NotBlank(message = "Bairro obrigatorio")
+    @NotBlank(message = "Bairro obrigatório")
     private String bairro;
 
-    @JsonProperty("complemento")
-    private String complemento;
-
-    @JsonProperty("numero")
-    @NotBlank(message = "Numero obrigatorio")
+    @NotBlank(message = "Número obrigatório")
     private String numero;
+
+    @NotBlank(message = "CEP obrigatório")
+    @Pattern(regexp = "^\\d{5}-?\\d{3}$", message = "CEP inválido")
+    private String cep;
+
+    private String complemento;
 }
