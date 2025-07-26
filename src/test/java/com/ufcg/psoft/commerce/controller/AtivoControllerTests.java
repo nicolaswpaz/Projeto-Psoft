@@ -400,5 +400,130 @@ public class AtivoControllerTests {
             // Assert
             assertEquals("Autenticacao falhou!", resultado.getMessage());
         }
+
+        @Test
+
+
+
+        @DisplayName("Quando tentamos a disponibilidade do ativo, ativando ou desativando")
+
+
+        void quandoAlteramosADisponibilidadeDoAtivo() throws Exception {
+
+
+            Long ativoId = ativo.getId();
+
+
+            String matriculaValida = administrador.getMatricula();
+
+
+
+
+
+            String responseDisponibilizarAtivo = driver.perform(put(URI_ATIVOS + "/" + ativoId + "/disponibilizar")
+
+
+                            .contentType(MediaType.APPLICATION_JSON)
+
+
+                            .param("matriculaAdmin", matriculaValida))
+
+
+                    .andExpect(status().isOk())
+
+
+                    .andDo(print())
+
+
+                    .andReturn().getResponse().getContentAsString();
+
+
+
+
+
+            String responseIndisponibilizarAtivo = driver.perform(put(URI_ATIVOS + "/" + ativoId + "/indisponibilizar")
+
+
+                            .contentType(MediaType.APPLICATION_JSON)
+
+
+                            .param("matriculaAdmin", matriculaValida))
+
+
+                    .andExpect(status().isOk())
+
+
+                    .andDo(print())
+
+
+                    .andReturn().getResponse().getContentAsString();
+
+
+
+
+
+            assertNotNull(responseDisponibilizarAtivo);
+
+
+            assertNotNull(responseIndisponibilizarAtivo);
+
+
+        }
+
+        @Test
+        @DisplayName("Quando tentamos alterar a disponibilidade de um ativo inexistente")
+        void quandoAlteramosADisponibilidadeDeUmAtivoInexistente() throws Exception {
+
+            Long idInvalido = 99992999L;
+
+            String responseDisponibilizarAtivo = driver.perform(put(URI_ATIVOS + "/" + idInvalido + "/disponibilizar")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .param("matriculaAdmin", administrador.getMatricula()))
+
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            String responseIndisponibilizarAtivo = driver.perform(put(URI_ATIVOS + "/" + idInvalido + "/indisponibilizar")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .param("matriculaAdmin", administrador.getMatricula()))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType resultado1 = objectMapper.readValue(responseIndisponibilizarAtivo, CustomErrorType.class);
+            CustomErrorType resultado2 = objectMapper.readValue(responseDisponibilizarAtivo, CustomErrorType.class);
+
+            assertEquals("O ativo consultado nao existe!", resultado1.getMessage());
+            assertEquals("O ativo consultado nao existe!", resultado2.getMessage());
+        }
+
+        @Test
+        @DisplayName("Quando tentamos alterar a disponibilidade de um ativo com administrador inválido")
+        void quandoAlteramosADisponibilidadeDeUmAtivoComAdminInvalido() throws Exception {
+
+            Long ativoId = ativo.getId();
+            String matriculaInvalida = "matricula_fake";
+
+            String responseDisponibilizarAtivo = driver.perform(put(URI_ATIVOS + "/" + ativoId + "/disponibilizar")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .param("matriculaAdmin", matriculaInvalida))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            String responseIndisponibilizarAtivo = driver.perform(put(URI_ATIVOS + "/" + ativoId + "/indisponibilizar")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .param("matriculaAdmin", matriculaInvalida))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType resultado1 = objectMapper.readValue(responseDisponibilizarAtivo, CustomErrorType.class);
+            CustomErrorType resultado2 = objectMapper.readValue(responseIndisponibilizarAtivo, CustomErrorType.class);
+
+            assertEquals("Autenticacao falhou!", resultado1.getMessage());
+            assertEquals("Autenticacao falhou!", resultado2.getMessage());
+        }
     }
 }
