@@ -10,6 +10,7 @@ import com.ufcg.psoft.commerce.dto.Endereco.EnderecoPostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.Endereco.EnderecoResponseDTO;
 import com.ufcg.psoft.commerce.exception.CustomErrorType;
 import com.ufcg.psoft.commerce.model.*;
+import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
 import com.ufcg.psoft.commerce.repository.AdministradorRepository;
 import com.ufcg.psoft.commerce.repository.AtivoRepository;
 import org.junit.jupiter.api.*;
@@ -76,7 +77,7 @@ public class AtivoControllerTests {
 
         ativo = ativoRepository.save(Ativo.builder()
                 .nome("Ativo 1")
-                .tipo(new Acao())
+                .tipo(TipoAtivo.ACAO)
                 .disponivel(true)
                 .descricao("Descrição do ativo 1")
                 .cotacao("1.00")
@@ -184,14 +185,14 @@ public class AtivoControllerTests {
             // Já temos 1 ativo do setup(), vamos adicionar mais 2
             Ativo ativo2 = Ativo.builder()
                     .nome("Ativo Secundario")
-                    .tipo(new Acao())
+                    .tipo(TipoAtivo.ACAO)
                     .disponivel(true)
                     .descricao("Descrição do ativo secundário")
                     .cotacao("20.00")
                     .build();
             Ativo ativo3 = Ativo.builder()
                     .nome("Outro Ativo")
-                    .tipo(new Criptomoeda())
+                    .tipo(TipoAtivo.CRIPTOMOEDA)
                     .disponivel(false)
                     .descricao("Descrição de outro ativo")
                     .cotacao("30000.00")
@@ -496,7 +497,7 @@ public class AtivoControllerTests {
             // Assert
             assertAll(
                     () -> assertEquals(ativo.getId(), resultado.getId()),
-                    () -> assertEquals("ACAO", resultado.getTipo()));
+                    () -> assertEquals("ACAO", resultado.getTipo().name()));
         }
     }
 
@@ -528,6 +529,56 @@ public class AtivoControllerTests {
                     () -> assertEquals(ativo.getId(), resultado.getId()),
                     () -> assertEquals(String.valueOf(novaCotacao), resultado.getCotacao())
             );
+        }
+
+        @Test
+        @DisplayName("Quando tentamos atualizar a cotação de um ativo do tipo TESOURO_DIRETO (não permitido)")
+        void quandoTentamosAtualizarCotacaoDeTesouroDireto() throws Exception {
+            // Arrange
+            Ativo tesouroAtivo = ativoRepository.save(Ativo.builder()
+                    .nome("Tesouro Selic 2029")
+                    .tipo(TipoAtivo.TESOURO_DIRETO)
+                    .disponivel(true)
+                    .descricao("Título do Tesouro Nacional")
+                    .cotacao("130.50")
+                    .build());
+            double novaCotacao = 135.00;
+
+            // Act
+            String responseJsonString = driver.perform(put(URI_ATIVOS + "/" + tesouroAtivo.getId() + "/cotacao")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .param("matriculaAdmin", administrador.getMatricula())
+                            .param("novoValor", String.valueOf(novaCotacao)))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType resultado = objectMapper.readValue(responseJsonString, CustomErrorType.class);
+
+            // Assert
+            assertEquals("Somente ativos do tipo Acao ou Criptomoeda podem ter a cotacao atualizada", resultado.getMessage());
+        }
+
+        @Test
+        @DisplayName("Quando tentamos atualizar a cotação com uma variação menor que 1% (não permitido)")
+        void quandoTentamosAtualizarCotacaoComVariacaoMenorQueUmPorcento() throws Exception {
+            // Arrange
+            // O ativo do setup tem cotação "1.00". Uma variação para "1.005" é de 0.5%, menor que o 1% exigido.
+            double novaCotacaoPequenaVariacao = 1.005;
+
+            // Act
+            String responseJsonString = driver.perform(put(URI_ATIVOS + "/" + ativo.getId() + "/cotacao")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .param("matriculaAdmin", administrador.getMatricula())
+                            .param("novoValor", String.valueOf(novaCotacaoPequenaVariacao)))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType resultado = objectMapper.readValue(responseJsonString, CustomErrorType.class);
+
+            // Assert
+            assertEquals("A variacao da cotacao deve ser de no minimo 1%", resultado.getMessage());
         }
     }
 }

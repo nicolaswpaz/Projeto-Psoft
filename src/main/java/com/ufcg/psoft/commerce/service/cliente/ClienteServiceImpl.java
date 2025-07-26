@@ -4,7 +4,6 @@ import com.ufcg.psoft.commerce.dto.Ativo.AtivoResponseDTO;
 import com.ufcg.psoft.commerce.exception.Cliente.ClienteNaoExisteException;
 import com.ufcg.psoft.commerce.exception.Cliente.CodigoDeAcessoInvalidoException;
 import com.ufcg.psoft.commerce.model.Endereco;
-import com.ufcg.psoft.commerce.model.TesouroDireto;
 import com.ufcg.psoft.commerce.model.enums.TipoPlano;
 import com.ufcg.psoft.commerce.repository.ClienteRepository;
 import com.ufcg.psoft.commerce.dto.Cliente.ClientePostPutRequestDTO;
@@ -120,7 +119,7 @@ public class ClienteServiceImpl implements ClienteService {
             if(cliente.getPlano() == TipoPlano.PREMIUM){
                 ativosFiltrados.add(ativo);
             }else{
-                if(ativo.getTipo().getTipo().equals("tesouro")){
+                if(ativo.getTipo().name().equals("TESOURO_DIRETO")){
                     ativosFiltrados.add(ativo);
                 }
             }

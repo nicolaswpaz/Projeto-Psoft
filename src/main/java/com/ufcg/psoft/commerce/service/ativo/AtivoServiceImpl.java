@@ -3,11 +3,10 @@ package com.ufcg.psoft.commerce.service.ativo;
 import com.ufcg.psoft.commerce.dto.Ativo.AtivoPostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.Ativo.AtivoResponseDTO;
 import com.ufcg.psoft.commerce.exception.Ativo.AtivoNaoExisteException;
-import com.ufcg.psoft.commerce.model.Acao;
+import com.ufcg.psoft.commerce.exception.Ativo.CotacaoNaoPodeAtualizarException;
+import com.ufcg.psoft.commerce.exception.Ativo.VariacaoCotacaoMenorQuerUmPorCentroException;
 import com.ufcg.psoft.commerce.model.Administrador;
 import com.ufcg.psoft.commerce.model.Ativo;
-import com.ufcg.psoft.commerce.model.Criptomoeda;
-import com.ufcg.psoft.commerce.repository.AdministradorRepository;
 import com.ufcg.psoft.commerce.repository.AtivoRepository;
 import com.ufcg.psoft.commerce.service.administrador.AdministradorService;
 import org.modelmapper.ModelMapper;
@@ -114,14 +113,14 @@ public class AtivoServiceImpl implements AtivoService {
         Ativo ativo = ativoRepository.findById(idAtivo).orElseThrow(AtivoNaoExisteException::new);
 
         if (!ativo.getTipo().podeTerCotacaoAtualizada()) {
-            throw new IllegalArgumentException("Somente ativos do tipo Ação ou Criptomoeda podem ter a cotação atualizada");
+            throw new CotacaoNaoPodeAtualizarException();
         }
 
         double valorAtual = Double.parseDouble(ativo.getCotacao());
         double variacaoPercentual = Math.abs((valor - valorAtual) / valorAtual) * 100;
 
         if (variacaoPercentual < 1.0) {
-            throw new IllegalArgumentException("A variação da cotação deve ser de no mínimo 1%");
+            throw new VariacaoCotacaoMenorQuerUmPorCentroException();
         }
 
         ativo.setCotacao(String.valueOf(valor));

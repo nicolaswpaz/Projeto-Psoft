@@ -12,6 +12,7 @@ import com.ufcg.psoft.commerce.dto.Endereco.EnderecoPostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.Endereco.EnderecoResponseDTO;
 import com.ufcg.psoft.commerce.exception.CustomErrorType;
 import com.ufcg.psoft.commerce.model.*;
+import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
 import com.ufcg.psoft.commerce.repository.AdministradorRepository;
 import com.ufcg.psoft.commerce.repository.AtivoRepository;
 import org.junit.jupiter.api.*;
@@ -78,7 +79,7 @@ public class AdministradorControllerTests {
 
         ativo = ativoRepository.save(Ativo.builder()
                 .nome("Ativo 1")
-                .tipo(new Acao())
+                .tipo(TipoAtivo.ACAO)
                 .disponivel(true)
                 .descricao("Descrição do ativo 1")
                 .cotacao("1.00")
@@ -87,7 +88,6 @@ public class AdministradorControllerTests {
 
         ativoPostPutRequestDTO = AtivoPostPutRequestDTO.builder()
                 .nome(ativo.getNome())
-                //.tipoAtivo(ativo.getTipoAtivo())
                 .disponivel(ativo.getDisponivel())
                 .descricao(ativo.getDescricao())
                 .cotacao(ativo.getCotacao())
