@@ -3,11 +3,13 @@ package com.ufcg.psoft.commerce.service.administrador;
 
 import com.ufcg.psoft.commerce.dto.Administrador.AdministradorResponseDTO;
 import com.ufcg.psoft.commerce.dto.Administrador.AdministradorPostPutRequestDTO;
+import com.ufcg.psoft.commerce.exception.Administrador.AdminJaExisteException;
 import com.ufcg.psoft.commerce.exception.Administrador.MatriculaInvalidaException;
 import com.ufcg.psoft.commerce.exception.Cliente.ClienteNaoExisteException;
 import com.ufcg.psoft.commerce.exception.Cliente.CodigoDeAcessoInvalidoException;
 import com.ufcg.psoft.commerce.model.Administrador;
 import com.ufcg.psoft.commerce.model.Cliente;
+import com.ufcg.psoft.commerce.model.Endereco;
 import com.ufcg.psoft.commerce.repository.AdministradorRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,25 +28,18 @@ public class AdministradorServiceImpl implements AdministradorService {
 
     @Override
     public Administrador autenticar(String matricula) {
-        if (getAdmin()== null) {
-            throw new IllegalStateException("Administrador não cadastrado no sistema.");
-        }
-
         Administrador administrador = getAdmin();
 
         if (!administrador.getMatricula().equals(matricula)) {
             throw new MatriculaInvalidaException();
-        } else {
-            return administrador;
         }
+        return administrador;
     }
 
     @Override
     public AdministradorResponseDTO criar(AdministradorPostPutRequestDTO dto) {
-        Administrador administradorExistente = getAdmin();
-
-        if (administradorExistente != null) {
-            throw new IllegalStateException("Já existe um administrador cadastrado no sistema.");
+        if (getAdmin() != null) {
+            throw new AdminJaExisteException();
         }
 
         Administrador admin = modelMapper.map(dto, Administrador.class);
@@ -57,7 +52,15 @@ public class AdministradorServiceImpl implements AdministradorService {
     public AdministradorResponseDTO atualizarAdmin(AdministradorPostPutRequestDTO administradorPostPutRequestDTO, String matricula) {
         Administrador admin = autenticar(matricula);
 
-        modelMapper.map(administradorPostPutRequestDTO, admin);
+        admin.setNome(administradorPostPutRequestDTO.getNome());
+        admin.setCpf(administradorPostPutRequestDTO.getCpf());
+        admin.setMatricula(administradorPostPutRequestDTO.getMatricula());
+
+        if (administradorPostPutRequestDTO.getEnderecoDTO() != null){
+            Endereco enderecoExistente = admin.getEndereco();
+            modelMapper.map(administradorPostPutRequestDTO.getEnderecoDTO(), enderecoExistente);
+        }
+
         administradorRepository.save(admin);
         return modelMapper.map(admin, AdministradorResponseDTO.class);
     }

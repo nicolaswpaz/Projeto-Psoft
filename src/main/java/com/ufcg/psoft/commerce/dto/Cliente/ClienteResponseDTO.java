@@ -1,5 +1,6 @@
 package com.ufcg.psoft.commerce.dto.Cliente;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.ufcg.psoft.commerce.dto.Endereco.EnderecoResponseDTO;
 import com.ufcg.psoft.commerce.model.Cliente;
@@ -17,6 +18,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ClienteResponseDTO {
 
     @JsonProperty("id")
@@ -30,7 +32,6 @@ public class ClienteResponseDTO {
 
     @JsonProperty("endereco")
     @NotBlank(message = "Endereco obrigatorio")
-
     private EnderecoResponseDTO endereco;
 
     public ClienteResponseDTO(Cliente cliente) {

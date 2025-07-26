@@ -42,7 +42,7 @@ public class Ativo {
         return disponivel;
     }
 
-    public String getTipoAtivo() {
+    public String getNomeTipoAtivo() {
         if (this.tipoAtivo != null) {
             return this.tipoAtivo.getNomeTipo();
         }

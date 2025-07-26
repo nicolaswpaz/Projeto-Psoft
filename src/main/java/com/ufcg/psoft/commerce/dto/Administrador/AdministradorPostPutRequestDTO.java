@@ -1,6 +1,7 @@
 package com.ufcg.psoft.commerce.dto.Administrador;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.ufcg.psoft.commerce.dto.Endereco.EnderecoPostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.Endereco.EnderecoResponseDTO;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -24,7 +25,7 @@ public class AdministradorPostPutRequestDTO {
     @JsonProperty("endereco")
     @NotNull(message = "Endereco obrigatorio")
     @Valid
-    private EnderecoResponseDTO enderecoDTO;
+    private EnderecoPostPutRequestDTO enderecoDTO;
 
     @JsonProperty("cpf")
     @NotBlank(message = "Cpf obrigatorio")

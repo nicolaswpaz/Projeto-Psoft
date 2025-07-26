@@ -52,7 +52,7 @@ public class AtivoResponseDTO {
         this.disponivel = ativo.isDisponivel();
         this.cotacao = ativo.getCotacao();
 
-        String tipoAtivo = ativo.getTipoAtivo();
+        String tipoAtivo = ativo.getNomeTipoAtivo();
         this.tipo = tipoAtivo.toUpperCase();
     }
 }
