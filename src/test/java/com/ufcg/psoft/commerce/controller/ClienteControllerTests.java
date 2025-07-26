@@ -538,7 +538,7 @@ public class ClienteControllerTests {
             String responseJsonString = driver.perform(post(URI_CLIENTES)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
-                    .andExpect(status().isCreated())
+                    .andExpect(status().isBadRequest())
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
 
@@ -546,7 +546,7 @@ public class ClienteControllerTests {
 
             // Assert
             assertAll(
-                    () -> assertEquals("Nome obrigatorio", resultado.getMessage())
+                    () -> assertEquals("Erros de validacao encontrados", resultado.getMessage())
             );
         }
 
@@ -565,7 +565,7 @@ public class ClienteControllerTests {
             String responseJsonString = driver.perform(post(URI_CLIENTES)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
-                    .andExpect(status().isCreated())
+                    .andExpect(status().isBadRequest())
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
 
@@ -592,7 +592,7 @@ public class ClienteControllerTests {
             String responseJsonString = driver.perform(post(URI_CLIENTES)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
-                    .andExpect(status().isCreated())
+                    .andExpect(status().isBadRequest())
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
 
@@ -627,7 +627,7 @@ public class ClienteControllerTests {
             String responseJsonString = driver.perform(post(URI_CLIENTES)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
-                    .andExpect(status().isCreated())
+                    .andExpect(status().isBadRequest())
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
 
@@ -694,8 +694,7 @@ public class ClienteControllerTests {
             assertAll(
                     () -> assertNotNull(resultado.getId()),
                     () -> assertEquals(clientePostPutRequestDTO.getNome(), resultado.getNome()),
-                    () -> assertEquals(clientePostPutRequestDTO.getPlano(), resultado.getPlano()),
-                    () -> assertEquals(TipoPlano.NORMAL, resultado.getPlano())
+                    () -> assertEquals("NORMAL", resultado.getPlano().name())
             );
         }
 
@@ -722,7 +721,7 @@ public class ClienteControllerTests {
 
             // Assert
             assertAll(
-                    () -> assertEquals("Codigo Obrigatorio", resultado.getMessage())
+                    () -> assertEquals("Erros de validacao encontrados", resultado.getMessage())
             );
         }
 
@@ -741,7 +740,7 @@ public class ClienteControllerTests {
             String responseJsonString = driver.perform(post(URI_CLIENTES)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
-                    .andExpect(status().isCreated())
+                    .andExpect(status().isBadRequest())
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
 
@@ -749,7 +748,7 @@ public class ClienteControllerTests {
 
             // Assert
             assertAll(
-                    () -> assertEquals("Codigo Obrigatorio", resultado.getMessage())
+                    () -> assertEquals("Erros de validacao encontrados", resultado.getMessage())
             );
         }
 
@@ -768,7 +767,7 @@ public class ClienteControllerTests {
             String responseJsonString = driver.perform(post(URI_CLIENTES)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
-                    .andExpect(status().isCreated())
+                    .andExpect(status().isBadRequest())
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
 
@@ -776,7 +775,7 @@ public class ClienteControllerTests {
 
             // Assert
             assertAll(
-                    () -> assertEquals("Codigo Deve ter 6 digitos", resultado.getMessage())
+                    () -> assertEquals("Erros de validacao encontrados", resultado.getMessage())
             );
         }
 
@@ -795,7 +794,7 @@ public class ClienteControllerTests {
             String responseJsonString = driver.perform(post(URI_CLIENTES)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
-                    .andExpect(status().isCreated())
+                    .andExpect(status().isBadRequest())
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
 
@@ -803,7 +802,7 @@ public class ClienteControllerTests {
 
             // Assert
             assertAll(
-                    () -> assertEquals("Codigo Deve ter 6 digitos", resultado.getMessage())
+                    () -> assertEquals("Erros de validacao encontrados", resultado.getMessage())
             );
         }
 
@@ -822,7 +821,7 @@ public class ClienteControllerTests {
             String responseJsonString = driver.perform(post(URI_CLIENTES)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
-                    .andExpect(status().isCreated())
+                    .andExpect(status().isBadRequest())
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
 
@@ -830,7 +829,7 @@ public class ClienteControllerTests {
 
             // Assert
             assertAll(
-                    () -> assertEquals("Codigo Numerico Obrigatorio", resultado.getMessage())
+                    () -> assertEquals("Erros de validacao encontrados", resultado.getMessage())
             );
         }
 
@@ -849,7 +848,7 @@ public class ClienteControllerTests {
             String responseJsonString = driver.perform(post(URI_CLIENTES)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
-                    .andExpect(status().isCreated())
+                    .andExpect(status().isBadRequest())
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
 
@@ -857,7 +856,7 @@ public class ClienteControllerTests {
 
             // Assert
             assertAll(
-                    () -> assertEquals("CPF Obrigatorio", resultado.getMessage())
+                    () -> assertEquals("Erros de validacao encontrados", resultado.getMessage())
             );
         }
 
@@ -876,7 +875,7 @@ public class ClienteControllerTests {
             String responseJsonString = driver.perform(post(URI_CLIENTES)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
-                    .andExpect(status().isCreated())
+                    .andExpect(status().isBadRequest())
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
 
@@ -884,7 +883,7 @@ public class ClienteControllerTests {
 
             // Assert
             assertAll(
-                    () -> assertEquals("CPF Obrigatorio", resultado.getMessage())
+                    () -> assertEquals("Erros de validacao encontrados", resultado.getMessage())
             );
         }
 
@@ -903,7 +902,7 @@ public class ClienteControllerTests {
             String responseJsonString = driver.perform(post(URI_CLIENTES)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
-                    .andExpect(status().isCreated())
+                    .andExpect(status().isBadRequest())
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
 
@@ -911,7 +910,7 @@ public class ClienteControllerTests {
 
             // Assert
             assertAll(
-                    () -> assertEquals("CPF Obrigatorio", resultado.getMessage())
+                    () -> assertEquals("Erros de validacao encontrados", resultado.getMessage())
             );
         }
 

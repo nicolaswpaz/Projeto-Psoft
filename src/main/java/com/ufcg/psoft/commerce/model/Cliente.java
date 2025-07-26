@@ -30,4 +30,11 @@ public class Cliente extends Usuario {
     @ManyToOne
     @JsonIgnore
     private Conta conta;
+
+    @PrePersist
+    public void prePersist(){
+        if (this.plano == null){
+            this.plano = TipoPlano.NORMAL;
+        }
+    }
 }

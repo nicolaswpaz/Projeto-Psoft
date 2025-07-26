@@ -33,7 +33,7 @@ public class ClientePostPutRequestDTO {
     private String codigo;
 
     @JsonProperty("cpf")
-    @NotBlank(message = "CPF obrigatório")
+    @NotBlank(message = "CPF obrigatorio")
     private String cpf;
 
     @JsonProperty("plano")
