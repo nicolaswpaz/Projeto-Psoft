@@ -402,11 +402,30 @@ public class AtivoControllerTests {
         }
 
         @Test
+        @DisplayName("Quando buscamos um ativo salvo pelo id, seu tipo deve ser retornado corretamente")
+        void quandoBuscamosUmAtivoSalvoVerificamosOSeuTipo() throws Exception {
+            // Act
+            String responseJsonString = driver.perform(get(URI_ATIVOS + "/" + ativo.getId()))
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            AtivoResponseDTO resultado = objectMapper.readValue(responseJsonString, AtivoResponseDTO.class);
+
+            // Assert
+            assertAll(
+                    () -> assertEquals(ativo.getId(), resultado.getId()),
+                    () -> assertEquals("ACAO", resultado.getTipo().name()));
+        }
+    }
+    @Nested
+    @DisplayName("Conjunto de casos de verificação da atualização de disponibilidade do Ativo")
+    class AtivoAtualizacaoDisponibilidade {
+
+        @Test
         @DisplayName("Quando tentamos a disponibilidade do ativo, ativando ou desativando")
         void quandoAlteramosADisponibilidadeDoAtivo() throws Exception {
-
             Long ativoId = ativo.getId();
-
             String matriculaValida = administrador.getMatricula();
 
             String responseDisponibilizarAtivo = driver.perform(put(URI_ATIVOS + "/" + ativoId + "/disponibilizar")
@@ -430,7 +449,6 @@ public class AtivoControllerTests {
         @Test
         @DisplayName("Quando tentamos alterar a disponibilidade de um ativo inexistente")
         void quandoAlteramosADisponibilidadeDeUmAtivoInexistente() throws Exception {
-
             Long idInvalido = 99992999L;
 
             String responseDisponibilizarAtivo = driver.perform(put(URI_ATIVOS + "/" + idInvalido + "/disponibilizar")
@@ -458,7 +476,6 @@ public class AtivoControllerTests {
         @Test
         @DisplayName("Quando tentamos alterar a disponibilidade de um ativo com administrador inválido")
         void quandoAlteramosADisponibilidadeDeUmAtivoComAdminInvalido() throws Exception {
-
             Long ativoId = ativo.getId();
             String matriculaInvalida = "matricula_fake";
 
@@ -484,20 +501,61 @@ public class AtivoControllerTests {
         }
 
         @Test
-        @DisplayName("Quando buscamos um ativo salvo pelo id, seu tipo deve ser retornado corretamente")
-        void quandoBuscamosUmAtivoSalvoVerificamosOSeuTipo() throws Exception {
-            // Act
-            String responseJsonString = driver.perform(get(URI_ATIVOS + "/" + ativo.getId()))
-                    .andExpect(status().isOk())
-                    .andDo(print())
-                    .andReturn().getResponse().getContentAsString();
+        @DisplayName("Quando disponibilizamos um ativo, seu estado deve mudar para disponível")
+        void quandoDisponibilizamosAtivoEstadoDeveSerDisponivel() throws Exception {
+            Long ativoId = ativo.getId();
+            String matriculaValida = administrador.getMatricula();
 
-            AtivoResponseDTO resultado = objectMapper.readValue(responseJsonString, AtivoResponseDTO.class);
+            driver.perform(put(URI_ATIVOS + "/" + ativoId + "/disponibilizar")
+                            .param("matriculaAdmin", matriculaValida))
+                    .andExpect(status().isOk());
 
-            // Assert
-            assertAll(
-                    () -> assertEquals(ativo.getId(), resultado.getId()),
-                    () -> assertEquals("ACAO", resultado.getTipo().name()));
+            Ativo atualizado = ativoRepository.findById(ativoId).orElseThrow();
+            assertTrue(atualizado.isDisponivel());
+        }
+
+        @Test
+        @DisplayName("Quando indisponibilizamos um ativo, seu estado deve mudar para indisponível")
+        void quandoIndisponibilizamosAtivoEstadoDeveSerIndisponivel() throws Exception {
+            Long ativoId = ativo.getId();
+            String matriculaValida = administrador.getMatricula();
+
+            driver.perform(put(URI_ATIVOS + "/" + ativoId + "/indisponibilizar")
+                            .param("matriculaAdmin", matriculaValida))
+                    .andExpect(status().isOk());
+
+            Ativo atualizado = ativoRepository.findById(ativoId).orElseThrow();
+            assertFalse(atualizado.isDisponivel());
+        }
+
+        @Test
+        @DisplayName("Quando disponibilizamos o ativo duas vezes seguidas não deve falhar")
+        void quandoDisponibilizamosDuasVezesNaoDeveFalhar() throws Exception {
+            Long ativoId = ativo.getId();
+            String matricula = administrador.getMatricula();
+
+            driver.perform(put(URI_ATIVOS + "/" + ativoId + "/disponibilizar")
+                            .param("matriculaAdmin", matricula))
+                    .andExpect(status().isOk());
+
+            driver.perform(put(URI_ATIVOS + "/" + ativoId + "/disponibilizar")
+                            .param("matriculaAdmin", matricula))
+                    .andExpect(status().isOk());
+        }
+
+        @Test
+        @DisplayName("Quando indisponibilizamos o ativo duas vezes seguidas não deve falhar")
+        void quandoIndisponibilizamosDuasVezesNaoDeveFalhar() throws Exception {
+            Long ativoId = ativo.getId();
+            String matricula = administrador.getMatricula();
+
+            driver.perform(put(URI_ATIVOS + "/" + ativoId + "/indisponibilizar")
+                            .param("matriculaAdmin", matricula))
+                    .andExpect(status().isOk());
+
+            driver.perform(put(URI_ATIVOS + "/" + ativoId + "/indisponibilizar")
+                            .param("matriculaAdmin", matricula))
+                    .andExpect(status().isOk());
         }
     }
 
@@ -506,7 +564,7 @@ public class AtivoControllerTests {
     class AtivoAtualizacaoCotacao{
 
         @Test
-        @DisplayName("Quando atualizamosd a cotacao de um ativo com dados validos")
+        @DisplayName("Quando atualizamos a cotacao de um ativo com dados validos")
         void quandoAtualizamosCotacaoAtivoValido() throws Exception{
 
             // Arrange
