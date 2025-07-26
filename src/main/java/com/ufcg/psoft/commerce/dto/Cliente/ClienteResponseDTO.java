@@ -23,8 +23,6 @@ import lombok.NoArgsConstructor;
 public class ClienteResponseDTO {
 
     @JsonProperty("id")
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
     @JsonProperty("nome")

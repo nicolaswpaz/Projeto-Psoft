@@ -76,7 +76,7 @@ public class AtivoControllerTests {
 
         ativo = ativoRepository.save(Ativo.builder()
                 .nome("Ativo 1")
-                .tipoAtivo(new Acao())
+                .tipo(new Acao())
                 .disponivel(true)
                 .descricao("Descrição do ativo 1")
                 .cotacao("1.00")
@@ -85,7 +85,6 @@ public class AtivoControllerTests {
 
         ativoPostPutRequestDTO = AtivoPostPutRequestDTO.builder()
                 .nome(ativo.getNome())
-                //.tipoAtivo(ativo.getTipoAtivo())
                 .disponivel(ativo.getDisponivel())
                 .descricao(ativo.getDescricao())
                 .cotacao(ativo.getCotacao())
@@ -185,14 +184,14 @@ public class AtivoControllerTests {
             // Já temos 1 ativo do setup(), vamos adicionar mais 2
             Ativo ativo2 = Ativo.builder()
                     .nome("Ativo Secundario")
-                    .tipoAtivo(new Acao())
+                    .tipo(new Acao())
                     .disponivel(true)
                     .descricao("Descrição do ativo secundário")
                     .cotacao("20.00")
                     .build();
             Ativo ativo3 = Ativo.builder()
                     .nome("Outro Ativo")
-                    .tipoAtivo(new Criptomoeda())
+                    .tipo(new Criptomoeda())
                     .disponivel(false)
                     .descricao("Descrição de outro ativo")
                     .cotacao("30000.00")
@@ -402,72 +401,29 @@ public class AtivoControllerTests {
         }
 
         @Test
-
-
-
         @DisplayName("Quando tentamos a disponibilidade do ativo, ativando ou desativando")
-
-
         void quandoAlteramosADisponibilidadeDoAtivo() throws Exception {
-
 
             Long ativoId = ativo.getId();
 
-
             String matriculaValida = administrador.getMatricula();
 
-
-
-
-
             String responseDisponibilizarAtivo = driver.perform(put(URI_ATIVOS + "/" + ativoId + "/disponibilizar")
-
-
                             .contentType(MediaType.APPLICATION_JSON)
-
-
                             .param("matriculaAdmin", matriculaValida))
-
-
                     .andExpect(status().isOk())
-
-
                     .andDo(print())
-
-
                     .andReturn().getResponse().getContentAsString();
-
-
-
-
 
             String responseIndisponibilizarAtivo = driver.perform(put(URI_ATIVOS + "/" + ativoId + "/indisponibilizar")
-
-
                             .contentType(MediaType.APPLICATION_JSON)
-
-
                             .param("matriculaAdmin", matriculaValida))
-
-
                     .andExpect(status().isOk())
-
-
                     .andDo(print())
-
-
                     .andReturn().getResponse().getContentAsString();
 
-
-
-
-
             assertNotNull(responseDisponibilizarAtivo);
-
-
             assertNotNull(responseIndisponibilizarAtivo);
-
-
         }
 
         @Test
@@ -524,6 +480,54 @@ public class AtivoControllerTests {
 
             assertEquals("Autenticacao falhou!", resultado1.getMessage());
             assertEquals("Autenticacao falhou!", resultado2.getMessage());
+        }
+
+        @Test
+        @DisplayName("Quando buscamos um ativo salvo pelo id, seu tipo deve ser retornado corretamente")
+        void quandoBuscamosUmAtivoSalvoVerificamosOSeuTipo() throws Exception {
+            // Act
+            String responseJsonString = driver.perform(get(URI_ATIVOS + "/" + ativo.getId()))
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            AtivoResponseDTO resultado = objectMapper.readValue(responseJsonString, AtivoResponseDTO.class);
+
+            // Assert
+            assertAll(
+                    () -> assertEquals(ativo.getId(), resultado.getId()),
+                    () -> assertEquals("ACAO", resultado.getTipo()));
+        }
+    }
+
+    @Nested
+    @DisplayName("Conjunto de casos de verificação da atualização de cotação")
+    class AtivoAtualizacaoCotacao{
+
+        @Test
+        @DisplayName("Quando atualizamosd a cotacao de um ativo com dados validos")
+        void quandoAtualizamosCotacaoAtivoValido() throws Exception{
+
+            // Arrange
+            //10% de aumento
+            double novaCotacao = 1.10;
+
+            // Act
+            String responseJsonString = driver.perform(put(URI_ATIVOS + "/" + ativo.getId() + "/cotacao")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .param("matriculaAdmin", administrador.getMatricula())
+                            .param("novoValor", String.valueOf(novaCotacao)))
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            AtivoResponseDTO resultado = objectMapper.readValue(responseJsonString, AtivoResponseDTO.class);
+
+            // Assert
+            assertAll(
+                    () -> assertEquals(ativo.getId(), resultado.getId()),
+                    () -> assertEquals(String.valueOf(novaCotacao), resultado.getCotacao())
+            );
         }
     }
 }

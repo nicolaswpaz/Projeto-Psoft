@@ -23,8 +23,8 @@ public class Ativo {
     private String cotacao;
 
     @Embedded
-    @JsonProperty("tipoAtivo")
-    private TipoAtivoEmbedded tipoAtivo;
+    @JsonProperty("tipo")
+    private TipoAtivoEmbedded tipo;
 
     @JsonProperty("descricao")
     private String descricao;

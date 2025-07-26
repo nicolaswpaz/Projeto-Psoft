@@ -78,7 +78,7 @@ public class AdministradorControllerTests {
 
         ativo = ativoRepository.save(Ativo.builder()
                 .nome("Ativo 1")
-                .tipoAtivo(new Acao())
+                .tipo(new Acao())
                 .disponivel(true)
                 .descricao("Descrição do ativo 1")
                 .cotacao("1.00")

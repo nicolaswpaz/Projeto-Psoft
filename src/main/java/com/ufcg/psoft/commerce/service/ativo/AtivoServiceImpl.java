@@ -113,7 +113,7 @@ public class AtivoServiceImpl implements AtivoService {
 
         Ativo ativo = ativoRepository.findById(idAtivo).orElseThrow(AtivoNaoExisteException::new);
 
-        if (!ativo.getTipoAtivo().podeTerCotacaoAtualizada()) {
+        if (!ativo.getTipo().podeTerCotacaoAtualizada()) {
             throw new IllegalArgumentException("Somente ativos do tipo Ação ou Criptomoeda podem ter a cotação atualizada");
         }
 
