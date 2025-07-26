@@ -1,17 +1,22 @@
 package com.ufcg.psoft.commerce.service.cliente;
 
+import com.ufcg.psoft.commerce.dto.Ativo.AtivoResponseDTO;
 import com.ufcg.psoft.commerce.exception.Cliente.ClienteNaoExisteException;
 import com.ufcg.psoft.commerce.exception.Cliente.CodigoDeAcessoInvalidoException;
 import com.ufcg.psoft.commerce.model.Endereco;
+import com.ufcg.psoft.commerce.model.TesouroDireto;
+import com.ufcg.psoft.commerce.model.enums.TipoPlano;
 import com.ufcg.psoft.commerce.repository.ClienteRepository;
 import com.ufcg.psoft.commerce.dto.Cliente.ClientePostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.Cliente.ClienteResponseDTO;
 import com.ufcg.psoft.commerce.model.Cliente;
 import com.ufcg.psoft.commerce.service.administrador.AdministradorService;
+import com.ufcg.psoft.commerce.service.ativo.AtivoService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,6 +33,8 @@ public class ClienteServiceImpl implements ClienteService {
     EnderecoRepository enderecoRepository;
     @Autowired
     AdministradorService administradorService;
+    @Autowired
+    AtivoService ativoService;
 
     @Override
     public Cliente autenticar(Long id, String codigoAcesso) {
@@ -95,5 +102,30 @@ public class ClienteServiceImpl implements ClienteService {
         return clientes.stream()
                 .map(ClienteResponseDTO::new)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<AtivoResponseDTO> listarAtivosDisponiveisPorPlano(Long idCliente, String codigoAcesso){
+        Cliente cliente = clienteRepository.findById(idCliente)
+                .orElseThrow(ClienteNaoExisteException::new);
+
+        if (!cliente.getCodigo().equals(codigoAcesso)) {
+            throw new CodigoDeAcessoInvalidoException();
+        }
+
+        List<AtivoResponseDTO> ativosFiltrados = new ArrayList<>();
+        List<AtivoResponseDTO> ativosDisponiveis = ativoService.listarAtivosDisponiveis();
+
+        for(AtivoResponseDTO ativo : ativosDisponiveis){
+            if(cliente.getPlano() == TipoPlano.PREMIUM){
+                ativosFiltrados.add(ativo);
+            }else{
+                if(ativo.getTipo()  TesouroDireto){
+                    ativosFiltrados.add(ativo);
+                }
+            }
+        }
+
+        return ativosFiltrados;
     }
 }
