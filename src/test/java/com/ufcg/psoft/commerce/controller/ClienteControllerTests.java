@@ -9,8 +9,10 @@ import com.ufcg.psoft.commerce.dto.Endereco.EnderecoResponseDTO;
 import com.ufcg.psoft.commerce.exception.CustomErrorType;
 import com.ufcg.psoft.commerce.model.Cliente;
 import com.ufcg.psoft.commerce.model.Endereco;
+import com.ufcg.psoft.commerce.model.enums.TipoPlano;
 import com.ufcg.psoft.commerce.repository.ClienteRepository;
 import com.ufcg.psoft.commerce.repository.EnderecoRepository;
+import com.ufcg.psoft.commerce.service.cliente.ClienteService;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,9 +20,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-
-import java.util.Arrays;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -51,6 +50,8 @@ public class ClienteControllerTests {
 
     Endereco endereco;
     EnderecoResponseDTO enderecoDTO;
+    @Autowired
+    private ClienteService clienteService;
 
     @BeforeEach
     @Transactional
@@ -296,6 +297,30 @@ public class ClienteControllerTests {
         }
 
         @Test
+        @DisplayName("Quando alteramos o código de acesso do cliente vazio")
+        void quandoAlteramosCodigoAcessoDoClienteVazio() throws Exception {
+            // Arrange
+            clientePostPutRequestDTO.setCodigo("");
+
+            // Act
+            String responseJsonString = driver.perform(put(URI_CLIENTES + "/" + cliente.getId())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .param("codigo", cliente.getCodigo())
+                            .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType resultado = objectMapper.readValue(responseJsonString, CustomErrorType.class);
+
+            // Assert
+            assertAll(
+                    () -> assertEquals("Erros de validacao encontrados", resultado.getMessage()),
+                    () -> assertEquals("Codigo de acesso deve ter exatamente 6 digitos numericos", resultado.getErrors().get(0))
+            );
+        }
+
+        @Test
         @DisplayName("Quando alteramos o código de acesso do cliente mais de 6 digitos")
         void quandoAlteramosCodigoAcessoDoClienteMaisDe6Digitos() throws Exception {
             // Arrange
@@ -364,6 +389,30 @@ public class ClienteControllerTests {
             assertAll(
                     () -> assertEquals("Erros de validacao encontrados", resultado.getMessage()),
                     () -> assertEquals("Codigo de acesso deve ter exatamente 6 digitos numericos", resultado.getErrors().get(0))
+            );
+        }
+
+        @Test
+        @DisplayName("Quando alteramos o codigo de cliente para um novo válido")
+        void quandoAlteramosCodigoDoClienteValido() throws Exception {
+            // Arrange
+            clientePostPutRequestDTO.setCodigo("987654");
+
+            // Act
+            String responseJsonString = driver.perform(put(URI_CLIENTES + "/" + cliente.getId())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .param("codigo", cliente.getCodigo())
+                            .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            ClienteResponseDTO resultado = objectMapper.readValue(responseJsonString, ClienteResponseDTO.class);
+
+            // Assert
+            assertAll(
+                    () -> assertEquals(cliente.getId().longValue(), resultado.getId().longValue()),
+                    () -> assertEquals("987654", cliente.getCodigo())
             );
         }
     }
@@ -472,7 +521,398 @@ public class ClienteControllerTests {
                     () -> assertNotNull(resultado.getId()),
                     () -> assertEquals(clientePostPutRequestDTO.getNome(), resultado.getNome())
             );
+        }
 
+        @Test
+        @DisplayName("Quando criamos um novo cliente com nome null")
+        void quandoCriarClienteNomeNull() throws Exception {
+            // Arrange
+            clientePostPutRequestDTO = ClientePostPutRequestDTO.builder()
+                    .nome(null)
+                    .enderecoDTO(enderecoDTO)
+                    .codigo("654321")
+                    .cpf("12345678910")
+                    .build();
+
+            // Act
+            String responseJsonString = driver.perform(post(URI_CLIENTES)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
+                    .andExpect(status().isCreated())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType resultado = objectMapper.readValue(responseJsonString, CustomErrorType.class);
+
+            // Assert
+            assertAll(
+                    () -> assertEquals("Nome obrigatorio", resultado.getMessage())
+            );
+        }
+
+        @Test
+        @DisplayName("Quando criamos um novo cliente com nome vazio")
+        void quandoCriarClienteNomeVazio() throws Exception {
+            // Arrange
+            clientePostPutRequestDTO = ClientePostPutRequestDTO.builder()
+                    .nome("")
+                    .enderecoDTO(enderecoDTO)
+                    .codigo("654321")
+                    .cpf("12345678910")
+                    .build();
+
+            // Act
+            String responseJsonString = driver.perform(post(URI_CLIENTES)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
+                    .andExpect(status().isCreated())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType resultado = objectMapper.readValue(responseJsonString, CustomErrorType.class);
+
+            // Assert
+            assertAll(
+                    () -> assertEquals("Nome obrigatorio", resultado.getMessage())
+            );
+        }
+
+        @Test
+        @DisplayName("Quando criamos um novo cliente com endereço null")
+        void quandoCriarClienteEnderecoNull() throws Exception {
+            // Arrange
+            clientePostPutRequestDTO = ClientePostPutRequestDTO.builder()
+                    .nome("Cliente Sem Edereço")
+                    .enderecoDTO(null)
+                    .codigo("654321")
+                    .cpf("12345678910")
+                    .build();
+
+            // Act
+            String responseJsonString = driver.perform(post(URI_CLIENTES)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
+                    .andExpect(status().isCreated())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            ClienteResponseDTO resultado = objectMapper.readValue(responseJsonString, ClienteResponseDTO.class);
+
+            // Assert
+            assertAll(
+                    () -> assertNotNull(resultado.getId()),
+                    () -> assertEquals(clientePostPutRequestDTO.getNome(), resultado.getNome())
+            );
+        }
+
+        @Test
+        @DisplayName("Quando criamos um novo cliente com endereço sem dados")
+        void quandoCriarClienteEndereçoVazio() throws Exception {
+            // Arrange
+            enderecoDTO = EnderecoResponseDTO.builder()
+                    .numero("")
+                    .bairro("")
+                    .cep("")
+                    .complemento("")
+                    .rua("")
+                    .build();
+            clientePostPutRequestDTO = ClientePostPutRequestDTO.builder()
+                    .nome("Cliente Sem Edereço")
+                    .enderecoDTO(enderecoDTO)
+                    .codigo("654321")
+                    .cpf("12345678910")
+                    .build();
+
+            // Act
+            String responseJsonString = driver.perform(post(URI_CLIENTES)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
+                    .andExpect(status().isCreated())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            ClienteResponseDTO resultado = objectMapper.readValue(responseJsonString, ClienteResponseDTO.class);
+
+            // Assert
+            assertAll(
+                    () -> assertNotNull(resultado.getId()),
+                    () -> assertEquals(clientePostPutRequestDTO.getNome(), resultado.getNome())
+            );
+        }
+
+        @Test
+        @DisplayName("Quando criamos um novo cliente com plano premium")
+        void quandoCriarClientePlanoPremium() throws Exception {
+            clientePostPutRequestDTO = ClientePostPutRequestDTO.builder()
+                    .nome("Cliente Premium")
+                    .enderecoDTO(enderecoDTO)
+                    .codigo("654321")
+                    .cpf("12345678910")
+                    .plano(TipoPlano.PREMIUM)
+                    .build();
+
+            // Act
+            String responseJsonString = driver.perform(post(URI_CLIENTES)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
+                    .andExpect(status().isCreated())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            ClienteResponseDTO resultado = objectMapper.readValue(responseJsonString, ClienteResponseDTO.class);
+
+            // Assert
+            assertAll(
+                    () -> assertNotNull(resultado.getId()),
+                    () -> assertEquals(clientePostPutRequestDTO.getNome(), resultado.getNome()),
+                    () -> assertEquals(clientePostPutRequestDTO.getPlano(), resultado.getPlano())
+            );
+        }
+
+        @Test
+        @DisplayName("Quando criamos um novo cliente com plano null por padrão normal")
+        void quandoCriarClientePlanoNull() throws Exception {
+            clientePostPutRequestDTO = ClientePostPutRequestDTO.builder()
+                    .nome("Cliente Premium")
+                    .enderecoDTO(enderecoDTO)
+                    .codigo("654321")
+                    .cpf("12345678910")
+                    .plano(null)
+                    .build();
+
+            // Act
+            String responseJsonString = driver.perform(post(URI_CLIENTES)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
+                    .andExpect(status().isCreated())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            ClienteResponseDTO resultado = objectMapper.readValue(responseJsonString, ClienteResponseDTO.class);
+
+            // Assert
+            assertAll(
+                    () -> assertNotNull(resultado.getId()),
+                    () -> assertEquals(clientePostPutRequestDTO.getNome(), resultado.getNome()),
+                    () -> assertEquals(clientePostPutRequestDTO.getPlano(), resultado.getPlano()),
+                    () -> assertEquals(TipoPlano.NORMAL, resultado.getPlano())
+            );
+        }
+
+        @Test
+        @DisplayName("Quando criamos um novo cliente com codigo null")
+        void quandoCriarClienteCodigoNull() throws Exception {
+            // Arrange
+            clientePostPutRequestDTO = ClientePostPutRequestDTO.builder()
+                    .nome("Cliente sem Codigo")
+                    .enderecoDTO(enderecoDTO)
+                    .codigo(null)
+                    .cpf("12345678910")
+                    .build();
+
+            // Act
+            String responseJsonString = driver.perform(post(URI_CLIENTES)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
+                    .andExpect(status().isCreated())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType resultado = objectMapper.readValue(responseJsonString, CustomErrorType.class);
+
+            // Assert
+            assertAll(
+                    () -> assertEquals("Codigo Obrigatorio", resultado.getMessage())
+            );
+        }
+
+        @Test
+        @DisplayName("Quando criamos um novo cliente com codigo vazio")
+        void quandoCriarClienteCodigoVazio() throws Exception {
+            // Arrange
+            clientePostPutRequestDTO = ClientePostPutRequestDTO.builder()
+                    .nome("Cliente sem Codigo")
+                    .enderecoDTO(enderecoDTO)
+                    .codigo("")
+                    .cpf("12345678910")
+                    .build();
+
+            // Act
+            String responseJsonString = driver.perform(post(URI_CLIENTES)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
+                    .andExpect(status().isCreated())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType resultado = objectMapper.readValue(responseJsonString, CustomErrorType.class);
+
+            // Assert
+            assertAll(
+                    () -> assertEquals("Codigo Obrigatorio", resultado.getMessage())
+            );
+        }
+
+        @Test
+        @DisplayName("Quando criamos um novo cliente com codigo maior que 6 digitos")
+        void quandoCriarClienteCodigoInvalidoMaior() throws Exception {
+            // Arrange
+            clientePostPutRequestDTO = ClientePostPutRequestDTO.builder()
+                    .nome("Cliente Codigo Invalido")
+                    .enderecoDTO(enderecoDTO)
+                    .codigo("1234567")
+                    .cpf("12345678910")
+                    .build();
+
+            // Act
+            String responseJsonString = driver.perform(post(URI_CLIENTES)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
+                    .andExpect(status().isCreated())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType resultado = objectMapper.readValue(responseJsonString, CustomErrorType.class);
+
+            // Assert
+            assertAll(
+                    () -> assertEquals("Codigo Deve ter 6 digitos", resultado.getMessage())
+            );
+        }
+
+        @Test
+        @DisplayName("Quando criamos um novo cliente com codigo menor que 6 digitos")
+        void quandoCriarClienteCodigoInvalidoMenor() throws Exception {
+            // Arrange
+            clientePostPutRequestDTO = ClientePostPutRequestDTO.builder()
+                    .nome("Cliente Codigo Invalido")
+                    .enderecoDTO(enderecoDTO)
+                    .codigo("12345")
+                    .cpf("12345678910")
+                    .build();
+
+            // Act
+            String responseJsonString = driver.perform(post(URI_CLIENTES)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
+                    .andExpect(status().isCreated())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType resultado = objectMapper.readValue(responseJsonString, CustomErrorType.class);
+
+            // Assert
+            assertAll(
+                    () -> assertEquals("Codigo Deve ter 6 digitos", resultado.getMessage())
+            );
+        }
+
+        @Test
+        @DisplayName("Quando criamos um novo cliente com codigo não numerico")
+        void quandoCriarClienteCodigoInvalido() throws Exception {
+            // Arrange
+            clientePostPutRequestDTO = ClientePostPutRequestDTO.builder()
+                    .nome("Cliente Codigo Invalido")
+                    .enderecoDTO(enderecoDTO)
+                    .codigo("batata")
+                    .cpf("12345678910")
+                    .build();
+
+            // Act
+            String responseJsonString = driver.perform(post(URI_CLIENTES)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
+                    .andExpect(status().isCreated())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType resultado = objectMapper.readValue(responseJsonString, CustomErrorType.class);
+
+            // Assert
+            assertAll(
+                    () -> assertEquals("Codigo Numerico Obrigatorio", resultado.getMessage())
+            );
+        }
+
+        @Test
+        @DisplayName("Quando criamos um novo cliente com cpf null")
+        void quandoCriarClienteCpfNull() throws Exception {
+            // Arrange
+            clientePostPutRequestDTO = ClientePostPutRequestDTO.builder()
+                    .nome("Cliente Sem cpf")
+                    .enderecoDTO(enderecoDTO)
+                    .codigo("123456")
+                    .cpf(null)
+                    .build();
+
+            // Act
+            String responseJsonString = driver.perform(post(URI_CLIENTES)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
+                    .andExpect(status().isCreated())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType resultado = objectMapper.readValue(responseJsonString, CustomErrorType.class);
+
+            // Assert
+            assertAll(
+                    () -> assertEquals("CPF Obrigatorio", resultado.getMessage())
+            );
+        }
+
+        @Test
+        @DisplayName("Quando criamos um novo cliente com cpf vazio")
+        void quandoCriarClienteCpfVazio() throws Exception {
+            // Arrange
+            clientePostPutRequestDTO = ClientePostPutRequestDTO.builder()
+                    .nome("Cliente Sem cpf")
+                    .enderecoDTO(enderecoDTO)
+                    .codigo("123456")
+                    .cpf("")
+                    .build();
+
+            // Act
+            String responseJsonString = driver.perform(post(URI_CLIENTES)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
+                    .andExpect(status().isCreated())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType resultado = objectMapper.readValue(responseJsonString, CustomErrorType.class);
+
+            // Assert
+            assertAll(
+                    () -> assertEquals("CPF Obrigatorio", resultado.getMessage())
+            );
+        }
+
+        @Test
+        @DisplayName("Quando criamos um novo cliente com cpf invalido")
+        void quandoCriarClienteCpfInvalido() throws Exception {
+            // Arrange
+            clientePostPutRequestDTO = ClientePostPutRequestDTO.builder()
+                    .nome("Cliente cpf Invalido")
+                    .enderecoDTO(enderecoDTO)
+                    .codigo("123456")
+                    .cpf("123")
+                    .build();
+
+            // Act
+            String responseJsonString = driver.perform(post(URI_CLIENTES)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
+                    .andExpect(status().isCreated())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType resultado = objectMapper.readValue(responseJsonString, CustomErrorType.class);
+
+            // Assert
+            assertAll(
+                    () -> assertEquals("CPF Obrigatorio", resultado.getMessage())
+            );
         }
 
         @Test

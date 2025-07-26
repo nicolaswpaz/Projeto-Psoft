@@ -22,14 +22,15 @@ public class Ativo {
     @JsonProperty("cotacao")
     private String cotacao;
 
+    @Embedded
+    @JsonProperty("tipoAtivo")
+    private TipoAtivoEmbedded tipoAtivo;
+
     @JsonProperty("descricao")
     private String descricao;
 
     @JsonProperty("disponivel")
     private Boolean disponivel;
-
-    @Transient
-    private AtivoStrategy tipoAtivo;
 
     @PrePersist
     public void setDefaultValues() {
@@ -38,14 +39,7 @@ public class Ativo {
         }
     }
 
-    public Boolean isDisponivel(){
+    public Boolean isDisponivel() {
         return disponivel;
-    }
-
-    public String getNomeTipoAtivo() {
-        if (this.tipoAtivo != null) {
-            return this.tipoAtivo.getNomeTipo();
-        }
-        return "Desconhecido";
     }
 }

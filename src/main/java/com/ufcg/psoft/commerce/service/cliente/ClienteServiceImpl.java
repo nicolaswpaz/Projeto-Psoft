@@ -120,7 +120,7 @@ public class ClienteServiceImpl implements ClienteService {
             if(cliente.getPlano() == TipoPlano.PREMIUM){
                 ativosFiltrados.add(ativo);
             }else{
-                if(ativo.getTipo()  TesouroDireto){
+                if(ativo.getTipo().getTipo().equals("tesouro")){
                     ativosFiltrados.add(ativo);
                 }
             }

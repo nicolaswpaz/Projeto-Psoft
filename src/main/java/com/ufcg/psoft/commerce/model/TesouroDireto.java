@@ -1,8 +1,22 @@
 package com.ufcg.psoft.commerce.model;
 
-public class TesouroDireto extends AtivoStrategy{
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import com.ufcg.psoft.commerce.model.interfaces.TipoAtivo;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+@Data
+@EqualsAndHashCode(callSuper = false)
+@JsonTypeName("tesouro")
+public class TesouroDireto implements TipoAtivo {
+
     @Override
-    public String getNomeTipo() {
-        return "Tesouro_Direto";
+    public boolean podeTerCotacaoAtualizada() {
+        return false;
+    }
+
+    @Override
+    public String getTipo() {
+        return "tesouro";
     }
 }

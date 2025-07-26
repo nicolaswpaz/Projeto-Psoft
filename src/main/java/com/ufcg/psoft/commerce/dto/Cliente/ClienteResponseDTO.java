@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.ufcg.psoft.commerce.dto.Endereco.EnderecoResponseDTO;
 import com.ufcg.psoft.commerce.model.Cliente;
 import com.ufcg.psoft.commerce.model.Endereco;
+import com.ufcg.psoft.commerce.model.enums.TipoPlano;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -34,9 +35,17 @@ public class ClienteResponseDTO {
     @NotBlank(message = "Endereco obrigatorio")
     private EnderecoResponseDTO endereco;
 
+    @JsonProperty("plano")
+    private TipoPlano plano;
+
     public ClienteResponseDTO(Cliente cliente) {
         this.id = cliente.getId();
         this.nome = cliente.getNome();
         this.endereco = new EnderecoResponseDTO(cliente.getEndereco());
+        if (cliente.getPlano() != null) {
+            this.plano = cliente.getPlano();
+        } else{
+            this.plano = TipoPlano.NORMAL;
+        }
     }
 }

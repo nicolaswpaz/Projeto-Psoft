@@ -2,6 +2,7 @@ package com.ufcg.psoft.commerce.dto.Cliente;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.ufcg.psoft.commerce.dto.Endereco.EnderecoResponseDTO;
+import com.ufcg.psoft.commerce.model.enums.TipoPlano;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -23,7 +24,6 @@ public class ClientePostPutRequestDTO {
     private String nome;
 
     @JsonProperty("endereco")
-    @NotNull(message = "Endereco obrigatorio")
     @Valid
     private EnderecoResponseDTO enderecoDTO;
 
@@ -32,7 +32,10 @@ public class ClientePostPutRequestDTO {
     @Pattern(regexp = "^\\d{6}$", message = "Codigo de acesso deve ter exatamente 6 digitos numericos")
     private String codigo;
 
-    @JsonProperty
+    @JsonProperty("cpf")
     @NotBlank(message = "CPF obrigatório")
     private String cpf;
+
+    @JsonProperty("plano")
+    private TipoPlano plano;
 }

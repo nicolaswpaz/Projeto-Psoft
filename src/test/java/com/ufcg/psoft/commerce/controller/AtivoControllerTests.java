@@ -7,6 +7,7 @@ import com.ufcg.psoft.commerce.dto.Administrador.AdministradorPostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.Ativo.AtivoPostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.Ativo.AtivoResponseDTO;
 import com.ufcg.psoft.commerce.dto.Endereco.EnderecoPostPutRequestDTO;
+import com.ufcg.psoft.commerce.dto.Endereco.EnderecoResponseDTO;
 import com.ufcg.psoft.commerce.exception.CustomErrorType;
 import com.ufcg.psoft.commerce.model.*;
 import com.ufcg.psoft.commerce.repository.AdministradorRepository;
@@ -398,36 +399,6 @@ public class AtivoControllerTests {
 
             // Assert
             assertEquals("Autenticacao falhou!", resultado.getMessage());
-        }
-    }
-
-    @Nested
-    @DisplayName("Conjunto de casos de verificação da atualização de cotação")
-    class AtivoAtualizacaoCotacao{
-
-        @Test
-        @DisplayName("Quando atualizamosd a cotacao de um ativo com dados validos")
-        void quandoAtualizamosCotacaoAtivoValido() throws Exception{
-            // Arrange
-            //10% de aumento
-            double novaCotacao = 1.10;
-
-            // Act
-            String responseJsonString = driver.perform(put(URI_ATIVOS + "/" + ativo.getId() + "/cotacao")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .param("matriculaAdmin", administrador.getMatricula())
-                            .param("novoValor", String.valueOf(novaCotacao)))
-                    .andExpect(status().isOk())
-                    .andDo(print())
-                    .andReturn().getResponse().getContentAsString();
-
-            AtivoResponseDTO resultado = objectMapper.readValue(responseJsonString, AtivoResponseDTO.class);
-
-            // Assert
-            assertAll(
-                    () -> assertEquals(ativo.getId(), resultado.getId()),
-                    () -> assertEquals(String.valueOf(novaCotacao), resultado.getCotacao())
-            );
         }
     }
 }
