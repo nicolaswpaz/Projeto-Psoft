@@ -3,19 +3,18 @@ package com.ufcg.psoft.commerce.controller;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.ufcg.psoft.commerce.dto.Ativo.AtivoPostPutRequestDTO;
-import com.ufcg.psoft.commerce.dto.Ativo.AtivoResponseDTO;
+import com.ufcg.psoft.commerce.dto.Administrador.AdministradorPostPutRequestDTO;
+import com.ufcg.psoft.commerce.dto.Administrador.AdministradorResponseDTO;
 import com.ufcg.psoft.commerce.dto.Cliente.ClientePostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.Cliente.ClienteResponseDTO;
 import com.ufcg.psoft.commerce.dto.Endereco.EnderecoPostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.Endereco.EnderecoResponseDTO;
 import com.ufcg.psoft.commerce.exception.CustomErrorType;
-import com.ufcg.psoft.commerce.model.Ativo;
+import com.ufcg.psoft.commerce.model.Administrador;
 import com.ufcg.psoft.commerce.model.Cliente;
 import com.ufcg.psoft.commerce.model.Endereco;
-import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
 import com.ufcg.psoft.commerce.model.enums.TipoPlano;
-import com.ufcg.psoft.commerce.repository.AtivoRepository;
+import com.ufcg.psoft.commerce.repository.AdministradorRepository;
 import com.ufcg.psoft.commerce.repository.ClienteRepository;
 import com.ufcg.psoft.commerce.repository.EnderecoRepository;
 import com.ufcg.psoft.commerce.service.cliente.ClienteService;
@@ -26,6 +25,12 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import com.ufcg.psoft.commerce.dto.Ativo.AtivoPostPutRequestDTO;
+import com.ufcg.psoft.commerce.dto.Ativo.AtivoResponseDTO;
+import com.ufcg.psoft.commerce.model.Ativo;
+import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
+import com.ufcg.psoft.commerce.repository.AtivoRepository;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -33,6 +38,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -46,29 +52,35 @@ public class ClienteControllerTests {
     MockMvc driver;
 
     @Autowired
-    AdministradorRepository administradorRepository;
-    Administrador administrador;
-    AdministradorPostPutRequestDTO administradorPostPutRequestDTO;
-
-    @Autowired
     AtivoRepository ativoRepository;
     Ativo ativo1;
     Ativo ativo2;
     Ativo ativo3;
     AtivoPostPutRequestDTO ativoPostPutRequestDTO;
 
+    @Autowired
     ClienteRepository clienteRepository;
+
     ObjectMapper objectMapper = new ObjectMapper();
+
     Cliente cliente;
+
     ClientePostPutRequestDTO clientePostPutRequestDTO;
 
     @Autowired
     EnderecoRepository enderecoRepository;
+
     Endereco endereco;
     EnderecoResponseDTO enderecoDTO;
 
     @Autowired
-    private ClienteService clienteService;
+    ClienteService clienteService;
+
+    AdministradorPostPutRequestDTO administradorPostPutRequestDTO;
+    Administrador administrador;
+
+    @Autowired
+    AdministradorRepository administradorRepository;
 
     @BeforeEach
     @Transactional
@@ -104,7 +116,6 @@ public class ClienteControllerTests {
                 .cpf(cliente.getCpf())
                 .build();
 
-
         ativo1 = Ativo.builder()
                 .nome("Ativo1")
                 .tipo(TipoAtivo.TESOURO_DIRETO)
@@ -127,31 +138,12 @@ public class ClienteControllerTests {
                 .cotacao("30000.00")
                 .build();
         ativoRepository.saveAll(Arrays.asList(ativo1, ativo2, ativo3));
-        administrador = administradorRepository.save(Administrador.builder()
-                .matricula("admin123")
-                .nome("Admin Teste")
-                .cpf("11122233344")
-                .endereco(Endereco.builder()
-                        .cep("12345678")
-                        .bairro("Um lugar aí")
-                        .rua("Avenida Qualquer")
-                        .numero("15")
-                        .build())
-                .build()
-        );
-
-        administradorPostPutRequestDTO = AdministradorPostPutRequestDTO.builder()
-                .matricula(administrador.getMatricula())
-                .nome(administrador.getNome())
-                .cpf(administrador.getCpf())
-                .enderecoDTO(new EnderecoPostPutRequestDTO())
-                .build();
     }
 
     @AfterEach
     void tearDown() {
-        clienteRepository.deleteAll();
         ativoRepository.deleteAll();
+        clienteRepository.deleteAll();
     }
 
     @Nested
@@ -511,6 +503,27 @@ public class ClienteControllerTests {
         void quandoBuscamosPorTodosClienteSalvos() throws Exception {
             // Arrange
             clienteRepository.deleteAll();
+
+            administrador = administradorRepository.save(Administrador.builder()
+                    .matricula("admin123")
+                    .nome("Admin Teste")
+                    .cpf("11122233344")
+                    .endereco(Endereco.builder()
+                            .cep("12345678")
+                            .bairro("Um lugar aí")
+                            .rua("Avenida Qualquer")
+                            .numero("15")
+                            .build())
+                    .build()
+            );
+
+            administradorPostPutRequestDTO = AdministradorPostPutRequestDTO.builder()
+                    .matricula(administrador.getMatricula())
+                    .nome(administrador.getNome())
+                    .cpf(administrador.getCpf())
+                    .enderecoDTO(new EnderecoPostPutRequestDTO())
+                    .build();
+
 
             // Cria endereços primeiro
             Endereco endereco1 = enderecoRepository.save(Endereco.builder()
@@ -1165,125 +1178,125 @@ public class ClienteControllerTests {
                     () -> assertEquals("Codigo de acesso invalido!", resultado.getMessage())
             );
         }
+    }
 
-        @Test
-        @DisplayName("Quando listamos ativos disponiveis passando o id de um cliente válido com plano Normal")
-        void quandoListamosAtivosClientePlanoNormal() throws Exception {
-            //Arrange
-            // Plano do cliente geral já é Normal
+    @Test
+    @DisplayName("Quando listamos ativos disponiveis passando o id de um cliente válido com plano Normal")
+    void quandoListamosAtivosClientePlanoNormal() throws Exception {
+        //Arrange
+        // Plano do cliente geral já é Normal
 
-            // Act
-            String responseJsonString = driver.perform(get(URI_CLIENTES + "/" + cliente.getId() + "/ativos-disponiveis")
-                            .param("codigo", cliente.getCodigo())
-                            .contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isOk())
-                    .andDo(print())
-                    .andReturn().getResponse().getContentAsString();
+        // Act
+        String responseJsonString = driver.perform(get(URI_CLIENTES + "/" + cliente.getId() + "/ativos-disponiveis")
+                        .param("codigo", cliente.getCodigo())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andReturn().getResponse().getContentAsString();
 
-            List<AtivoResponseDTO> resultado = objectMapper.readValue(responseJsonString, new TypeReference<>() {});
-            List<String> nomesEsperados = List.of("Ativo1");
-            List<String> nomesRetornados = resultado.stream().map(AtivoResponseDTO::getNome).toList();
-
-
-            // Assert
-            assertTrue(nomesRetornados.containsAll(nomesEsperados));
-            assertEquals(nomesRetornados.size(), 1);
-            assertFalse(nomesRetornados.isEmpty());
-        }
-
-        @Test
-        @DisplayName("Quando listamos ativos disponiveis passando o id de um cliente válido com plano Premium")
-        void quandoListamosAtivosClientePlanoPremium() throws Exception {
-            //Arrange
-            cliente.setPlano(TipoPlano.PREMIUM);
-            clienteRepository.save(cliente);
-
-            // Act
-            String responseJsonString = driver.perform(get(URI_CLIENTES + "/" + cliente.getId() + "/ativos-disponiveis")
-                            .param("codigo", cliente.getCodigo())
-                            .contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isOk())
-                    .andDo(print())
-                    .andReturn().getResponse().getContentAsString();
-
-            List<AtivoResponseDTO> resultado = objectMapper.readValue(responseJsonString, new TypeReference<>() {});
-            List<String> nomesEsperados = List.of("Ativo1", "Ativo2");
-            List<String> nomesRetornados = resultado.stream().map(AtivoResponseDTO::getNome).toList();
+        List<AtivoResponseDTO> resultado = objectMapper.readValue(responseJsonString, new TypeReference<>() {});
+        List<String> nomesEsperados = List.of("Ativo1");
+        List<String> nomesRetornados = resultado.stream().map(AtivoResponseDTO::getNome).toList();
 
 
-            // Assert
-            assertTrue(nomesRetornados.containsAll(nomesEsperados));
-            assertEquals(nomesRetornados.size(), 2);
-            assertFalse(nomesRetornados.isEmpty());
-        }
+        // Assert
+        assertTrue(nomesRetornados.containsAll(nomesEsperados));
+        assertEquals(nomesRetornados.size(), 1);
+        assertFalse(nomesRetornados.isEmpty());
+    }
 
-        @Test
-        @DisplayName("Quando tentamos listar ativos passando um cliente inexistente")
-        void quandoListamosAtivosClienteInexistente() throws Exception {
-            // Arrange
-            // nenhuma necessidade além do setup()
+    @Test
+    @DisplayName("Quando listamos ativos disponiveis passando o id de um cliente válido com plano Premium")
+    void quandoListamosAtivosClientePlanoPremium() throws Exception {
+        //Arrange
+        cliente.setPlano(TipoPlano.PREMIUM);
+        clienteRepository.save(cliente);
 
-            // Act
-            String responseJsonString = driver.perform(get(URI_CLIENTES + "/" + 999999999 + "/ativos-disponiveis")
-                            .param("codigo", "123456789")
-                            .contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isBadRequest()) // Codigo 400
-                    .andDo(print())
-                    .andReturn().getResponse().getContentAsString();
+        // Act
+        String responseJsonString = driver.perform(get(URI_CLIENTES + "/" + cliente.getId() + "/ativos-disponiveis")
+                        .param("codigo", cliente.getCodigo())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andReturn().getResponse().getContentAsString();
 
-            CustomErrorType resultado = objectMapper.readValue(responseJsonString, CustomErrorType.class);
+        List<AtivoResponseDTO> resultado = objectMapper.readValue(responseJsonString, new TypeReference<>() {});
+        List<String> nomesEsperados = List.of("Ativo1", "Ativo2");
+        List<String> nomesRetornados = resultado.stream().map(AtivoResponseDTO::getNome).toList();
 
-            // Assert
-            assertAll(
-                    () -> assertEquals("O cliente consultado nao existe!", resultado.getMessage())
-            );
-        }
 
-        @Test
-        @DisplayName("Quando tentamos listar ativos de um cliente, mas não existe ativos diponiveis")
-        void quandoTentamosListarAtivosDisponiveisQuandoNaoExistem() throws Exception {
-            //Arrange
-            ativo1.setDisponivel(false);
-            ativo2.setDisponivel(false);
-            ativoRepository.saveAll(List.of(ativo1, ativo2));
+        // Assert
+        assertTrue(nomesRetornados.containsAll(nomesEsperados));
+        assertEquals(nomesRetornados.size(), 2);
+        assertFalse(nomesRetornados.isEmpty());
+    }
 
-            cliente.setPlano(TipoPlano.PREMIUM);
-            clienteRepository.save(cliente);
+    @Test
+    @DisplayName("Quando tentamos listar ativos passando um cliente inexistente")
+    void quandoListamosAtivosClienteInexistente() throws Exception {
+        // Arrange
+        // nenhuma necessidade além do setup()
 
-            // Act
-            String responseJsonString = driver.perform(get(URI_CLIENTES + "/" + cliente.getId() + "/ativos-disponiveis")
-                            .param("codigo", cliente.getCodigo())
-                            .contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isOk())
-                    .andDo(print())
-                    .andReturn().getResponse().getContentAsString();
+        // Act
+        String responseJsonString = driver.perform(get(URI_CLIENTES + "/" + 999999999 + "/ativos-disponiveis")
+                        .param("codigo", "123456789")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest()) // Codigo 400
+                .andDo(print())
+                .andReturn().getResponse().getContentAsString();
 
-            List<AtivoResponseDTO> resultado = objectMapper.readValue(responseJsonString, new TypeReference<>() {});
+        CustomErrorType resultado = objectMapper.readValue(responseJsonString, CustomErrorType.class);
 
-            // Assert
-            assertTrue(resultado.isEmpty());
-        }
+        // Assert
+        assertAll(
+                () -> assertEquals("O cliente consultado nao existe!", resultado.getMessage())
+        );
+    }
 
-        @Test
-        @DisplayName("Quando tentamos listar ativos de um cliente passando um código de acesso incorreto")
-        void quandoTentamosListarAtivosCodigoClienteInvalido() throws Exception {
-            // Arrange
-            // nenhuma necessidade além do setup()
+    @Test
+    @DisplayName("Quando tentamos listar ativos de um cliente, mas não existe ativos diponiveis")
+    void quandoTentamosListarAtivosDisponiveisQuandoNaoExistem() throws Exception {
+        //Arrange
+        ativo1.setDisponivel(false);
+        ativo2.setDisponivel(false);
+        ativoRepository.saveAll(List.of(ativo1, ativo2));
 
-            // Act
-            String responseJsonString = driver.perform(get(URI_CLIENTES + "/" + cliente.getId() + "/ativos-disponiveis")
-                            .param("codigo", "000000000")
-                            .contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isBadRequest())
-                    .andDo(print())
-                    .andReturn().getResponse().getContentAsString();
+        cliente.setPlano(TipoPlano.PREMIUM);
+        clienteRepository.save(cliente);
 
-            CustomErrorType resultado = objectMapper.readValue(responseJsonString, CustomErrorType.class);
+        // Act
+        String responseJsonString = driver.perform(get(URI_CLIENTES + "/" + cliente.getId() + "/ativos-disponiveis")
+                        .param("codigo", cliente.getCodigo())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andReturn().getResponse().getContentAsString();
 
-            // Assert
-            assertAll(
-                    () -> assertEquals("Codigo de acesso invalido!", resultado.getMessage())
-            );
-        }
+        List<AtivoResponseDTO> resultado = objectMapper.readValue(responseJsonString, new TypeReference<>() {});
+
+        // Assert
+        assertTrue(resultado.isEmpty());
+    }
+
+    @Test
+    @DisplayName("Quando tentamos listar ativos de um cliente passando um código de acesso incorreto")
+    void quandoTentamosListarAtivosCodigoClienteInvalido() throws Exception {
+        // Arrange
+        // nenhuma necessidade além do setup()
+
+        // Act
+        String responseJsonString = driver.perform(get(URI_CLIENTES + "/" + cliente.getId() + "/ativos-disponiveis")
+                        .param("codigo", "000000000")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andDo(print())
+                .andReturn().getResponse().getContentAsString();
+
+        CustomErrorType resultado = objectMapper.readValue(responseJsonString, CustomErrorType.class);
+
+        // Assert
+        assertAll(
+                () -> assertEquals("Codigo de acesso invalido!", resultado.getMessage())
+        );
     }
 }
