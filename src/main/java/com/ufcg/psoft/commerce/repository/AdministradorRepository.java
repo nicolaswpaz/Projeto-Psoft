@@ -8,6 +8,4 @@ import java.util.Optional;
 public interface AdministradorRepository extends JpaRepository<Administrador, Long> {
 
     Optional<Administrador> findTopBy();
-
-    Optional<Administrador> findByMatricula(String matricula);
 }
