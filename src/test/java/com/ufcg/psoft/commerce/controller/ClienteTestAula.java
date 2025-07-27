@@ -2,10 +2,14 @@ package com.ufcg.psoft.commerce.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.ufcg.psoft.commerce.dto.Administrador.AdministradorPostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.Cliente.ClienteResponseDTO;
+import com.ufcg.psoft.commerce.dto.Endereco.EnderecoPostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.Endereco.EnderecoResponseDTO;
+import com.ufcg.psoft.commerce.model.Administrador;
 import com.ufcg.psoft.commerce.model.Cliente;
 import com.ufcg.psoft.commerce.model.Endereco;
+import com.ufcg.psoft.commerce.repository.AdministradorRepository;
 import com.ufcg.psoft.commerce.repository.ClienteRepository;
 import com.ufcg.psoft.commerce.repository.EnderecoRepository;
 import jakarta.transaction.Transactional;
@@ -39,6 +43,11 @@ public class ClienteTestAula {
     @Autowired
     EnderecoRepository enderecoRepository;
 
+    @Autowired
+    AdministradorRepository administradorRepository;
+    Administrador administrador;
+    AdministradorPostPutRequestDTO administradorPostPutRequestDTO;
+
     ObjectMapper objectMapper = new ObjectMapper();
 
     List<ClienteResponseDTO> clientesDTO = new ArrayList<>();
@@ -49,48 +58,25 @@ public class ClienteTestAula {
         // Object Mapper suporte para LocalDateTime
         objectMapper.registerModule(new JavaTimeModule());
 
-        //enderecos fictícios para os testes
-
-        Endereco endereco1 = enderecoRepository.save(Endereco.builder()
-                .numero("123")
-                .cep("58400-000")
-                .rua("Rua 123")
-                .complemento("")
-                .bairro("bairro 1")
+        administrador = administradorRepository.save(Administrador.builder()
+                .matricula("admin123")
+                .nome("Admin Teste")
+                .cpf("11122233344")
+                .endereco(Endereco.builder()
+                        .cep("12345678")
+                        .bairro("Um lugar aí")
+                        .rua("Avenida Qualquer")
+                        .numero("15")
+                        .build())
                 .build()
         );
 
-        Endereco endereco2 = enderecoRepository.save(Endereco.builder()
-                .bairro("bairro 2")
-                .complemento("")
-                .numero("234")
-                .rua("Rua 234")
-                .cep("40028922")
-                .build()
-        );
-        Cliente cliente1 = clienteRepository.save(Cliente.builder()
-                .nome("Cliente")
-                .endereco(endereco1)
-                .codigo("123456")
-                .cpf("12345678914")
-                .build()
-        );
-
-        Cliente cliente2 = clienteRepository.save(Cliente.builder()
-                .nome("Clienta")
-                .endereco(endereco2)
-                .codigo("123456")
-                .cpf("12345678910")
-                .build()
-        );
-
-        ClienteResponseDTO r1 = ClienteResponseDTO.builder()
-                .nome(cliente1.getNome())
-                .endereco(new EnderecoResponseDTO(cliente1.getEndereco())) //gera o objeto EnderecoResponseDTO a partir do objeto Endereco
-                .id(cliente1.getId())
+        administradorPostPutRequestDTO = AdministradorPostPutRequestDTO.builder()
+                .matricula(administrador.getMatricula())
+                .nome(administrador.getNome())
+                .cpf(administrador.getCpf())
+                .enderecoDTO(new EnderecoPostPutRequestDTO())
                 .build();
-
-        clientesDTO.add(r1);
     }
 
     @AfterEach
@@ -103,26 +89,50 @@ public class ClienteTestAula {
     class ClienteVerificacaoNome {
 
         @Test
+        @Transactional
         @DisplayName("Quando recuperamos clientes")
         void quandoRecuperamosClientesValidos() throws Exception {
-
+            // Arrange
             String stringBusca = "Cliente";
+            String matriculaAdmin = administrador.getMatricula(); // Usa a matrícula do admin criado no setup
+
+            // Persiste os endereços antes de associá-los aos clientes
+            Endereco endereco1 = enderecoRepository.save(Endereco.builder()
+                    .numero("123")
+                    .cep("58400-000")
+                    .rua("Rua 123")
+                    .complemento("")
+                    .bairro("bairro 1")
+                    .build());
+
+            Cliente cliente1 = clienteRepository.save(Cliente.builder()
+                    .nome("Cliente")
+                    .endereco(endereco1)
+                    .codigo("123456")
+                    .cpf("12345678914")
+                    .build());
+
+            // Atualiza a lista de clientes esperada
+            List<ClienteResponseDTO> clientesEsperados = List.of(
+                    ClienteResponseDTO.builder()
+                            .nome(cliente1.getNome())
+                            .endereco(new EnderecoResponseDTO(cliente1.getEndereco()))
+                            .id(cliente1.getId())
+                            .build()
+            );
+
             // Act
-            String responseJsonString = driver.perform(get(URI_CLIENTES)
-                            .param("nome", stringBusca))
+            String responseJsonString = driver.perform(get(URI_CLIENTES + "/busca")
+                            .param("nome", stringBusca)
+                            .param("matriculaAdmin", matriculaAdmin)) // Usa a matrícula correta
                     .andExpect(status().isOk())
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
 
-            String expectedResult = objectMapper
-                    .writeValueAsString(clientesDTO);
-
-            System.out.println(expectedResult);
-            System.out.println(responseJsonString);
             // Assert
+            String expectedResult = objectMapper.writeValueAsString(clientesEsperados);
             assertEquals(expectedResult, responseJsonString);
         }
-
     }
 }
 

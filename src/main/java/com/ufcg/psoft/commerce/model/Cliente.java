@@ -9,7 +9,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import com.ufcg.psoft.commerce.model.enums.TipoPlano;
-import com.ufcg.psoft.commerce.model.Endereco;
+
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
@@ -30,4 +30,11 @@ public class Cliente extends Usuario {
     @ManyToOne
     @JsonIgnore
     private Conta conta;
+
+    @PrePersist
+    public void prePersist(){
+        if (this.plano == null){
+            this.plano = TipoPlano.NORMAL;
+        }
+    }
 }

@@ -1,7 +1,7 @@
 package com.ufcg.psoft.commerce.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.ufcg.psoft.commerce.model.interfaces.TipoAtivo;
+import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -23,8 +23,9 @@ public class Ativo {
     @JsonProperty("cotacao")
     private String cotacao;
 
-    @JsonProperty("tipoAtivo")
-    private TipoAtivo tipoAtivo;
+    @Enumerated(EnumType.STRING)
+    @JsonProperty("tipo")
+    private TipoAtivo tipo;
 
     @JsonProperty("descricao")
     private String descricao;
@@ -39,7 +40,7 @@ public class Ativo {
         }
     }
 
-    public Boolean isDisponivel(){
+    public Boolean isDisponivel() {
         return disponivel;
     }
 }

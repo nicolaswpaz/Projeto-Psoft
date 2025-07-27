@@ -6,19 +6,13 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.ufcg.psoft.commerce.dto.Administrador.AdministradorPostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.Ativo.AtivoPostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.Ativo.AtivoResponseDTO;
-import com.ufcg.psoft.commerce.dto.Cliente.ClientePostPutRequestDTO;
-import com.ufcg.psoft.commerce.dto.Cliente.ClienteResponseDTO;
+import com.ufcg.psoft.commerce.dto.Endereco.EnderecoPostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.Endereco.EnderecoResponseDTO;
 import com.ufcg.psoft.commerce.exception.CustomErrorType;
-import com.ufcg.psoft.commerce.model.Administrador;
-import com.ufcg.psoft.commerce.model.Ativo;
-import com.ufcg.psoft.commerce.model.Cliente;
-import com.ufcg.psoft.commerce.model.Endereco;
+import com.ufcg.psoft.commerce.model.*;
 import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
 import com.ufcg.psoft.commerce.repository.AdministradorRepository;
 import com.ufcg.psoft.commerce.repository.AtivoRepository;
-import com.ufcg.psoft.commerce.repository.ClienteRepository;
-import com.ufcg.psoft.commerce.repository.EnderecoRepository;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -78,12 +72,12 @@ public class AtivoControllerTests {
                 .matricula(administrador.getMatricula())
                 .nome(administrador.getNome())
                 .cpf(administrador.getCpf())
-                .enderecoDTO(new EnderecoResponseDTO(administrador.getEndereco()))
+                .enderecoDTO(new EnderecoPostPutRequestDTO())
                 .build();
 
         ativo = ativoRepository.save(Ativo.builder()
                 .nome("Ativo 1")
-                .tipoAtivo(TipoAtivo.ACAO)
+                .tipo(TipoAtivo.ACAO)
                 .disponivel(true)
                 .descricao("Descrição do ativo 1")
                 .cotacao("1.00")
@@ -92,7 +86,6 @@ public class AtivoControllerTests {
 
         ativoPostPutRequestDTO = AtivoPostPutRequestDTO.builder()
                 .nome(ativo.getNome())
-                //.tipoAtivo(ativo.getTipoAtivo())
                 .disponivel(ativo.getDisponivel())
                 .descricao(ativo.getDescricao())
                 .cotacao(ativo.getCotacao())
@@ -192,14 +185,14 @@ public class AtivoControllerTests {
             // Já temos 1 ativo do setup(), vamos adicionar mais 2
             Ativo ativo2 = Ativo.builder()
                     .nome("Ativo Secundario")
-                    .tipoAtivo(TipoAtivo.ACAO)
+                    .tipo(TipoAtivo.ACAO)
                     .disponivel(true)
                     .descricao("Descrição do ativo secundário")
                     .cotacao("20.00")
                     .build();
             Ativo ativo3 = Ativo.builder()
                     .nome("Outro Ativo")
-                    .tipoAtivo(TipoAtivo.CRIPTOMOEDA)
+                    .tipo(TipoAtivo.CRIPTOMOEDA)
                     .disponivel(false)
                     .descricao("Descrição de outro ativo")
                     .cotacao("30000.00")
@@ -406,6 +399,244 @@ public class AtivoControllerTests {
 
             // Assert
             assertEquals("Autenticacao falhou!", resultado.getMessage());
+        }
+
+        @Test
+        @DisplayName("Quando buscamos um ativo salvo pelo id, seu tipo deve ser retornado corretamente")
+        void quandoBuscamosUmAtivoSalvoVerificamosOSeuTipo() throws Exception {
+            // Act
+            String responseJsonString = driver.perform(get(URI_ATIVOS + "/" + ativo.getId()))
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            AtivoResponseDTO resultado = objectMapper.readValue(responseJsonString, AtivoResponseDTO.class);
+
+            // Assert
+            assertAll(
+                    () -> assertEquals(ativo.getId(), resultado.getId()),
+                    () -> assertEquals("ACAO", resultado.getTipo().name()));
+        }
+    }
+    @Nested
+    @DisplayName("Conjunto de casos de verificação da atualização de disponibilidade do Ativo")
+    class AtivoAtualizacaoDisponibilidade {
+
+        @Test
+        @DisplayName("Quando tentamos a disponibilidade do ativo, ativando ou desativando")
+        void quandoAlteramosADisponibilidadeDoAtivo() throws Exception {
+            Long ativoId = ativo.getId();
+            String matriculaValida = administrador.getMatricula();
+
+            String responseDisponibilizarAtivo = driver.perform(put(URI_ATIVOS + "/" + ativoId + "/disponibilizar")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .param("matriculaAdmin", matriculaValida))
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            String responseIndisponibilizarAtivo = driver.perform(put(URI_ATIVOS + "/" + ativoId + "/indisponibilizar")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .param("matriculaAdmin", matriculaValida))
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            assertNotNull(responseDisponibilizarAtivo);
+            assertNotNull(responseIndisponibilizarAtivo);
+        }
+
+        @Test
+        @DisplayName("Quando tentamos alterar a disponibilidade de um ativo inexistente")
+        void quandoAlteramosADisponibilidadeDeUmAtivoInexistente() throws Exception {
+            Long idInvalido = 99992999L;
+
+            String responseDisponibilizarAtivo = driver.perform(put(URI_ATIVOS + "/" + idInvalido + "/disponibilizar")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .param("matriculaAdmin", administrador.getMatricula()))
+
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            String responseIndisponibilizarAtivo = driver.perform(put(URI_ATIVOS + "/" + idInvalido + "/indisponibilizar")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .param("matriculaAdmin", administrador.getMatricula()))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType resultado1 = objectMapper.readValue(responseIndisponibilizarAtivo, CustomErrorType.class);
+            CustomErrorType resultado2 = objectMapper.readValue(responseDisponibilizarAtivo, CustomErrorType.class);
+
+            assertEquals("O ativo consultado nao existe!", resultado1.getMessage());
+            assertEquals("O ativo consultado nao existe!", resultado2.getMessage());
+        }
+
+        @Test
+        @DisplayName("Quando tentamos alterar a disponibilidade de um ativo com administrador inválido")
+        void quandoAlteramosADisponibilidadeDeUmAtivoComAdminInvalido() throws Exception {
+            Long ativoId = ativo.getId();
+            String matriculaInvalida = "matricula_fake";
+
+            String responseDisponibilizarAtivo = driver.perform(put(URI_ATIVOS + "/" + ativoId + "/disponibilizar")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .param("matriculaAdmin", matriculaInvalida))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            String responseIndisponibilizarAtivo = driver.perform(put(URI_ATIVOS + "/" + ativoId + "/indisponibilizar")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .param("matriculaAdmin", matriculaInvalida))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType resultado1 = objectMapper.readValue(responseDisponibilizarAtivo, CustomErrorType.class);
+            CustomErrorType resultado2 = objectMapper.readValue(responseIndisponibilizarAtivo, CustomErrorType.class);
+
+            assertEquals("Autenticacao falhou!", resultado1.getMessage());
+            assertEquals("Autenticacao falhou!", resultado2.getMessage());
+        }
+
+        @Test
+        @DisplayName("Quando disponibilizamos um ativo, seu estado deve mudar para disponível")
+        void quandoDisponibilizamosAtivoEstadoDeveSerDisponivel() throws Exception {
+            Long ativoId = ativo.getId();
+            String matriculaValida = administrador.getMatricula();
+
+            driver.perform(put(URI_ATIVOS + "/" + ativoId + "/disponibilizar")
+                            .param("matriculaAdmin", matriculaValida))
+                    .andExpect(status().isOk());
+
+            Ativo atualizado = ativoRepository.findById(ativoId).orElseThrow();
+            assertTrue(atualizado.isDisponivel());
+        }
+
+        @Test
+        @DisplayName("Quando indisponibilizamos um ativo, seu estado deve mudar para indisponível")
+        void quandoIndisponibilizamosAtivoEstadoDeveSerIndisponivel() throws Exception {
+            Long ativoId = ativo.getId();
+            String matriculaValida = administrador.getMatricula();
+
+            driver.perform(put(URI_ATIVOS + "/" + ativoId + "/indisponibilizar")
+                            .param("matriculaAdmin", matriculaValida))
+                    .andExpect(status().isOk());
+
+            Ativo atualizado = ativoRepository.findById(ativoId).orElseThrow();
+            assertFalse(atualizado.isDisponivel());
+        }
+
+        @Test
+        @DisplayName("Quando disponibilizamos o ativo duas vezes seguidas não deve falhar")
+        void quandoDisponibilizamosDuasVezesNaoDeveFalhar() throws Exception {
+            Long ativoId = ativo.getId();
+            String matricula = administrador.getMatricula();
+
+            driver.perform(put(URI_ATIVOS + "/" + ativoId + "/disponibilizar")
+                            .param("matriculaAdmin", matricula))
+                    .andExpect(status().isOk());
+
+            driver.perform(put(URI_ATIVOS + "/" + ativoId + "/disponibilizar")
+                            .param("matriculaAdmin", matricula))
+                    .andExpect(status().isOk());
+        }
+
+        @Test
+        @DisplayName("Quando indisponibilizamos o ativo duas vezes seguidas não deve falhar")
+        void quandoIndisponibilizamosDuasVezesNaoDeveFalhar() throws Exception {
+            Long ativoId = ativo.getId();
+            String matricula = administrador.getMatricula();
+
+            driver.perform(put(URI_ATIVOS + "/" + ativoId + "/indisponibilizar")
+                            .param("matriculaAdmin", matricula))
+                    .andExpect(status().isOk());
+
+            driver.perform(put(URI_ATIVOS + "/" + ativoId + "/indisponibilizar")
+                            .param("matriculaAdmin", matricula))
+                    .andExpect(status().isOk());
+        }
+    }
+
+    @Nested
+    @DisplayName("Conjunto de casos de verificação da atualização de cotação")
+    class AtivoAtualizacaoCotacao{
+
+        @Test
+        @DisplayName("Quando atualizamos a cotacao de um ativo com dados validos")
+        void quandoAtualizamosCotacaoAtivoValido() throws Exception{
+
+            // Arrange
+            //10% de aumento
+            double novaCotacao = 1.10;
+
+            // Act
+            String responseJsonString = driver.perform(put(URI_ATIVOS + "/" + ativo.getId() + "/cotacao")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .param("matriculaAdmin", administrador.getMatricula())
+                            .param("novoValor", String.valueOf(novaCotacao)))
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            AtivoResponseDTO resultado = objectMapper.readValue(responseJsonString, AtivoResponseDTO.class);
+
+            // Assert
+            assertAll(
+                    () -> assertEquals(ativo.getId(), resultado.getId()),
+                    () -> assertEquals(String.valueOf(novaCotacao), resultado.getCotacao())
+            );
+        }
+
+        @Test
+        @DisplayName("Quando tentamos atualizar a cotação de um ativo do tipo TESOURO_DIRETO (não permitido)")
+        void quandoTentamosAtualizarCotacaoDeTesouroDireto() throws Exception {
+            // Arrange
+            Ativo tesouroAtivo = ativoRepository.save(Ativo.builder()
+                    .nome("Tesouro Selic 2029")
+                    .tipo(TipoAtivo.TESOURO_DIRETO)
+                    .disponivel(true)
+                    .descricao("Título do Tesouro Nacional")
+                    .cotacao("130.50")
+                    .build());
+            double novaCotacao = 135.00;
+
+            // Act
+            String responseJsonString = driver.perform(put(URI_ATIVOS + "/" + tesouroAtivo.getId() + "/cotacao")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .param("matriculaAdmin", administrador.getMatricula())
+                            .param("novoValor", String.valueOf(novaCotacao)))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType resultado = objectMapper.readValue(responseJsonString, CustomErrorType.class);
+
+            // Assert
+            assertEquals("Somente ativos do tipo Acao ou Criptomoeda podem ter a cotacao atualizada", resultado.getMessage());
+        }
+
+        @Test
+        @DisplayName("Quando tentamos atualizar a cotação com uma variação menor que 1% (não permitido)")
+        void quandoTentamosAtualizarCotacaoComVariacaoMenorQueUmPorcento() throws Exception {
+            // Arrange
+            // O ativo do setup tem cotação "1.00". Uma variação para "1.005" é de 0.5%, menor que o 1% exigido.
+            double novaCotacaoPequenaVariacao = 1.005;
+
+            // Act
+            String responseJsonString = driver.perform(put(URI_ATIVOS + "/" + ativo.getId() + "/cotacao")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .param("matriculaAdmin", administrador.getMatricula())
+                            .param("novoValor", String.valueOf(novaCotacaoPequenaVariacao)))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType resultado = objectMapper.readValue(responseJsonString, CustomErrorType.class);
+
+            // Assert
+            assertEquals("A variacao da cotacao deve ser de no minimo 1%", resultado.getMessage());
         }
     }
 }

@@ -69,8 +69,9 @@ public class AtivoController {
     }
 
     @PutMapping("/{idAtivo}/cotacao")
-    public ResponseEntity<?> atualizarCotacao(@RequestParam String matriculaAdmin,
-                                              @RequestParam Long idAtivo, @PathVariable double novoValor) {
+    public ResponseEntity<?> atualizarCotacao(@PathVariable Long idAtivo,
+                                              @RequestParam String matriculaAdmin,
+                                              @RequestParam double novoValor) {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ativoService.atualizarCotacao(matriculaAdmin, idAtivo, novoValor));

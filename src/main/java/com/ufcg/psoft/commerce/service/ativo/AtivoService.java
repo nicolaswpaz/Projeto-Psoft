@@ -25,5 +25,5 @@ public interface AtivoService {
 
     AtivoResponseDTO atualizarCotacao(String matriculaAdmin, Long idAtivo, double valor);
 
-    List<AtivoResponseDTO> listarAtivosDisponiveisPorPlano(Long clienteId);
+    List<AtivoResponseDTO> listarAtivosDisponiveis();
 }

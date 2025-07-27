@@ -10,4 +10,5 @@ public interface AtivoRepository extends JpaRepository<Ativo, Long> {
     List<Ativo> findByNomeContaining(String nome);
 
     List<Ativo> findByDisponivelTrue();
+
 }

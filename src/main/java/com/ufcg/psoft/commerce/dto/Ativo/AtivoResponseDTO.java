@@ -2,10 +2,9 @@ package com.ufcg.psoft.commerce.dto.Ativo;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.ufcg.psoft.commerce.model.Ativo;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,8 +17,6 @@ import lombok.NoArgsConstructor;
 public class AtivoResponseDTO {
 
     @JsonProperty("id")
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
     @JsonProperty("nome")
@@ -31,7 +28,7 @@ public class AtivoResponseDTO {
     private String cotacao;
 
     @JsonProperty("tipo")
-    @NotBlank(message = "Tipo obrigatorio")
+    @NotNull(message = "Tipo obrigatorio")
     private TipoAtivo tipo;
 
     @JsonProperty("descricao")
@@ -46,7 +43,7 @@ public class AtivoResponseDTO {
 
         this.id = ativo.getId();
         this.nome = ativo.getNome();
-        this.tipo = ativo.getTipoAtivo();
+        this.tipo = ativo.getTipo();
         this.descricao = ativo.getDescricao();
         this.disponivel = ativo.isDisponivel();
         this.cotacao = ativo.getCotacao();
