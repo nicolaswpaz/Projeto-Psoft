@@ -145,7 +145,7 @@ public class ClienteServiceImpl implements ClienteService {
     public List<ClienteResponseDTO> listarPorNome(String nome, String matriculaAdmin) {
         administradorService.autenticar(matriculaAdmin);
 
-        List<Cliente> clientes = clienteRepository.findByNomeContaining(nome);
+        List<Cliente> clientes = clienteRepository.findByNomeContainingIgnoreCase(nome);
         return clientes.stream()
                 .map(ClienteResponseDTO::new)
                 .collect(Collectors.toList());
