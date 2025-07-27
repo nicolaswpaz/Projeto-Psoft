@@ -2,7 +2,6 @@ package com.ufcg.psoft.commerce.repository;
 
 import com.ufcg.psoft.commerce.model.Ativo;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 

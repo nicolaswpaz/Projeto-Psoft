@@ -11,7 +11,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import com.ufcg.psoft.commerce.model.Endereco;
 
 @Data
 @Builder
@@ -34,6 +33,7 @@ public class ClientePostPutRequestDTO {
     private String codigo;
 
     @JsonProperty("cpf")
+    @Pattern(regexp = "\\d{11}", message = "CPF deve conter exatamente 11 dígitos")
     @NotBlank(message = "CPF obrigatorio")
     private String cpf;
 

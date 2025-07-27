@@ -9,7 +9,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import com.ufcg.psoft.commerce.model.enums.TipoPlano;
-import com.ufcg.psoft.commerce.model.Endereco;
+
 
 @EqualsAndHashCode(callSuper = true)
 @Entity

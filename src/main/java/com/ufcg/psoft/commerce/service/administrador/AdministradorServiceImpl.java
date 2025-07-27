@@ -5,17 +5,12 @@ import com.ufcg.psoft.commerce.dto.Administrador.AdministradorResponseDTO;
 import com.ufcg.psoft.commerce.dto.Administrador.AdministradorPostPutRequestDTO;
 import com.ufcg.psoft.commerce.exception.Administrador.AdminJaExisteException;
 import com.ufcg.psoft.commerce.exception.Administrador.MatriculaInvalidaException;
-import com.ufcg.psoft.commerce.exception.Cliente.ClienteNaoExisteException;
-import com.ufcg.psoft.commerce.exception.Cliente.CodigoDeAcessoInvalidoException;
 import com.ufcg.psoft.commerce.model.Administrador;
-import com.ufcg.psoft.commerce.model.Cliente;
 import com.ufcg.psoft.commerce.model.Endereco;
 import com.ufcg.psoft.commerce.repository.AdministradorRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 public class AdministradorServiceImpl implements AdministradorService {
