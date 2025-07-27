@@ -4,7 +4,6 @@ import com.ufcg.psoft.commerce.dto.Ativo.AtivoResponseDTO;
 import com.ufcg.psoft.commerce.dto.Endereco.EnderecoResponseDTO;
 import com.ufcg.psoft.commerce.exception.Cliente.ClienteNaoExisteException;
 import com.ufcg.psoft.commerce.exception.Cliente.CodigoDeAcessoInvalidoException;
-import com.ufcg.psoft.commerce.exception.Cliente.OperacaoNaoPermitidaException;
 import com.ufcg.psoft.commerce.model.Endereco;
 import com.ufcg.psoft.commerce.model.enums.TipoPlano;
 import com.ufcg.psoft.commerce.repository.ClienteRepository;

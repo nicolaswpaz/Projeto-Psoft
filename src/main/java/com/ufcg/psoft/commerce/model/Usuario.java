@@ -27,7 +27,6 @@ public abstract class Usuario {
     private String nome;
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "endereco_id", referencedColumnName = "id", unique = true)
     @Valid
     @NotNull(message = "Endereco obrigatorio")
     private Endereco endereco;

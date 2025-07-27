@@ -3,14 +3,17 @@ package com.ufcg.psoft.commerce.controller;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.ufcg.psoft.commerce.dto.Administrador.AdministradorPostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.Cliente.ClientePostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.Cliente.ClienteResponseDTO;
+import com.ufcg.psoft.commerce.dto.Endereco.EnderecoPostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.Endereco.EnderecoResponseDTO;
-import com.ufcg.psoft.commerce.exception.Cliente.ClienteNaoExisteException;
 import com.ufcg.psoft.commerce.exception.CustomErrorType;
+import com.ufcg.psoft.commerce.model.Administrador;
 import com.ufcg.psoft.commerce.model.Cliente;
 import com.ufcg.psoft.commerce.model.Endereco;
 import com.ufcg.psoft.commerce.model.enums.TipoPlano;
+import com.ufcg.psoft.commerce.repository.AdministradorRepository;
 import com.ufcg.psoft.commerce.repository.ClienteRepository;
 import com.ufcg.psoft.commerce.repository.EnderecoRepository;
 import com.ufcg.psoft.commerce.service.cliente.ClienteService;
@@ -21,12 +24,10 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultMatcher;
 
-import java.util.function.BooleanSupplier;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -42,19 +43,21 @@ public class ClienteControllerTests {
     MockMvc driver;
 
     @Autowired
+    AdministradorRepository administradorRepository;
+    Administrador administrador;
+    AdministradorPostPutRequestDTO administradorPostPutRequestDTO;
+
+    @Autowired
     ClienteRepository clienteRepository;
-
     ObjectMapper objectMapper = new ObjectMapper();
-
     Cliente cliente;
-
     ClientePostPutRequestDTO clientePostPutRequestDTO;
 
     @Autowired
     EnderecoRepository enderecoRepository;
-
     Endereco endereco;
     EnderecoResponseDTO enderecoDTO;
+
     @Autowired
     private ClienteService clienteService;
 
@@ -90,6 +93,26 @@ public class ClienteControllerTests {
                 .enderecoDTO(enderecoDTO)
                 .codigo(cliente.getCodigo())
                 .cpf(cliente.getCpf())
+                .build();
+
+        administrador = administradorRepository.save(Administrador.builder()
+                .matricula("admin123")
+                .nome("Admin Teste")
+                .cpf("11122233344")
+                .endereco(Endereco.builder()
+                        .cep("12345678")
+                        .bairro("Um lugar aí")
+                        .rua("Avenida Qualquer")
+                        .numero("15")
+                        .build())
+                .build()
+        );
+
+        administradorPostPutRequestDTO = AdministradorPostPutRequestDTO.builder()
+                .matricula(administrador.getMatricula())
+                .nome(administrador.getNome())
+                .cpf(administrador.getCpf())
+                .enderecoDTO(new EnderecoPostPutRequestDTO())
                 .build();
     }
 
@@ -448,41 +471,87 @@ public class ClienteControllerTests {
     @Nested
     @DisplayName("Conjunto de casos de verificação dos fluxos básicos API Rest")
     class ClienteVerificacaoFluxosBasicosApiRest {
-/*
+
         @Test
+        @Transactional
         @DisplayName("Quando buscamos por todos clientes salvos")
         void quandoBuscamosPorTodosClienteSalvos() throws Exception {
             // Arrange
-            // Vamos ter 3 clientes no banco
-            Cliente cliente1 = Cliente.builder()
+            clienteRepository.deleteAll();
+
+            // Cria endereços primeiro
+            Endereco endereco1 = enderecoRepository.save(Endereco.builder()
+                    .rua("Av. da Pits A")
+                    .numero("100")
+                    .bairro("Centro")
+                    .cep("58400-000")
+                    .complemento("")
+                    .build());
+
+            Endereco endereco2 = enderecoRepository.save(Endereco.builder()
+                    .rua("Distrito dos Testadores")
+                    .numero("200")
+                    .bairro("Zona Rural")
+                    .cep("58400-123")
+                    .complemento("Fazenda")
+                    .build());
+
+            Endereco endereco3 = enderecoRepository.save(Endereco.builder()
+                    .rua("Rua dos Devs")
+                    .numero("300")
+                    .bairro("Tecnopolis")
+                    .cep("58400-456")
+                    .complemento("Sala 42")
+                    .build());
+
+            // Cria e salva 3 clientes
+            Cliente cliente1 = clienteRepository.save(Cliente.builder()
                     .nome("Cliente Dois Almeida")
-                    .endereco("Av. da Pits A, 100")
+                    .endereco(endereco1)
                     .codigo("246810")
-                    .build();
-            Cliente cliente2 = Cliente.builder()
-                    .nome("Cliente Três Lima")
-                    .endereco("Distrito dos Testadores, 200")
+                    .cpf("11122233344")
+                    .build());
+
+            Cliente cliente2 = clienteRepository.save(Cliente.builder()
+                    .nome("Cliente Tres Lima")
+                    .endereco(endereco2)
                     .codigo("135790")
-                    .build();
-            clienteRepository.saveAll(Arrays.asList(cliente1, cliente2));
+                    .cpf("22233344455")
+                    .build());
+
+            Cliente cliente3 = clienteRepository.save(Cliente.builder()
+                    .nome("Cliente Quatro Silva")
+                    .endereco(endereco3)
+                    .codigo("987654")
+                    .cpf("33344455566")
+                    .build());
 
             // Act
             String responseJsonString = driver.perform(get(URI_CLIENTES)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
-                    .andExpect(status().isOk()) // Codigo 200
+                            .param("matriculaAdmin", "admin123")
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
 
-            List<Cliente> resultado = objectMapper.readValue(responseJsonString, new TypeReference<>() {
-            });
+            List<ClienteResponseDTO> resultado = objectMapper.readValue(responseJsonString, new TypeReference<>() {});
+
+            System.out.println("Resultado recebido da API:");
+            resultado.forEach(cliente -> System.out.println(cliente));
+
 
             // Assert
             assertAll(
-                    () -> assertEquals(3, resultado.size())
+                    () -> assertEquals(3, resultado.size(), "Deveriam retornar 3 clientes"),
+                    () -> assertTrue(resultado.stream().anyMatch(c -> c.getNome().equals("Cliente Dois Almeida"))),
+                    () -> assertTrue(resultado.stream().anyMatch(c -> c.getNome().equals("Cliente Tres Lima"))),
+                    () -> assertTrue(resultado.stream().anyMatch(c -> c.getNome().equals("Cliente Quatro Silva"))),
+                    () -> assertEquals("Av. da Pits A", resultado.get(0).getEndereco().getRua()),
+                    () -> assertEquals("Distrito dos Testadores", resultado.get(1).getEndereco().getRua()),
+                    () -> assertEquals("Rua dos Devs", resultado.get(2).getEndereco().getRua())
             );
         }
-*/
+
         @Test
         @DisplayName("Quando buscamos um cliente salvo pelo id")
         void quandoBuscamosPorUmClienteSalvo() throws Exception {
