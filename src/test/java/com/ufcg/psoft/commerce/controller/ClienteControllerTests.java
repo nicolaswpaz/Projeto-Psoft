@@ -1093,8 +1093,7 @@ public class ClienteControllerTests {
         @DisplayName("Quando listamos ativos disponiveis passando o id de um cliente válido com plano Normal")
         void quandoListamosAtivosClientePlanoNormal() throws Exception {
             //Arrange
-            cliente.setPlano(TipoPlano.NORMAL);
-            clienteRepository.save(cliente);
+            // Plano do cliente geral já é Normal
 
             // Act
             String responseJsonString = driver.perform(get(URI_CLIENTES + "/" + cliente.getId() + "/ativos-disponiveis")
