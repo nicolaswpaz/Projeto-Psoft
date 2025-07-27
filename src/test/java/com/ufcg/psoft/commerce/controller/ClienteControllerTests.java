@@ -3,13 +3,18 @@ package com.ufcg.psoft.commerce.controller;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.ufcg.psoft.commerce.dto.Administrador.AdministradorPostPutRequestDTO;
+import com.ufcg.psoft.commerce.dto.Administrador.AdministradorResponseDTO;
 import com.ufcg.psoft.commerce.dto.Cliente.ClientePostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.Cliente.ClienteResponseDTO;
+import com.ufcg.psoft.commerce.dto.Endereco.EnderecoPostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.Endereco.EnderecoResponseDTO;
 import com.ufcg.psoft.commerce.exception.CustomErrorType;
+import com.ufcg.psoft.commerce.model.Administrador;
 import com.ufcg.psoft.commerce.model.Cliente;
 import com.ufcg.psoft.commerce.model.Endereco;
 import com.ufcg.psoft.commerce.model.enums.TipoPlano;
+import com.ufcg.psoft.commerce.repository.AdministradorRepository;
 import com.ufcg.psoft.commerce.repository.ClienteRepository;
 import com.ufcg.psoft.commerce.repository.EnderecoRepository;
 import com.ufcg.psoft.commerce.service.cliente.ClienteService;
@@ -53,7 +58,13 @@ public class ClienteControllerTests {
     Endereco endereco;
     EnderecoResponseDTO enderecoDTO;
     @Autowired
-    private ClienteService clienteService;
+    ClienteService clienteService;
+
+    AdministradorPostPutRequestDTO administradorPostPutRequestDTO;
+    Administrador administrador;
+
+    @Autowired
+    AdministradorRepository administradorRepository;
 
     @BeforeEach
     @Transactional
@@ -452,6 +463,27 @@ public class ClienteControllerTests {
         void quandoBuscamosPorTodosClienteSalvos() throws Exception {
             // Arrange
             clienteRepository.deleteAll();
+
+            administrador = administradorRepository.save(Administrador.builder()
+                    .matricula("admin123")
+                    .nome("Admin Teste")
+                    .cpf("11122233344")
+                    .endereco(Endereco.builder()
+                            .cep("12345678")
+                            .bairro("Um lugar aí")
+                            .rua("Avenida Qualquer")
+                            .numero("15")
+                            .build())
+                    .build()
+            );
+
+            administradorPostPutRequestDTO = AdministradorPostPutRequestDTO.builder()
+                    .matricula(administrador.getMatricula())
+                    .nome(administrador.getNome())
+                    .cpf(administrador.getCpf())
+                    .enderecoDTO(new EnderecoPostPutRequestDTO())
+                    .build();
+
 
             // Cria endereços primeiro
             Endereco endereco1 = enderecoRepository.save(Endereco.builder()

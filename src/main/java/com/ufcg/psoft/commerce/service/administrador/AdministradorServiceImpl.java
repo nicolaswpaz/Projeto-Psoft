@@ -4,6 +4,7 @@ package com.ufcg.psoft.commerce.service.administrador;
 import com.ufcg.psoft.commerce.dto.Administrador.AdministradorResponseDTO;
 import com.ufcg.psoft.commerce.dto.Administrador.AdministradorPostPutRequestDTO;
 import com.ufcg.psoft.commerce.exception.Administrador.AdminJaExisteException;
+import com.ufcg.psoft.commerce.exception.Administrador.AdminNaoExisteException;
 import com.ufcg.psoft.commerce.exception.Administrador.MatriculaInvalidaException;
 import com.ufcg.psoft.commerce.model.Administrador;
 import com.ufcg.psoft.commerce.model.Endereco;
@@ -70,7 +71,7 @@ public class AdministradorServiceImpl implements AdministradorService {
     @Override
     public Administrador getAdmin() {
         return administradorRepository.findTopBy()
-                .orElseThrow(() -> new IllegalArgumentException("Administrador não encontrado."));
+                .orElseThrow(() -> new AdminNaoExisteException());
     }
 
 }
