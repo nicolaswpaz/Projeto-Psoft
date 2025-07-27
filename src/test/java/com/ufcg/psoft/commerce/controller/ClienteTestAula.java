@@ -2,14 +2,10 @@ package com.ufcg.psoft.commerce.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.ufcg.psoft.commerce.dto.Administrador.AdministradorPostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.Cliente.ClienteResponseDTO;
-import com.ufcg.psoft.commerce.dto.Endereco.EnderecoPostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.Endereco.EnderecoResponseDTO;
-import com.ufcg.psoft.commerce.model.Administrador;
 import com.ufcg.psoft.commerce.model.Cliente;
 import com.ufcg.psoft.commerce.model.Endereco;
-import com.ufcg.psoft.commerce.repository.AdministradorRepository;
 import com.ufcg.psoft.commerce.repository.ClienteRepository;
 import com.ufcg.psoft.commerce.repository.EnderecoRepository;
 import jakarta.transaction.Transactional;
@@ -36,11 +32,6 @@ public class ClienteTestAula {
 
     @Autowired
     MockMvc driver;
-
-    @Autowired
-    AdministradorRepository administradorRepository;
-    Administrador administrador;
-    AdministradorPostPutRequestDTO administradorPostPutRequestDTO;
 
     @Autowired
     ClienteRepository clienteRepository;
@@ -75,7 +66,6 @@ public class ClienteTestAula {
                 .rua("Rua 234")
                 .cep("40028922")
                 .build();
-
         Cliente cliente1 = clienteRepository.save(Cliente.builder()
                 .nome("Cliente")
                 .endereco(endereco1)
@@ -98,23 +88,6 @@ public class ClienteTestAula {
                 .id(cliente1.getId())
                 .build();
 
-        Endereco enderecoAdmin = enderecoRepository.save(
-                Endereco.builder()
-                        .cep("12345678")
-                        .bairro("Um lugar aí")
-                        .rua("Avenida Qualquer")
-                        .numero("15")
-                        .build()
-        );
-
-        administrador = administradorRepository.save(Administrador.builder()
-                .matricula("admin123")
-                .nome("Admin Teste")
-                .cpf("11122233344")
-                .endereco(enderecoAdmin)  // Agora salvo!
-                .build()
-        );
-
         clientesDTO.add(r1);
     }
 
@@ -132,12 +105,9 @@ public class ClienteTestAula {
         void quandoRecuperamosClientesValidos() throws Exception {
 
             String stringBusca = "Cliente";
-            String matriculaAdmin = "admin123";
-
-            //Act
-            String responseJsonString = driver.perform(get(URI_CLIENTES + "/busca")
-                            .param("nome", stringBusca)
-                            .param("matriculaAdmin", "admin123"))
+            // Act
+            String responseJsonString = driver.perform(get(URI_CLIENTES)
+                            .param("nome", stringBusca))
                     .andExpect(status().isOk())
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
@@ -152,6 +122,8 @@ public class ClienteTestAula {
         }
 
     }
+
+
 }
 
 
