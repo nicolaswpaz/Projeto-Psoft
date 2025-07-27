@@ -2,6 +2,8 @@ package com.ufcg.psoft.commerce.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -25,8 +27,10 @@ public abstract class Usuario {
     private String nome;
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "endereco_id", referencedColumnName = "id", nullable = false, unique = true)
-    private Endereco endereco; // Referência ao objeto Endereco
+    @JoinColumn(name = "endereco_id", referencedColumnName = "id", unique = true)
+    @Valid
+    @NotNull(message = "Endereco obrigatorio")
+    private Endereco endereco;
 
     @JsonProperty("cpf")
     @Column(nullable = false)
