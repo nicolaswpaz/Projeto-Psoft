@@ -9,6 +9,7 @@ import com.ufcg.psoft.commerce.exception.Administrador.MatriculaInvalidaExceptio
 import com.ufcg.psoft.commerce.model.Administrador;
 import com.ufcg.psoft.commerce.model.Endereco;
 import com.ufcg.psoft.commerce.repository.AdministradorRepository;
+import com.ufcg.psoft.commerce.repository.EnderecoRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,9 @@ public class AdministradorServiceImpl implements AdministradorService {
     @Autowired
     ModelMapper modelMapper;
 
+    @Autowired
+    EnderecoRepository enderecoRepository;
+
     @Override
     public Administrador autenticar(String matricula) {
         Administrador administrador = getAdmin();
@@ -34,11 +38,15 @@ public class AdministradorServiceImpl implements AdministradorService {
 
     @Override
     public AdministradorResponseDTO criar(AdministradorPostPutRequestDTO dto) {
-        if (getAdmin() != null) {
-            throw new AdminJaExisteException();
+        Administrador admin = modelMapper.map(dto, Administrador.class);
+
+        if (dto.getEnderecoDTO() != null) {
+            Endereco endereco = modelMapper.map(dto.getEnderecoDTO(), Endereco.class);
+            endereco = enderecoRepository.save(endereco);
+            admin.setEndereco(endereco);
         }
 
-        Administrador admin = modelMapper.map(dto, Administrador.class);
+
         Administrador adminSalvo = administradorRepository.save(admin);
 
         return modelMapper.map(adminSalvo, AdministradorResponseDTO.class);

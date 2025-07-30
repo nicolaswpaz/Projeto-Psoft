@@ -1,5 +1,6 @@
 package com.ufcg.psoft.commerce.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import jakarta.persistence.*;
@@ -27,9 +28,10 @@ public abstract class TipoAtivo {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JsonIgnore
     private Long id;
 
-    @Column(name = "pode_atualizar_cotacao", nullable = false)
+    @JsonIgnore
     private boolean podeAtualizarCotacao;
 
     protected TipoAtivo(boolean podeAtualizarCotacao) {
