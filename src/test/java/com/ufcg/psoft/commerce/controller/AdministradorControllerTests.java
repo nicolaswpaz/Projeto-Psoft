@@ -1,29 +1,24 @@
 package com.ufcg.psoft.commerce.controller;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.ufcg.psoft.commerce.dto.Administrador.AdministradorPostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.Administrador.AdministradorResponseDTO;
 import com.ufcg.psoft.commerce.dto.Ativo.AtivoPostPutRequestDTO;
-import com.ufcg.psoft.commerce.dto.Ativo.AtivoResponseDTO;
-import com.ufcg.psoft.commerce.dto.Cliente.ClienteResponseDTO;
 import com.ufcg.psoft.commerce.dto.Endereco.EnderecoPostPutRequestDTO;
-import com.ufcg.psoft.commerce.dto.Endereco.EnderecoResponseDTO;
 import com.ufcg.psoft.commerce.exception.CustomErrorType;
 import com.ufcg.psoft.commerce.model.*;
-import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
 import com.ufcg.psoft.commerce.repository.AdministradorRepository;
 import com.ufcg.psoft.commerce.repository.AtivoRepository;
+import com.ufcg.psoft.commerce.repository.TipoAtivoRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-
-import java.util.Arrays;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -50,12 +45,17 @@ public class AdministradorControllerTests {
     Administrador administrador;
     AdministradorPostPutRequestDTO administradorPostPutRequestDTO;
 
+    @Autowired
+    TipoAtivoRepository tipoAtivoRepository;
+
     ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeEach
     void setup() {
         // Object Mapper suporte para LocalDateTime
         objectMapper.registerModule(new JavaTimeModule());
+
+        Acao acao = tipoAtivoRepository.save(new Acao());
 
         administrador = administradorRepository.save(Administrador.builder()
                 .matricula("admin123")
@@ -79,7 +79,7 @@ public class AdministradorControllerTests {
 
         ativo = ativoRepository.save(Ativo.builder()
                 .nome("Ativo 1")
-                .tipo(TipoAtivo.ACAO)
+                .tipo(acao)
                 .disponivel(true)
                 .descricao("Descrição do ativo 1")
                 .cotacao("1.00")

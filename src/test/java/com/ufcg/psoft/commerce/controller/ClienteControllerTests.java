@@ -4,19 +4,14 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.ufcg.psoft.commerce.dto.Administrador.AdministradorPostPutRequestDTO;
-import com.ufcg.psoft.commerce.dto.Administrador.AdministradorResponseDTO;
 import com.ufcg.psoft.commerce.dto.Cliente.ClientePostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.Cliente.ClienteResponseDTO;
 import com.ufcg.psoft.commerce.dto.Endereco.EnderecoPostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.Endereco.EnderecoResponseDTO;
 import com.ufcg.psoft.commerce.exception.CustomErrorType;
-import com.ufcg.psoft.commerce.model.Administrador;
-import com.ufcg.psoft.commerce.model.Cliente;
-import com.ufcg.psoft.commerce.model.Endereco;
+import com.ufcg.psoft.commerce.model.*;
 import com.ufcg.psoft.commerce.model.enums.TipoPlano;
-import com.ufcg.psoft.commerce.repository.AdministradorRepository;
-import com.ufcg.psoft.commerce.repository.ClienteRepository;
-import com.ufcg.psoft.commerce.repository.EnderecoRepository;
+import com.ufcg.psoft.commerce.repository.*;
 import com.ufcg.psoft.commerce.service.cliente.ClienteService;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.*;
@@ -27,9 +22,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import com.ufcg.psoft.commerce.dto.Ativo.AtivoPostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.Ativo.AtivoResponseDTO;
-import com.ufcg.psoft.commerce.model.Ativo;
-import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
-import com.ufcg.psoft.commerce.repository.AtivoRepository;
 
 import java.util.Arrays;
 import java.util.List;
@@ -82,11 +74,22 @@ public class ClienteControllerTests {
     @Autowired
     AdministradorRepository administradorRepository;
 
+    @Autowired
+    TipoAtivoRepository tipoAtivoRepository;
+
+    Acao acao;
+    TesouroDireto tesouroDireto;
+    Criptomoeda criptomoeda;
+
     @BeforeEach
     @Transactional
     void setup() {
         // Object Mapper suporte para LocalDateTime
         objectMapper.registerModule(new JavaTimeModule());
+
+        acao = tipoAtivoRepository.save(new Acao());
+        tesouroDireto = tipoAtivoRepository.save(new TesouroDireto());
+        criptomoeda= tipoAtivoRepository.save(new Criptomoeda());
 
         endereco = /*enderecoRepository.save(*/Endereco.builder()
                 .rua("Rua dos testes")
@@ -118,21 +121,21 @@ public class ClienteControllerTests {
 
         ativo1 = Ativo.builder()
                 .nome("Ativo1")
-                .tipo(TipoAtivo.TESOURO_DIRETO)
+                .tipo(tesouroDireto)
                 .disponivel(true)
                 .descricao("Descrição do ativo1")
                 .cotacao("20.00")
                 .build();
         ativo2 = Ativo.builder()
                 .nome("Ativo2")
-                .tipo(TipoAtivo.ACAO)
+                .tipo(acao)
                 .disponivel(true)
                 .descricao("Descrição do ativo2")
                 .cotacao("20.00")
                 .build();
         ativo3 = Ativo.builder()
                 .nome("Ativo3")
-                .tipo(TipoAtivo.TESOURO_DIRETO)
+                .tipo(tesouroDireto)
                 .disponivel(false)
                 .descricao("Descrição do ativo3")
                 .cotacao("30000.00")
@@ -1201,7 +1204,7 @@ public class ClienteControllerTests {
 
         // Assert
         assertTrue(nomesRetornados.containsAll(nomesEsperados));
-        assertEquals(nomesRetornados.size(), 1);
+        assertEquals(1, nomesRetornados.size());
         assertFalse(nomesRetornados.isEmpty());
     }
 
@@ -1227,7 +1230,7 @@ public class ClienteControllerTests {
 
         // Assert
         assertTrue(nomesRetornados.containsAll(nomesEsperados));
-        assertEquals(nomesRetornados.size(), 2);
+        assertEquals(2, nomesRetornados.size());
         assertFalse(nomesRetornados.isEmpty());
     }
 

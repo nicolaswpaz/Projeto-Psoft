@@ -5,6 +5,7 @@ import com.ufcg.psoft.commerce.dto.Endereco.EnderecoResponseDTO;
 import com.ufcg.psoft.commerce.exception.Cliente.ClienteNaoExisteException;
 import com.ufcg.psoft.commerce.exception.Cliente.CodigoDeAcessoInvalidoException;
 import com.ufcg.psoft.commerce.model.Endereco;
+import com.ufcg.psoft.commerce.model.TesouroDireto;
 import com.ufcg.psoft.commerce.model.enums.TipoPlano;
 import com.ufcg.psoft.commerce.repository.ClienteRepository;
 import com.ufcg.psoft.commerce.dto.Cliente.ClientePostPutRequestDTO;
@@ -173,13 +174,13 @@ public class ClienteServiceImpl implements ClienteService {
         List<AtivoResponseDTO> ativosFiltrados = new ArrayList<>();
         List<AtivoResponseDTO> ativosDisponiveis = ativoService.listarAtivosDisponiveis();
 
+        if (cliente.getPlano() == TipoPlano.PREMIUM) {
+            return ativosDisponiveis;
+        }
+
         for(AtivoResponseDTO ativo : ativosDisponiveis) {
-            if(cliente.getPlano() == TipoPlano.PREMIUM) {
+            if(ativo.getTipo() instanceof TesouroDireto) {
                 ativosFiltrados.add(ativo);
-            } else {
-                if(ativo.getTipo().name().equals("TESOURO_DIRETO")) {
-                    ativosFiltrados.add(ativo);
-                }
             }
         }
 
