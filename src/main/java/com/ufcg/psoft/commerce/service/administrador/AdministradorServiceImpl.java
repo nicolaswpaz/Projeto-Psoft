@@ -10,6 +10,10 @@ import com.ufcg.psoft.commerce.model.Administrador;
 import com.ufcg.psoft.commerce.model.Endereco;
 import com.ufcg.psoft.commerce.repository.AdministradorRepository;
 import com.ufcg.psoft.commerce.repository.EnderecoRepository;
+
+import java.util.List;
+
+
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -38,18 +42,27 @@ public class AdministradorServiceImpl implements AdministradorService {
 
     @Override
     public AdministradorResponseDTO criar(AdministradorPostPutRequestDTO dto) {
-        Administrador admin = modelMapper.map(dto, Administrador.class);
 
-        if (dto.getEnderecoDTO() != null) {
-            Endereco endereco = modelMapper.map(dto.getEnderecoDTO(), Endereco.class);
-            endereco = enderecoRepository.save(endereco);
-            admin.setEndereco(endereco);
+        List<Administrador> adminObj = administradorRepository.findAll();
+
+        if(adminObj.size() == 0){
+        
+            Administrador admin = modelMapper.map(dto, Administrador.class);
+
+            if (dto.getEnderecoDTO() != null) {
+                Endereco endereco = modelMapper.map(dto.getEnderecoDTO(), Endereco.class);
+                endereco = enderecoRepository.save(endereco);
+                admin.setEndereco(endereco);
         }
 
-
         Administrador adminSalvo = administradorRepository.save(admin);
-
+        
         return modelMapper.map(adminSalvo, AdministradorResponseDTO.class);
+        
+        }
+
+        throw new AdminJaExisteException();
+
     }
 
     @Override
