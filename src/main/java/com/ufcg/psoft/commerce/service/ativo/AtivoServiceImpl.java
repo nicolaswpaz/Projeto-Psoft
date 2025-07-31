@@ -6,13 +6,19 @@ import com.ufcg.psoft.commerce.exception.Ativo.AtivoNaoExisteException;
 import com.ufcg.psoft.commerce.exception.Ativo.CotacaoNaoPodeAtualizarException;
 import com.ufcg.psoft.commerce.exception.Ativo.VariacaoCotacaoMenorQuerUmPorCentroException;
 import com.ufcg.psoft.commerce.model.Ativo;
+import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
 import com.ufcg.psoft.commerce.repository.AtivoRepository;
 import com.ufcg.psoft.commerce.service.administrador.AdministradorService;
+import com.ufcg.psoft.commerce.service.ativo.tipoAtivo.Acao;
+import com.ufcg.psoft.commerce.service.ativo.tipoAtivo.Criptomoeda;
+import com.ufcg.psoft.commerce.service.ativo.tipoAtivo.TesouroDireto;
+import com.ufcg.psoft.commerce.service.ativo.tipoAtivo.TipoAtivoStrategy;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,6 +33,12 @@ public class AtivoServiceImpl implements AtivoService {
     @Autowired
     ModelMapper modelMapper;
 
+    private final Map<TipoAtivo, TipoAtivoStrategy> tipoAtivoMap = Map.of(
+            TipoAtivo.ACAO, new Acao(),
+            TipoAtivo.TESOURO_DIRETO, new TesouroDireto(),
+            TipoAtivo.CRIPTOMOEDA, new Criptomoeda()
+    );
+
     @Override
     public AtivoResponseDTO criar(String matriculaAdmin, AtivoPostPutRequestDTO ativoPostPutRequestDTO) {
         administradorService.autenticar(matriculaAdmin);
@@ -35,6 +47,7 @@ public class AtivoServiceImpl implements AtivoService {
         ativoRepository.save(ativo);
         return modelMapper.map(ativo, AtivoResponseDTO.class);
     }
+
 
     @Override
     public AtivoResponseDTO alterar(String matriculaAdmin, Long id, AtivoPostPutRequestDTO ativoPostPutRequestDTO) {
@@ -111,7 +124,9 @@ public class AtivoServiceImpl implements AtivoService {
 
         Ativo ativo = ativoRepository.findById(idAtivo).orElseThrow(AtivoNaoExisteException::new);
 
-        if (!ativo.getTipo().podeTerCotacaoAtualizada()) {
+        TipoAtivoStrategy tipoAtivoStrategy = tipoAtivoMap.get(ativo.getTipo());
+
+        if (!(tipoAtivoStrategy.podeTerCotacaoAtualizada())) {
             throw new CotacaoNaoPodeAtualizarException();
         }
 

@@ -2,7 +2,7 @@ package com.ufcg.psoft.commerce.dto.Ativo;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.ufcg.psoft.commerce.model.Ativo;
-import com.ufcg.psoft.commerce.model.TipoAtivo;
+import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;

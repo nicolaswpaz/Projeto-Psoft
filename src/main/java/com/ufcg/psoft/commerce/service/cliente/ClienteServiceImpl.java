@@ -5,8 +5,8 @@ import com.ufcg.psoft.commerce.dto.Endereco.EnderecoResponseDTO;
 import com.ufcg.psoft.commerce.exception.Cliente.ClienteNaoExisteException;
 import com.ufcg.psoft.commerce.exception.Cliente.CodigoDeAcessoInvalidoException;
 import com.ufcg.psoft.commerce.model.Endereco;
-import com.ufcg.psoft.commerce.model.TesouroDireto;
 import com.ufcg.psoft.commerce.model.enums.TipoPlano;
+import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
 import com.ufcg.psoft.commerce.repository.ClienteRepository;
 import com.ufcg.psoft.commerce.dto.Cliente.ClientePostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.Cliente.ClienteResponseDTO;
@@ -179,7 +179,7 @@ public class ClienteServiceImpl implements ClienteService {
         }
 
         for(AtivoResponseDTO ativo : ativosDisponiveis) {
-            if(ativo.getTipo() instanceof TesouroDireto) {
+            if(ativo.getTipo() == TipoAtivo.TESOURO_DIRETO) {
                 ativosFiltrados.add(ativo);
             }
         }

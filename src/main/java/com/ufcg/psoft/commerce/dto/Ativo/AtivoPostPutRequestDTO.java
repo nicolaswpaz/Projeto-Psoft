@@ -1,7 +1,7 @@
 package com.ufcg.psoft.commerce.dto.Ativo;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.ufcg.psoft.commerce.model.TipoAtivo;
+import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -28,7 +28,6 @@ public class AtivoPostPutRequestDTO {
     private String descricao;
 
     @JsonProperty("tipo")
-    @NotBlank(message = "Tipo obrigatoria")
     private TipoAtivo tipo;
 
     @JsonProperty("disponivel")

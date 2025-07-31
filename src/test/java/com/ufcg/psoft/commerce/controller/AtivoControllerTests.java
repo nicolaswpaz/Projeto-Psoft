@@ -9,9 +9,9 @@ import com.ufcg.psoft.commerce.dto.Ativo.AtivoResponseDTO;
 import com.ufcg.psoft.commerce.dto.Endereco.EnderecoPostPutRequestDTO;
 import com.ufcg.psoft.commerce.exception.CustomErrorType;
 import com.ufcg.psoft.commerce.model.*;
+import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
 import com.ufcg.psoft.commerce.repository.AdministradorRepository;
 import com.ufcg.psoft.commerce.repository.AtivoRepository;
-import com.ufcg.psoft.commerce.repository.TipoAtivoRepository;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -19,7 +19,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import javax.sql.rowset.CachedRowSet;
 import java.util.Arrays;
 import java.util.List;
 
@@ -48,23 +47,12 @@ public class AtivoControllerTests {
     Administrador administrador;
     AdministradorPostPutRequestDTO administradorPostPutRequestDTO;
 
-    @Autowired
-    TipoAtivoRepository tipoAtivoRepository;
-
-    Acao acao;
-    TesouroDireto tesouroDireto;
-    Criptomoeda criptomoeda;
-
     ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeEach
     void setup() {
         // Object Mapper suporte para LocalDateTime
         objectMapper.registerModule(new JavaTimeModule());
-
-        acao = tipoAtivoRepository.save(new Acao());
-        tesouroDireto = tipoAtivoRepository.save(new TesouroDireto());
-        criptomoeda= tipoAtivoRepository.save(new Criptomoeda());
 
         administrador = administradorRepository.save(Administrador.builder()
                 .matricula("admin123")
@@ -88,7 +76,7 @@ public class AtivoControllerTests {
 
         ativo = ativoRepository.save(Ativo.builder()
                 .nome("Ativo 1")
-                .tipo(acao)
+                .tipo(TipoAtivo.ACAO)
                 .disponivel(true)
                 .descricao("Descrição do ativo 1")
                 .cotacao("1.00")
@@ -196,14 +184,14 @@ public class AtivoControllerTests {
             // Já temos 1 ativo do setup(), vamos adicionar mais 2
             Ativo ativo2 = Ativo.builder()
                     .nome("Ativo Secundario")
-                    .tipo(acao)
+                    .tipo(TipoAtivo.ACAO)
                     .disponivel(true)
                     .descricao("Descrição do ativo secundário")
                     .cotacao("20.00")
                     .build();
             Ativo ativo3 = Ativo.builder()
                     .nome("Outro Ativo")
-                    .tipo(criptomoeda)
+                    .tipo(TipoAtivo.CRIPTOMOEDA)
                     .disponivel(false)
                     .descricao("Descrição de outro ativo")
                     .cotacao("30000.00")
@@ -426,7 +414,7 @@ public class AtivoControllerTests {
             // Assert
             assertAll(
                     () -> assertEquals(ativo.getId(), resultado.getId()),
-                    () -> assertEquals(Acao.class, resultado.getTipo().getClass()));
+                    () -> assertEquals(TipoAtivo.ACAO, resultado.getTipo()));
         }
     }
     @Nested
@@ -460,7 +448,7 @@ public class AtivoControllerTests {
         @Test
         @DisplayName("Quando tentamos alterar a disponibilidade de um ativo inexistente")
         void quandoAlteramosADisponibilidadeDeUmAtivoInexistente() throws Exception {
-            Long idInvalido = 99992999L;
+            long idInvalido = 99992999L;
 
             String responseDisponibilizarAtivo = driver.perform(put(URI_ATIVOS + "/" + idInvalido + "/disponibilizar")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -606,7 +594,7 @@ public class AtivoControllerTests {
             // Arrange
             Ativo tesouroAtivo = ativoRepository.save(Ativo.builder()
                     .nome("Tesouro Selic 2029")
-                    .tipo(tesouroDireto)
+                    .tipo(TipoAtivo.TESOURO_DIRETO)
                     .disponivel(true)
                     .descricao("Título do Tesouro Nacional")
                     .cotacao("130.50")
