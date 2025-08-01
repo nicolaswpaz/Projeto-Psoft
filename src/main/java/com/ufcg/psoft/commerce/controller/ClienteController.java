@@ -9,6 +9,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping(
         value = "/clientes",
@@ -72,4 +74,17 @@ public class ClienteController {
                 .status(HttpStatus.OK)
                 .body(clienteService.listarAtivosDisponiveisPorPlano(id, codigo));
     }
+
+    @PutMapping("/{id}/interesseAtivoIndisponivel")
+    public ResponseEntity<?> marcarInteresseEmAtivoIndisponivel(
+            @PathVariable Long id,
+            @RequestParam String codigo,
+            @RequestParam Long idAtivo) {
+
+        clienteService.marcarInteresseAtivoIndisponivel(id, codigo, idAtivo);
+        return ResponseEntity
+                .status(HttpStatus.NO_CONTENT)
+                .body("");
+    }
+
 }

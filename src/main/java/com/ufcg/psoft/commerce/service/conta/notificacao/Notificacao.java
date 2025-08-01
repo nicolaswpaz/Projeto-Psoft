@@ -1,8 +1,8 @@
 package com.ufcg.psoft.commerce.service.conta.notificacao;
 
-import com.ufcg.psoft.commerce.dto.Ativo.AtivoGetRequestDTO;
+import com.ufcg.psoft.commerce.dto.Ativo.AtivoResponseDTO;
 
 public abstract class Notificacao implements NotificacaoListener {
     @Override
-    public void notificarAtivoDisponivel(String nomeCliente, AtivoGetRequestDTO ativoGetRequestDTO){}
+    public void notificarAtivoDisponivel(String nomeCliente, AtivoResponseDTO ativoResponseDTO){}
 }

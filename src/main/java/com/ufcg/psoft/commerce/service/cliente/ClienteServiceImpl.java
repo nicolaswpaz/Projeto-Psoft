@@ -192,7 +192,7 @@ public class ClienteServiceImpl implements ClienteService {
     }
 
     @Override
-    public void marcarInteresseAtivo(Long idCliente, String codigoAcesso, Long idAtivo) {
+    public void marcarInteresseAtivoIndisponivel(Long idCliente, String codigoAcesso, Long idAtivo) {
         Cliente cliente = clienteRepository.findById(idCliente)
                 .orElseThrow(ClienteNaoExisteException::new);
 
@@ -208,4 +208,5 @@ public class ClienteServiceImpl implements ClienteService {
             contaService.adicionarAtivoNaListaDeInteresse(cliente.getConta().getId(), ativoResponseDTO);
         }
     }
+
 }

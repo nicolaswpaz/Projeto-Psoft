@@ -146,6 +146,8 @@ public class AtivoServiceImpl implements AtivoService {
         ativo.setCotacao(String.valueOf(valor));
         ativoRepository.save(ativo);
 
+        //contaService.notificarClientesComInteressePremium(ativo);
+
         return modelMapper.map(ativo, AtivoResponseDTO.class);
     }
 

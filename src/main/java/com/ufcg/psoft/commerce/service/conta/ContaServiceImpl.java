@@ -1,7 +1,7 @@
 package com.ufcg.psoft.commerce.service.conta;
 
-import com.ufcg.psoft.commerce.dto.Ativo.AtivoGetRequestDTO;
 import com.ufcg.psoft.commerce.dto.Ativo.AtivoResponseDTO;
+import com.ufcg.psoft.commerce.dto.Conta.ContaResponseDTO;
 import com.ufcg.psoft.commerce.exception.Conta.ContaNaoExisteException;
 import com.ufcg.psoft.commerce.model.Ativo;
 import com.ufcg.psoft.commerce.model.Conta;
@@ -14,13 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 @Service
 public class ContaServiceImpl implements ContaService {
-
-    private static final Logger logger = LogManager.getLogger(ContaServiceImpl.class);
 
     @Autowired
     ContaRepository contaRepository;
@@ -49,30 +45,23 @@ public class ContaServiceImpl implements ContaService {
     }
 
     @Override
-    public void notificarClientesComInteresse(Ativo ativoDisponivel) {
-        List<Conta> contasInteressadas = contaRepository.findAll()
-                .stream()
-                .filter(conta -> conta.getAtivosDeInteresse() != null &&
-                        conta.getAtivosDeInteresse().stream()
-                                .anyMatch(a -> a.getId().equals(ativoDisponivel.getId())))
-                .toList();
+    public ContaResponseDTO notificarClientesComInteresse(Ativo ativoDisponivel) {
+        List<Conta> contas = contaRepository.findAll();
 
-        if (!contasInteressadas.isEmpty()) {
-            for (Conta conta : contasInteressadas) {
-                AtivoGetRequestDTO dto = modelMapper.map(ativoDisponivel, AtivoGetRequestDTO.class);
+        for (Conta conta : contas) {
+            List<Ativo> interesses = conta.getAtivosDeInteresse();
 
-                clienteRepository.findByContaId(conta.getId())
-                        .ifPresent(cliente -> {
-                            NotificacaoListener notificacao = new NotificacaoAtivoDisponivel();
-                            notificacao.notificarAtivoDisponivel(cliente.getNome(), dto);
-                        });
-
-                conta.getAtivosDeInteresse().removeIf(a -> a.getId().equals(ativoDisponivel.getId()));
-                contaRepository.save(conta);
+            if (interesses == null || interesses.stream().noneMatch(a -> a.getId().equals(ativoDisponivel.getId()))) {
+                continue;
             }
-        } else {
-            logger.info("Nenhuma conta com interesse no ativo '{}'", ativoDisponivel.getNome());
+
+            clienteRepository.findByContaId(conta.getId()).ifPresent(cliente -> {
+                AtivoResponseDTO dto = modelMapper.map(ativoDisponivel, AtivoResponseDTO.class);
+                NotificacaoListener notificacao = new NotificacaoAtivoDisponivel();
+                notificacao.notificarAtivoDisponivel(cliente.getNome(), dto);
+            });
         }
+        return modelMapper.map(contas, ContaResponseDTO.class);
     }
 
 }
