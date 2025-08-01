@@ -13,6 +13,7 @@ import com.ufcg.psoft.commerce.dto.Cliente.ClienteResponseDTO;
 import com.ufcg.psoft.commerce.model.Cliente;
 import com.ufcg.psoft.commerce.service.administrador.AdministradorService;
 import com.ufcg.psoft.commerce.service.ativo.AtivoService;
+import com.ufcg.psoft.commerce.service.conta.ContaService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.modelmapper.ModelMapper;
@@ -44,6 +45,9 @@ public class ClienteServiceImpl implements ClienteService {
 
     @Autowired
     AtivoService ativoService;
+
+    @Autowired
+    ContaService contaService;
 
     @Override
     public Cliente autenticar(Long id, String codigoAcesso) {
@@ -185,5 +189,23 @@ public class ClienteServiceImpl implements ClienteService {
         }
 
         return ativosFiltrados;
+    }
+
+    @Override
+    public void marcarInteresseAtivo(Long idCliente, String codigoAcesso, Long idAtivo) {
+        Cliente cliente = clienteRepository.findById(idCliente)
+                .orElseThrow(ClienteNaoExisteException::new);
+
+        if (!cliente.getCodigo().equals(codigoAcesso)) {
+            throw new CodigoDeAcessoInvalidoException();
+        }
+
+        AtivoResponseDTO ativoResponseDTO= ativoService.recuperar(idAtivo);
+
+        List<AtivoResponseDTO> ativosDisponiveis = ativoService.listarAtivosDisponiveis();
+
+        if(!(ativosDisponiveis.contains(ativoResponseDTO))) {
+            contaService.adicionarAtivoNaListaDeInteresse(cliente.getConta().getId(), ativoResponseDTO);
+        }
     }
 }

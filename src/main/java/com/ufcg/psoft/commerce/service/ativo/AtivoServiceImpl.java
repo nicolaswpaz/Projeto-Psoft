@@ -13,6 +13,7 @@ import com.ufcg.psoft.commerce.service.ativo.tipoAtivo.Acao;
 import com.ufcg.psoft.commerce.service.ativo.tipoAtivo.Criptomoeda;
 import com.ufcg.psoft.commerce.service.ativo.tipoAtivo.TesouroDireto;
 import com.ufcg.psoft.commerce.service.ativo.tipoAtivo.TipoAtivoStrategy;
+import com.ufcg.psoft.commerce.service.conta.ContaService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,9 @@ public class AtivoServiceImpl implements AtivoService {
 
     @Autowired
     AdministradorService administradorService;
+
+    @Autowired
+    ContaService contaService;
 
     @Autowired
     ModelMapper modelMapper;
@@ -101,6 +105,8 @@ public class AtivoServiceImpl implements AtivoService {
         ativo.setDisponivel(true);
 
         ativoRepository.save(ativo);
+
+        contaService.notificarClientesComInteresse(ativo);
 
         return modelMapper.map(ativo, AtivoResponseDTO.class);
     }
