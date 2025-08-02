@@ -87,4 +87,16 @@ public class ClienteController {
                 .body("");
     }
 
+    @PutMapping("/{id}/interesseAtivoDisponivel")
+    public ResponseEntity<?> marcarInteresseEmAtivoDisponivel(
+            @PathVariable Long id,
+            @RequestParam String codigo,
+            @RequestParam Long idAtivo) {
+
+        clienteService.marcarInteresseAtivoDisponivel(id, codigo, idAtivo);
+        return ResponseEntity
+                .status(HttpStatus.NO_CONTENT)
+                .body("");
+    }
+
 }

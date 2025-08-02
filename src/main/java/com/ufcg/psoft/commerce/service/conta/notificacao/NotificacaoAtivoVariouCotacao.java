@@ -4,15 +4,15 @@ import com.ufcg.psoft.commerce.dto.Ativo.AtivoResponseDTO;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class NotificacaoAtivoDisponivel extends Notificacao{
+public class NotificacaoAtivoVariouCotacao extends Notificacao{
 
-    private static final Logger logger = LogManager.getLogger(NotificacaoAtivoDisponivel.class);
+    private static final Logger logger = LogManager.getLogger(NotificacaoAtivoVariouCotacao.class);
 
-    public NotificacaoAtivoDisponivel(){}
+    public NotificacaoAtivoVariouCotacao(){}
 
     @Override
     public void notificarCliente(String nomeCliente, AtivoResponseDTO ativoResponseDTO){
-        logger.info("\nCaro cliente {}, o ativo indisponível que você marcou interesse está disponível!" +
+        logger.info("\nCaro cliente {}, o ativo que você marcou interesse, teve uma taxa de variação de cotação acima de 10%!" +
                         "\nDados do Ativo:" +
                         "\nNome do ativo: {}" +
                         "\nO tipo do ativo: {}" +

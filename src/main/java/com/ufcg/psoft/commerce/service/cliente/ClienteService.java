@@ -27,4 +27,6 @@ public interface ClienteService {
     List<AtivoResponseDTO> listarAtivosDisponiveisPorPlano(Long idCliente, String codigoAcesso);
 
     void marcarInteresseAtivoIndisponivel(Long idCliente, String codigoAcesso, Long idAtivo);
+
+    void marcarInteresseAtivoDisponivel(Long idCliente, String codigoAcesso, Long idAtivo);
 }

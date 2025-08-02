@@ -3,7 +3,9 @@ package com.ufcg.psoft.commerce.service.cliente;
 import com.ufcg.psoft.commerce.dto.Ativo.AtivoResponseDTO;
 import com.ufcg.psoft.commerce.dto.Endereco.EnderecoResponseDTO;
 import com.ufcg.psoft.commerce.exception.Cliente.ClienteNaoExisteException;
+import com.ufcg.psoft.commerce.exception.Cliente.ClienteNaoPremiumException;
 import com.ufcg.psoft.commerce.exception.Cliente.CodigoDeAcessoInvalidoException;
+import com.ufcg.psoft.commerce.exception.Cliente.OperacaoNaoPermitidaException;
 import com.ufcg.psoft.commerce.model.Endereco;
 import com.ufcg.psoft.commerce.model.enums.TipoPlano;
 import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
@@ -168,12 +170,7 @@ public class ClienteServiceImpl implements ClienteService {
 
     @Override
     public List<AtivoResponseDTO> listarAtivosDisponiveisPorPlano(Long idCliente, String codigoAcesso) {
-        Cliente cliente = clienteRepository.findById(idCliente)
-                .orElseThrow(ClienteNaoExisteException::new);
-
-        if (!cliente.getCodigo().equals(codigoAcesso)) {
-            throw new CodigoDeAcessoInvalidoException();
-        }
+        Cliente cliente = autenticar(idCliente, codigoAcesso);
 
         List<AtivoResponseDTO> ativosFiltrados = new ArrayList<>();
         List<AtivoResponseDTO> ativosDisponiveis = ativoService.listarAtivosDisponiveis();
@@ -193,18 +190,26 @@ public class ClienteServiceImpl implements ClienteService {
 
     @Override
     public void marcarInteresseAtivoIndisponivel(Long idCliente, String codigoAcesso, Long idAtivo) {
-        Cliente cliente = clienteRepository.findById(idCliente)
-                .orElseThrow(ClienteNaoExisteException::new);
+        Cliente cliente = autenticar(idCliente, codigoAcesso);
 
-        if (!cliente.getCodigo().equals(codigoAcesso)) {
-            throw new CodigoDeAcessoInvalidoException();
+        AtivoResponseDTO ativoResponseDTO= ativoService.recuperar(idAtivo);
+
+        if(!ativoResponseDTO.isDisponivel()) {
+            contaService.adicionarAtivoNaListaDeInteresse(cliente.getConta().getId(), ativoResponseDTO);
+        }
+    }
+
+    @Override
+    public void marcarInteresseAtivoDisponivel(Long idCliente, String codigoAcesso, Long idAtivo) {
+        Cliente cliente = autenticar(idCliente, codigoAcesso);
+
+        if (cliente.getPlano() == TipoPlano.NORMAL) {
+            throw new ClienteNaoPremiumException();
         }
 
         AtivoResponseDTO ativoResponseDTO= ativoService.recuperar(idAtivo);
 
-        List<AtivoResponseDTO> ativosDisponiveis = ativoService.listarAtivosDisponiveis();
-
-        if(!(ativosDisponiveis.contains(ativoResponseDTO))) {
+        if (ativoResponseDTO.isDisponivel()){
             contaService.adicionarAtivoNaListaDeInteresse(cliente.getConta().getId(), ativoResponseDTO);
         }
     }

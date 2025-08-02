@@ -106,7 +106,7 @@ public class AtivoServiceImpl implements AtivoService {
 
         ativoRepository.save(ativo);
 
-        contaService.notificarClientesComInteresse(ativo);
+        contaService.notificarAtivoDisponivelClientesComInteresse(ativo);
 
         return modelMapper.map(ativo, AtivoResponseDTO.class);
     }
@@ -146,7 +146,9 @@ public class AtivoServiceImpl implements AtivoService {
         ativo.setCotacao(String.valueOf(valor));
         ativoRepository.save(ativo);
 
-        //contaService.notificarClientesComInteressePremium(ativo);
+        if (variacaoPercentual > 10) {
+            contaService.notificarClientesPremiumComInteresse(ativo);
+        }
 
         return modelMapper.map(ativo, AtivoResponseDTO.class);
     }
