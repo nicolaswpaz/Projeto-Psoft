@@ -85,4 +85,9 @@ public class ContaServiceImpl implements ContaService {
         return notificarClientesComInteresse(ativo, notificacao);
     }
 
+    @Override
+    public Conta salvar(Conta conta) {
+        return contaRepository.save(conta);
+    }
+
 }

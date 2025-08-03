@@ -1,7 +1,9 @@
 package com.ufcg.psoft.commerce.dto.Cliente;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.ufcg.psoft.commerce.dto.Endereco.EnderecoResponseDTO;
+import com.ufcg.psoft.commerce.model.Conta;
 import com.ufcg.psoft.commerce.model.enums.TipoPlano;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;

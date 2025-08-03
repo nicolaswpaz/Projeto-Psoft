@@ -2,10 +2,8 @@ package com.ufcg.psoft.commerce.service.cliente;
 
 import com.ufcg.psoft.commerce.dto.Ativo.AtivoResponseDTO;
 import com.ufcg.psoft.commerce.dto.Endereco.EnderecoResponseDTO;
-import com.ufcg.psoft.commerce.exception.Cliente.ClienteNaoExisteException;
-import com.ufcg.psoft.commerce.exception.Cliente.ClienteNaoPremiumException;
-import com.ufcg.psoft.commerce.exception.Cliente.CodigoDeAcessoInvalidoException;
-import com.ufcg.psoft.commerce.exception.Cliente.OperacaoNaoPermitidaException;
+import com.ufcg.psoft.commerce.exception.Cliente.*;
+import com.ufcg.psoft.commerce.model.Conta;
 import com.ufcg.psoft.commerce.model.Endereco;
 import com.ufcg.psoft.commerce.model.enums.TipoPlano;
 import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
@@ -75,10 +73,19 @@ public class ClienteServiceImpl implements ClienteService {
             cliente.setEndereco(endereco);
         }
 
-        // Salva o cliente
+        Conta novaConta = Conta.builder()
+                .saldo("0.00") //valor inicial padrão
+                .ativosDeInteresse(new ArrayList<>())
+                .build();
+
+        novaConta = contaService.salvar(novaConta);
+
+        cliente.setConta(novaConta);
+
         cliente = clienteRepository.save(cliente);
         return modelMapper.map(cliente, ClienteResponseDTO.class);
     }
+
 
     @Override
     @Transactional
@@ -196,6 +203,8 @@ public class ClienteServiceImpl implements ClienteService {
 
         if(!ativoResponseDTO.isDisponivel()) {
             contaService.adicionarAtivoNaListaDeInteresse(cliente.getConta().getId(), ativoResponseDTO);
+        }else{
+            throw new AtivoDisponivelException();
         }
     }
 
