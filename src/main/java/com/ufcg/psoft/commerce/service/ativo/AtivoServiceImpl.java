@@ -13,6 +13,7 @@ import com.ufcg.psoft.commerce.service.ativo.tipoAtivo.Acao;
 import com.ufcg.psoft.commerce.service.ativo.tipoAtivo.Criptomoeda;
 import com.ufcg.psoft.commerce.service.ativo.tipoAtivo.TesouroDireto;
 import com.ufcg.psoft.commerce.service.ativo.tipoAtivo.TipoAtivoStrategy;
+import com.ufcg.psoft.commerce.service.cliente.ClienteService;
 import com.ufcg.psoft.commerce.service.conta.ContaService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,9 @@ public class AtivoServiceImpl implements AtivoService {
 
     @Autowired
     AdministradorService administradorService;
+
+    @Autowired
+    ClienteService clienteService;
 
     @Autowired
     ContaService contaService;
@@ -75,9 +79,11 @@ public class AtivoServiceImpl implements AtivoService {
     }
 
     @Override
-    public AtivoResponseDTO recuperar(Long id) {
-        Ativo ativo = ativoRepository.findById(id).orElseThrow(AtivoNaoExisteException::new);
-        return new AtivoResponseDTO(ativo);
+    public AtivoResponseDTO recuperarDetalhado(Long idAtivo) {
+        Ativo ativo = ativoRepository.findById(idAtivo)
+                .orElseThrow(AtivoNaoExisteException::new);
+
+        return modelMapper.map(ativo, AtivoResponseDTO.class);
     }
 
     @Override

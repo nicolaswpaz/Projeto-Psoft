@@ -199,7 +199,7 @@ public class ClienteServiceImpl implements ClienteService {
     public void marcarInteresseAtivoIndisponivel(Long idCliente, String codigoAcesso, Long idAtivo) {
         Cliente cliente = autenticar(idCliente, codigoAcesso);
 
-        AtivoResponseDTO ativoResponseDTO= ativoService.recuperar(idAtivo);
+        AtivoResponseDTO ativoResponseDTO= ativoService.recuperarDetalhado(idAtivo);
 
         if(!ativoResponseDTO.isDisponivel()) {
             contaService.adicionarAtivoNaListaDeInteresse(cliente.getConta().getId(), ativoResponseDTO);
@@ -216,11 +216,25 @@ public class ClienteServiceImpl implements ClienteService {
             throw new ClienteNaoPremiumException();
         }
 
-        AtivoResponseDTO ativoResponseDTO= ativoService.recuperar(idAtivo);
+        AtivoResponseDTO ativoResponseDTO= ativoService.recuperarDetalhado(idAtivo);
 
         if (ativoResponseDTO.isDisponivel()){
             contaService.adicionarAtivoNaListaDeInteresse(cliente.getConta().getId(), ativoResponseDTO);
         }
     }
+
+    @Override
+    public AtivoResponseDTO visualizarDetalhesAtivo(Long idCliente, String codigoAcesso, Long idAtivo) {
+        Cliente cliente = autenticar(idCliente, codigoAcesso);
+
+        AtivoResponseDTO ativo = ativoService.recuperarDetalhado(idAtivo);
+
+        if (cliente.getPlano() == TipoPlano.NORMAL && ativo.getTipo() != TipoAtivo.TESOURO_DIRETO) {
+            throw new ClienteNaoPremiumException();
+        }
+
+        return ativo;
+    }
+
 
 }

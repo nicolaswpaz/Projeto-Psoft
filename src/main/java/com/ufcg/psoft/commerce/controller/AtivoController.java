@@ -37,7 +37,7 @@ public class AtivoController {
     public ResponseEntity<?> recuperarAtivo(@PathVariable Long id){
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(ativoService.recuperar(id));
+                .body(ativoService.recuperarDetalhado(id));
     }
 
     @DeleteMapping("/{id}")

@@ -13,7 +13,7 @@ public interface AtivoService {
 
     void remover(String matriculaAdmin, Long id);
 
-    AtivoResponseDTO recuperar(Long id);
+    AtivoResponseDTO recuperarDetalhado (Long ativoId);
 
     List<AtivoResponseDTO> listar();
 

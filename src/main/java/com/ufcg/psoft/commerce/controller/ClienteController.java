@@ -1,5 +1,6 @@
 package com.ufcg.psoft.commerce.controller;
 
+import com.ufcg.psoft.commerce.dto.Ativo.AtivoResponseDTO;
 import com.ufcg.psoft.commerce.dto.Cliente.ClientePostPutRequestDTO;
 import com.ufcg.psoft.commerce.service.cliente.ClienteService;
 import jakarta.validation.Valid;
@@ -97,6 +98,17 @@ public class ClienteController {
         return ResponseEntity
                 .status(HttpStatus.NO_CONTENT)
                 .body("");
+    }
+
+    @GetMapping("/{idCliente}/ativos/{idAtivo}")
+    public ResponseEntity<?> detalharAtivoParaCompra(
+            @PathVariable Long idCliente,
+            @PathVariable Long idAtivo,
+            @RequestParam String codigoAcesso
+    ) {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(clienteService.visualizarDetalhesAtivo(idCliente, codigoAcesso, idAtivo));
     }
 
 }

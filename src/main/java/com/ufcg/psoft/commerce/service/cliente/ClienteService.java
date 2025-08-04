@@ -29,4 +29,6 @@ public interface ClienteService {
     void marcarInteresseAtivoIndisponivel(Long idCliente, String codigoAcesso, Long idAtivo);
 
     void marcarInteresseAtivoDisponivel(Long idCliente, String codigoAcesso, Long idAtivo);
+
+    AtivoResponseDTO visualizarDetalhesAtivo(Long idCliente, String codigoAcesso, Long idAtivo);
 }
