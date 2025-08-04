@@ -33,9 +33,6 @@ public class AtivoServiceImpl implements AtivoService {
     AdministradorService administradorService;
 
     @Autowired
-    ClienteService clienteService;
-
-    @Autowired
     ContaService contaService;
 
     @Autowired
