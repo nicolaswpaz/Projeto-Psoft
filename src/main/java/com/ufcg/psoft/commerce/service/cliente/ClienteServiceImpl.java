@@ -2,6 +2,8 @@ package com.ufcg.psoft.commerce.service.cliente;
 
 import com.ufcg.psoft.commerce.dto.Ativo.AtivoResponseDTO;
 import com.ufcg.psoft.commerce.dto.Endereco.EnderecoResponseDTO;
+import com.ufcg.psoft.commerce.exception.Ativo.AtivoDisponivelException;
+import com.ufcg.psoft.commerce.exception.Ativo.AtivoIndisponivelException;
 import com.ufcg.psoft.commerce.exception.Cliente.*;
 import com.ufcg.psoft.commerce.model.Conta;
 import com.ufcg.psoft.commerce.model.Endereco;
