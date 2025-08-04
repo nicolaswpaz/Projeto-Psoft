@@ -220,6 +220,8 @@ public class ClienteServiceImpl implements ClienteService {
 
         if (ativoResponseDTO.isDisponivel()){
             contaService.adicionarAtivoNaListaDeInteresse(cliente.getConta().getId(), ativoResponseDTO);
+        } else {
+            throw new AtivoIndisponivelException();
         }
     }
 
