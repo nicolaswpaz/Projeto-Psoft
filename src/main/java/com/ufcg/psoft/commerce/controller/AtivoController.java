@@ -1,6 +1,7 @@
 package com.ufcg.psoft.commerce.controller;
 
 import com.ufcg.psoft.commerce.dto.ativo.AtivoPostPutRequestDTO;
+import com.ufcg.psoft.commerce.dto.ativo.AtivoResponseDTO;
 import com.ufcg.psoft.commerce.service.ativo.AtivoService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping(value = "/ativos", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -17,15 +20,15 @@ public class AtivoController {
     AtivoService ativoService;
 
     @PostMapping()
-    public ResponseEntity<?> criarAtivo(@RequestParam String matriculaAdmin,
-                                        @RequestBody @Valid AtivoPostPutRequestDTO ativoPostPutRequestDTO){
+    public ResponseEntity<AtivoResponseDTO> criarAtivo(@RequestParam String matriculaAdmin,
+                                                       @RequestBody @Valid AtivoPostPutRequestDTO ativoPostPutRequestDTO){
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ativoService.criar(matriculaAdmin, ativoPostPutRequestDTO));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> atualizarAtivo(@RequestParam String matriculaAdmin,
+    public ResponseEntity<AtivoResponseDTO> atualizarAtivo(@RequestParam String matriculaAdmin,
                                             @PathVariable Long id,
                                             @RequestBody @Valid AtivoPostPutRequestDTO ativoPostPutRequestDTO){
         return ResponseEntity
@@ -34,52 +37,54 @@ public class AtivoController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> recuperarAtivo(@PathVariable Long id){
+    public ResponseEntity<AtivoResponseDTO> recuperarAtivo(@PathVariable Long id){
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ativoService.recuperarDetalhado(id));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> excluirAtivo(@RequestParam String matriculaAdmin, @PathVariable Long id){
+    public ResponseEntity<Void> excluirAtivo(@RequestParam String matriculaAdmin, @PathVariable Long id){
         ativoService.remover(matriculaAdmin, id);
         return ResponseEntity
                 .status(HttpStatus.NO_CONTENT)
-                .body("");
+                .build();
     }
 
-    @PutMapping("/{ativoId}/disponibilizar")
-    public ResponseEntity<?> tornarAtivoDisponivel(
+    @PutMapping("/{id}/disponibilizar")
+    public ResponseEntity<AtivoResponseDTO> tornarAtivoDisponivel(
             @RequestParam String matriculaAdmin,
-            @PathVariable Long ativoId
+            @PathVariable Long id
     ) {
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(ativoService.tornarDisponivel(matriculaAdmin, ativoId));
+                .body(ativoService.tornarDisponivel(matriculaAdmin, id));
     }
 
-    @PutMapping("/{ativoId}/indisponibilizar")
-    public ResponseEntity<?> tornarAtivoIndisponivel(
+    @PutMapping("/{id}/indisponibilizar")
+    public ResponseEntity<AtivoResponseDTO> tornarAtivoIndisponivel(
             @RequestParam String matriculaAdmin,
-            @PathVariable Long ativoId
+            @PathVariable Long id
     ) {
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(ativoService.tornarIndisponivel(matriculaAdmin, ativoId));
+                .body(ativoService.tornarIndisponivel(matriculaAdmin, id));
     }
 
-    @PutMapping("/{idAtivo}/cotacao")
-    public ResponseEntity<?> atualizarCotacao(@PathVariable Long idAtivo,
+    @PutMapping("/{id}/cotacao")
+    public ResponseEntity<AtivoResponseDTO> atualizarCotacao(@PathVariable Long id,
                                               @RequestParam String matriculaAdmin,
                                               @RequestParam double novoValor) {
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(ativoService.atualizarCotacao(matriculaAdmin, idAtivo, novoValor));
+                .body(ativoService.atualizarCotacao(matriculaAdmin, id, novoValor));
     }
 
     @GetMapping
-    public ResponseEntity<?> listarAtivos(@RequestParam(required = false, defaultValue = "") String nome){
-        if (nome != null && !nome.isEmpty()){
+    public ResponseEntity<List<AtivoResponseDTO>> listarAtivos(
+            @RequestParam(required = false, defaultValue = "") String nome
+    ) {
+        if (!nome.isEmpty()) {
             return ResponseEntity
                     .status(HttpStatus.OK)
                     .body(ativoService.listarPorNome(nome));

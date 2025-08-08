@@ -24,6 +24,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import com.ufcg.psoft.commerce.dto.ativo.AtivoPostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.ativo.AtivoResponseDTO;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 
@@ -115,21 +116,21 @@ public class ClienteControllerTests {
                 .tipo(TipoAtivo.TESOURO_DIRETO)
                 .disponivel(true)
                 .descricao("Descrição do ativo1")
-                .cotacao("20.00")
+                .cotacao(BigDecimal.valueOf(20.00))
                 .build();
         ativo2 = Ativo.builder()
                 .nome("Ativo2")
                 .tipo(TipoAtivo.ACAO)
                 .disponivel(true)
                 .descricao("Descrição do ativo2")
-                .cotacao("20.00")
+                .cotacao(BigDecimal.valueOf(20.00))
                 .build();
         ativo3 = Ativo.builder()
                 .nome("Ativo3")
                 .tipo(TipoAtivo.TESOURO_DIRETO)
                 .disponivel(false)
                 .descricao("Descrição do ativo3")
-                .cotacao("30000.00")
+                .cotacao(BigDecimal.valueOf(30000.00))
                 .build();
         ativoRepository.saveAll(Arrays.asList(ativo1, ativo2, ativo3));
     }
@@ -1181,7 +1182,7 @@ public class ClienteControllerTests {
         // Plano do cliente geral já é Normal
 
         // Act
-        String responseJsonString = driver.perform(get(URI_CLIENTES + "/" + cliente.getId() + "/ativos-disponiveis")
+        String responseJsonString = driver.perform(get(URI_CLIENTES + "/" + cliente.getId() + "/ativosDisponiveis")
                         .param("codigo", cliente.getCodigo())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -1207,7 +1208,7 @@ public class ClienteControllerTests {
         clienteRepository.save(cliente);
 
         // Act
-        String responseJsonString = driver.perform(get(URI_CLIENTES + "/" + cliente.getId() + "/ativos-disponiveis")
+        String responseJsonString = driver.perform(get(URI_CLIENTES + "/" + cliente.getId() + "/ativosDisponiveis")
                         .param("codigo", cliente.getCodigo())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -1232,7 +1233,7 @@ public class ClienteControllerTests {
         // nenhuma necessidade além do setup()
 
         // Act
-        String responseJsonString = driver.perform(get(URI_CLIENTES + "/" + 999999999 + "/ativos-disponiveis")
+        String responseJsonString = driver.perform(get(URI_CLIENTES + "/" + 999999999 + "/ativosDisponiveis")
                         .param("codigo", "123456789")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest()) // Codigo 400
@@ -1259,7 +1260,7 @@ public class ClienteControllerTests {
         clienteRepository.save(cliente);
 
         // Act
-        String responseJsonString = driver.perform(get(URI_CLIENTES + "/" + cliente.getId() + "/ativos-disponiveis")
+        String responseJsonString = driver.perform(get(URI_CLIENTES + "/" + cliente.getId() + "/ativosDisponiveis")
                         .param("codigo", cliente.getCodigo())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -1279,7 +1280,7 @@ public class ClienteControllerTests {
         // nenhuma necessidade além do setup()
 
         // Act
-        String responseJsonString = driver.perform(get(URI_CLIENTES + "/" + cliente.getId() + "/ativos-disponiveis")
+        String responseJsonString = driver.perform(get(URI_CLIENTES + "/" + cliente.getId() + "/ativosDisponiveis")
                         .param("codigo", "000000000")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())

@@ -5,12 +5,14 @@ import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Entity
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "ativos")
+@Table(name = "ativo")
 public class Ativo {
     @Id
     @JsonProperty("id")
@@ -21,7 +23,7 @@ public class Ativo {
     private String nome;
 
     @JsonProperty("cotacao")
-    private String cotacao;
+    private BigDecimal cotacao;
 
     @Enumerated(EnumType.STRING)
     @JsonProperty("tipo")

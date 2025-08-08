@@ -19,6 +19,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 
@@ -79,7 +80,7 @@ public class AtivoControllerTests {
                 .tipo(TipoAtivo.ACAO)
                 .disponivel(true)
                 .descricao("Descrição do ativo 1")
-                .cotacao("1.00")
+                .cotacao(BigDecimal.valueOf(1.00))
                 .build()
         );
 
@@ -187,14 +188,14 @@ public class AtivoControllerTests {
                     .tipo(TipoAtivo.ACAO)
                     .disponivel(true)
                     .descricao("Descrição do ativo secundário")
-                    .cotacao("20.00")
+                    .cotacao(BigDecimal.valueOf(20.00))
                     .build();
             Ativo ativo3 = Ativo.builder()
                     .nome("Outro Ativo")
                     .tipo(TipoAtivo.CRIPTOMOEDA)
                     .disponivel(false)
                     .descricao("Descrição de outro ativo")
-                    .cotacao("30000.00")
+                    .cotacao(BigDecimal.valueOf(30000.00))
                     .build();
             ativoRepository.saveAll(Arrays.asList(ativo2, ativo3));
 
@@ -252,7 +253,7 @@ public class AtivoControllerTests {
                     //.tipoAtivo(TipoAtivo.ACAO)
                     .disponivel(false)
                     .descricao("Descricao do novo ativo")
-                    .cotacao("75.50")
+                    .cotacao(BigDecimal.valueOf(75.50))
                     .build();
 
             // Act
@@ -278,7 +279,7 @@ public class AtivoControllerTests {
             Long ativoId = ativo.getId();
             // Altera o nome no DTO que será enviado
             ativoPostPutRequestDTO.setNome("Ativo Principal Alterado");
-            ativoPostPutRequestDTO.setCotacao("55.50");
+            ativoPostPutRequestDTO.setCotacao(BigDecimal.valueOf(55.50));
 
             // Act
             String responseJsonString = driver.perform(put(URI_ATIVOS + "/" + ativo.getId())
@@ -296,7 +297,7 @@ public class AtivoControllerTests {
             assertAll(
                     () -> assertEquals(ativoId, resultado.getId()),
                     () -> assertEquals("Ativo Principal Alterado", resultado.getNome()),
-                    () -> assertEquals("55.50", resultado.getCotacao())
+                    () -> assertEquals(BigDecimal.valueOf(55.50), resultado.getCotacao())
             );
         }
 
@@ -584,7 +585,7 @@ public class AtivoControllerTests {
             // Assert
             assertAll(
                     () -> assertEquals(ativo.getId(), resultado.getId()),
-                    () -> assertEquals(String.valueOf(novaCotacao), resultado.getCotacao())
+                    () -> assertEquals(BigDecimal.valueOf(novaCotacao), resultado.getCotacao())
             );
         }
 
@@ -597,7 +598,7 @@ public class AtivoControllerTests {
                     .tipo(TipoAtivo.TESOURO_DIRETO)
                     .disponivel(true)
                     .descricao("Título do Tesouro Nacional")
-                    .cotacao("130.50")
+                    .cotacao(BigDecimal.valueOf(130.50))
                     .build());
             double novaCotacao = 135.00;
 

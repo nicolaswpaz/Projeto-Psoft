@@ -45,7 +45,7 @@ public class AdministradorServiceImpl implements AdministradorService {
 
         List<Administrador> adminObj = administradorRepository.findAll();
 
-        if(adminObj.size() == 0){
+        if(adminObj.isEmpty()){
         
             Administrador admin = modelMapper.map(dto, Administrador.class);
 
@@ -58,11 +58,9 @@ public class AdministradorServiceImpl implements AdministradorService {
         Administrador adminSalvo = administradorRepository.save(admin);
         
         return modelMapper.map(adminSalvo, AdministradorResponseDTO.class);
-        
         }
 
         throw new AdminJaExisteException();
-
     }
 
     @Override
@@ -89,10 +87,15 @@ public class AdministradorServiceImpl implements AdministradorService {
         administradorRepository.delete(admin);
     }
 
-    @Override
-    public Administrador getAdmin() {
+    private Administrador getAdmin() {
         return administradorRepository.findTopBy()
                 .orElseThrow(() -> new AdminNaoExisteException());
     }
 
+    @Override
+    public AdministradorResponseDTO buscarAdmin() {
+        Administrador admin = administradorRepository.findTopBy()
+                .orElseThrow(AdminNaoExisteException::new);
+        return modelMapper.map(admin, AdministradorResponseDTO.class);
+    }
 }

@@ -14,5 +14,5 @@ public interface AdministradorService {
 
     void removerAdmin(String matricula);
 
-    Administrador getAdmin();
+    AdministradorResponseDTO buscarAdmin();
 }

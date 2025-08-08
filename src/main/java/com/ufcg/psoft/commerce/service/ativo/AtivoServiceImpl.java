@@ -16,6 +16,8 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -144,17 +146,23 @@ public class AtivoServiceImpl implements AtivoService {
             throw new CotacaoNaoPodeAtualizarException();
         }
 
-        double valorAtual = Double.parseDouble(ativo.getCotacao());
-        double variacaoPercentual = Math.abs((valor - valorAtual) / valorAtual) * 100;
+        BigDecimal valorAtual = ativo.getCotacao();
+        BigDecimal novoValor = BigDecimal.valueOf(valor);
 
-        if (variacaoPercentual < 1.0) {
+        BigDecimal diferenca = novoValor.subtract(valorAtual);
+        BigDecimal variacaoPercentual = diferenca
+                .divide(valorAtual, MathContext.DECIMAL64)
+                .abs()
+                .multiply(BigDecimal.valueOf(100));
+
+        if (variacaoPercentual.compareTo(BigDecimal.valueOf(1.0)) < 0) {
             throw new VariacaoCotacaoMenorQuerUmPorCentroException();
         }
 
-        ativo.setCotacao(String.valueOf(valor));
+        ativo.setCotacao(novoValor);
         ativoRepository.save(ativo);
 
-        if (variacaoPercentual > 10) {
+        if (variacaoPercentual.compareTo(BigDecimal.valueOf(10.0)) > 0) {
             contaService.notificarClientesPremiumComInteresse(ativo);
         }
 
