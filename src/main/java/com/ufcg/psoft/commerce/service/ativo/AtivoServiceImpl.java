@@ -1,10 +1,8 @@
 package com.ufcg.psoft.commerce.service.ativo;
 
-import com.ufcg.psoft.commerce.dto.Ativo.AtivoPostPutRequestDTO;
-import com.ufcg.psoft.commerce.dto.Ativo.AtivoResponseDTO;
-import com.ufcg.psoft.commerce.exception.Ativo.AtivoNaoExisteException;
-import com.ufcg.psoft.commerce.exception.Ativo.CotacaoNaoPodeAtualizarException;
-import com.ufcg.psoft.commerce.exception.Ativo.VariacaoCotacaoMenorQuerUmPorCentroException;
+import com.ufcg.psoft.commerce.dto.ativo.AtivoPostPutRequestDTO;
+import com.ufcg.psoft.commerce.dto.ativo.AtivoResponseDTO;
+import com.ufcg.psoft.commerce.exception.ativo.*;
 import com.ufcg.psoft.commerce.model.Ativo;
 import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
 import com.ufcg.psoft.commerce.repository.AtivoRepository;
@@ -13,7 +11,6 @@ import com.ufcg.psoft.commerce.service.ativo.tipoAtivo.Acao;
 import com.ufcg.psoft.commerce.service.ativo.tipoAtivo.Criptomoeda;
 import com.ufcg.psoft.commerce.service.ativo.tipoAtivo.TesouroDireto;
 import com.ufcg.psoft.commerce.service.ativo.tipoAtivo.TipoAtivoStrategy;
-import com.ufcg.psoft.commerce.service.cliente.ClienteService;
 import com.ufcg.psoft.commerce.service.conta.ContaService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -105,6 +102,10 @@ public class AtivoServiceImpl implements AtivoService {
 
         Ativo ativo = ativoRepository.findById(ativoId).orElseThrow(AtivoNaoExisteException::new);
 
+        if(ativo.isDisponivel()) {
+            throw new AtivoDisponivelException();
+        }
+
         ativo.setDisponivel(true);
 
         ativoRepository.save(ativo);
@@ -119,6 +120,10 @@ public class AtivoServiceImpl implements AtivoService {
         administradorService.autenticar(matriculaAdmin);
 
         Ativo ativo = ativoRepository.findById(ativoId).orElseThrow(AtivoNaoExisteException::new);
+
+        if(!ativo.isDisponivel()) {
+            throw new AtivoIndisponivelException();
+        }
 
         ativo.setDisponivel(false);
 

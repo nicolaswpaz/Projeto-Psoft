@@ -2,10 +2,10 @@ package com.ufcg.psoft.commerce.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.ufcg.psoft.commerce.dto.Administrador.AdministradorPostPutRequestDTO;
-import com.ufcg.psoft.commerce.dto.Administrador.AdministradorResponseDTO;
-import com.ufcg.psoft.commerce.dto.Ativo.AtivoPostPutRequestDTO;
-import com.ufcg.psoft.commerce.dto.Endereco.EnderecoPostPutRequestDTO;
+import com.ufcg.psoft.commerce.dto.administrador.AdministradorPostPutRequestDTO;
+import com.ufcg.psoft.commerce.dto.administrador.AdministradorResponseDTO;
+import com.ufcg.psoft.commerce.dto.ativo.AtivoPostPutRequestDTO;
+import com.ufcg.psoft.commerce.dto.endereco.EnderecoPostPutRequestDTO;
 import com.ufcg.psoft.commerce.exception.CustomErrorType;
 import com.ufcg.psoft.commerce.model.*;
 import com.ufcg.psoft.commerce.model.enums.TipoAtivo;

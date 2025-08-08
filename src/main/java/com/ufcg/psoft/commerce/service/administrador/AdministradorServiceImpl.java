@@ -1,11 +1,11 @@
 package com.ufcg.psoft.commerce.service.administrador;
 
 
-import com.ufcg.psoft.commerce.dto.Administrador.AdministradorResponseDTO;
-import com.ufcg.psoft.commerce.dto.Administrador.AdministradorPostPutRequestDTO;
-import com.ufcg.psoft.commerce.exception.Administrador.AdminJaExisteException;
-import com.ufcg.psoft.commerce.exception.Administrador.AdminNaoExisteException;
-import com.ufcg.psoft.commerce.exception.Administrador.MatriculaInvalidaException;
+import com.ufcg.psoft.commerce.dto.administrador.AdministradorResponseDTO;
+import com.ufcg.psoft.commerce.dto.administrador.AdministradorPostPutRequestDTO;
+import com.ufcg.psoft.commerce.exception.administrador.AdminJaExisteException;
+import com.ufcg.psoft.commerce.exception.administrador.AdminNaoExisteException;
+import com.ufcg.psoft.commerce.exception.administrador.MatriculaInvalidaException;
 import com.ufcg.psoft.commerce.model.Administrador;
 import com.ufcg.psoft.commerce.model.Endereco;
 import com.ufcg.psoft.commerce.repository.AdministradorRepository;

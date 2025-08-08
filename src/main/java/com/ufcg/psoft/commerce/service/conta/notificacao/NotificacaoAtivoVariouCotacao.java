@@ -1,10 +1,10 @@
 package com.ufcg.psoft.commerce.service.conta.notificacao;
 
-import com.ufcg.psoft.commerce.dto.Ativo.AtivoResponseDTO;
+import com.ufcg.psoft.commerce.dto.ativo.AtivoResponseDTO;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class NotificacaoAtivoVariouCotacao extends Notificacao{
+public class NotificacaoAtivoVariouCotacao implements Notificacao{
 
     private static final Logger logger = LogManager.getLogger(NotificacaoAtivoVariouCotacao.class);
 

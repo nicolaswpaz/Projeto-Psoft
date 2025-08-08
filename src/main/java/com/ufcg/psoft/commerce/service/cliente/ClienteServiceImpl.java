@@ -1,17 +1,17 @@
 package com.ufcg.psoft.commerce.service.cliente;
 
-import com.ufcg.psoft.commerce.dto.Ativo.AtivoResponseDTO;
-import com.ufcg.psoft.commerce.dto.Endereco.EnderecoResponseDTO;
-import com.ufcg.psoft.commerce.exception.Ativo.AtivoDisponivelException;
-import com.ufcg.psoft.commerce.exception.Ativo.AtivoIndisponivelException;
-import com.ufcg.psoft.commerce.exception.Cliente.*;
+import com.ufcg.psoft.commerce.dto.ativo.AtivoResponseDTO;
+import com.ufcg.psoft.commerce.dto.endereco.EnderecoResponseDTO;
+import com.ufcg.psoft.commerce.exception.ativo.AtivoDisponivelException;
+import com.ufcg.psoft.commerce.exception.ativo.AtivoIndisponivelException;
+import com.ufcg.psoft.commerce.exception.cliente.*;
 import com.ufcg.psoft.commerce.model.Conta;
 import com.ufcg.psoft.commerce.model.Endereco;
 import com.ufcg.psoft.commerce.model.enums.TipoPlano;
 import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
 import com.ufcg.psoft.commerce.repository.ClienteRepository;
-import com.ufcg.psoft.commerce.dto.Cliente.ClientePostPutRequestDTO;
-import com.ufcg.psoft.commerce.dto.Cliente.ClienteResponseDTO;
+import com.ufcg.psoft.commerce.dto.cliente.ClientePostPutRequestDTO;
+import com.ufcg.psoft.commerce.dto.cliente.ClienteResponseDTO;
 import com.ufcg.psoft.commerce.model.Cliente;
 import com.ufcg.psoft.commerce.service.administrador.AdministradorService;
 import com.ufcg.psoft.commerce.service.ativo.AtivoService;
@@ -75,13 +75,7 @@ public class ClienteServiceImpl implements ClienteService {
             cliente.setEndereco(endereco);
         }
 
-        Conta novaConta = Conta.builder()
-                .saldo("0.00") //valor inicial padrão
-                .ativosDeInteresse(new ArrayList<>())
-                .build();
-
-        novaConta = contaService.salvar(novaConta);
-
+        Conta novaConta = contaService.criarContaPadrao();
         cliente.setConta(novaConta);
 
         cliente = clienteRepository.save(cliente);
