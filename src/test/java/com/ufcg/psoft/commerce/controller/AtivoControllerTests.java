@@ -425,7 +425,16 @@ public class AtivoControllerTests {
         @Test
         @DisplayName("Quando tentamos a disponibilidade do ativo, ativando ou desativando")
         void quandoAlteramosADisponibilidadeDoAtivo() throws Exception {
-            Long ativoId = ativo.getId();
+            Ativo ativoIndisponivel = ativoRepository.save(Ativo.builder()
+                    .nome("Ativo Indisponível")
+                    .tipo(TipoAtivo.ACAO)
+                    .disponivel(false)
+                    .descricao("Descrição do ativo 1")
+                    .cotacao(BigDecimal.valueOf(1.00))
+                    .build()
+            );
+
+            Long ativoId = ativoIndisponivel.getId();
             String matriculaValida = administrador.getMatricula();
 
             String responseDisponibilizarAtivo = driver.perform(put(URI_ATIVOS + "/" + ativoId + "/disponibilizar")
@@ -503,7 +512,16 @@ public class AtivoControllerTests {
         @Test
         @DisplayName("Quando disponibilizamos um ativo, seu estado deve mudar para disponível")
         void quandoDisponibilizamosAtivoEstadoDeveSerDisponivel() throws Exception {
-            Long ativoId = ativo.getId();
+            Ativo ativoIndisponivel = ativoRepository.save(Ativo.builder()
+                    .nome("Ativo Indisponível")
+                    .tipo(TipoAtivo.ACAO)
+                    .disponivel(false)
+                    .descricao("Descrição do ativo 1")
+                    .cotacao(BigDecimal.valueOf(1.00))
+                    .build()
+            );
+
+            Long ativoId = ativoIndisponivel.getId();
             String matriculaValida = administrador.getMatricula();
 
             driver.perform(put(URI_ATIVOS + "/" + ativoId + "/disponibilizar")
@@ -529,9 +547,18 @@ public class AtivoControllerTests {
         }
 
         @Test
-        @DisplayName("Quando disponibilizamos o ativo duas vezes seguidas não deve falhar")
+        @DisplayName("Quando disponibilizamos o ativo duas vezes seguidas deve falhar")
         void quandoDisponibilizamosDuasVezesNaoDeveFalhar() throws Exception {
-            Long ativoId = ativo.getId();
+            Ativo ativoIndisponivel = ativoRepository.save(Ativo.builder()
+                    .nome("Ativo Indisponível")
+                    .tipo(TipoAtivo.ACAO)
+                    .disponivel(false)
+                    .descricao("Descrição do ativo 1")
+                    .cotacao(BigDecimal.valueOf(1.00))
+                    .build()
+            );
+
+            Long ativoId = ativoIndisponivel.getId();
             String matricula = administrador.getMatricula();
 
             driver.perform(put(URI_ATIVOS + "/" + ativoId + "/disponibilizar")
@@ -540,11 +567,11 @@ public class AtivoControllerTests {
 
             driver.perform(put(URI_ATIVOS + "/" + ativoId + "/disponibilizar")
                             .param("matriculaAdmin", matricula))
-                    .andExpect(status().isOk());
+                    .andExpect(status().isBadRequest());
         }
 
         @Test
-        @DisplayName("Quando indisponibilizamos o ativo duas vezes seguidas não deve falhar")
+        @DisplayName("Quando indisponibilizamos o ativo duas vezes seguidas deve falhar")
         void quandoIndisponibilizamosDuasVezesNaoDeveFalhar() throws Exception {
             Long ativoId = ativo.getId();
             String matricula = administrador.getMatricula();
@@ -555,7 +582,7 @@ public class AtivoControllerTests {
 
             driver.perform(put(URI_ATIVOS + "/" + ativoId + "/indisponibilizar")
                             .param("matriculaAdmin", matricula))
-                    .andExpect(status().isOk());
+                    .andExpect(status().isBadRequest());
         }
     }
 
