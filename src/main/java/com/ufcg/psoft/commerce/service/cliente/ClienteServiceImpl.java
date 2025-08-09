@@ -1,17 +1,16 @@
 package com.ufcg.psoft.commerce.service.cliente;
 
-import com.ufcg.psoft.commerce.dto.Ativo.AtivoResponseDTO;
-import com.ufcg.psoft.commerce.dto.Endereco.EnderecoResponseDTO;
-import com.ufcg.psoft.commerce.exception.Ativo.AtivoDisponivelException;
-import com.ufcg.psoft.commerce.exception.Ativo.AtivoIndisponivelException;
-import com.ufcg.psoft.commerce.exception.Cliente.*;
+import com.ufcg.psoft.commerce.dto.ativo.AtivoResponseDTO;
+import com.ufcg.psoft.commerce.dto.endereco.EnderecoResponseDTO;
+import com.ufcg.psoft.commerce.exception.ativo.AtivoIndisponivelException;
+import com.ufcg.psoft.commerce.exception.cliente.*;
 import com.ufcg.psoft.commerce.model.Conta;
 import com.ufcg.psoft.commerce.model.Endereco;
 import com.ufcg.psoft.commerce.model.enums.TipoPlano;
 import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
 import com.ufcg.psoft.commerce.repository.ClienteRepository;
-import com.ufcg.psoft.commerce.dto.Cliente.ClientePostPutRequestDTO;
-import com.ufcg.psoft.commerce.dto.Cliente.ClienteResponseDTO;
+import com.ufcg.psoft.commerce.dto.cliente.ClientePostPutRequestDTO;
+import com.ufcg.psoft.commerce.dto.cliente.ClienteResponseDTO;
 import com.ufcg.psoft.commerce.model.Cliente;
 import com.ufcg.psoft.commerce.service.administrador.AdministradorService;
 import com.ufcg.psoft.commerce.service.ativo.AtivoService;
@@ -65,23 +64,15 @@ public class ClienteServiceImpl implements ClienteService {
     @Override
     @Transactional
     public ClienteResponseDTO criar(ClientePostPutRequestDTO clientePostPutRequestDTO) {
-        // Mapeia o DTO para a entidade Cliente
         Cliente cliente = modelMapper.map(clientePostPutRequestDTO, Cliente.class);
 
-        // Processa o endereço
         if (clientePostPutRequestDTO.getEnderecoDTO() != null) {
             Endereco endereco = modelMapper.map(clientePostPutRequestDTO.getEnderecoDTO(), Endereco.class);
             endereco = enderecoRepository.save(endereco);
             cliente.setEndereco(endereco);
         }
 
-        Conta novaConta = Conta.builder()
-                .saldo("0.00") //valor inicial padrão
-                .ativosDeInteresse(new ArrayList<>())
-                .build();
-
-        novaConta = contaService.salvar(novaConta);
-
+        Conta novaConta = contaService.criarContaPadrao();
         cliente.setConta(novaConta);
 
         cliente = clienteRepository.save(cliente);
@@ -92,39 +83,32 @@ public class ClienteServiceImpl implements ClienteService {
     @Override
     @Transactional
     public ClienteResponseDTO alterar(Long id, String codigoAcesso, ClientePostPutRequestDTO clientePostPutRequestDTO) {
-        // Recupera o cliente existente
         Cliente cliente = autenticar(id, codigoAcesso);
 
-        // Atualiza os campos básicos (exceto endereço)
         cliente.setNome(clientePostPutRequestDTO.getNome());
         cliente.setCpf(clientePostPutRequestDTO.getCpf());
         cliente.setCodigo(clientePostPutRequestDTO.getCodigo());
         cliente.setPlano(clientePostPutRequestDTO.getPlano());
 
-        // Atualiza o endereço
         if (clientePostPutRequestDTO.getEnderecoDTO() != null) {
             atualizarEndereco(cliente, clientePostPutRequestDTO.getEnderecoDTO());
         }
 
-        // Salva as alterações
         cliente = clienteRepository.save(cliente);
         return new ClienteResponseDTO(cliente);
     }
 
 
-    private void atualizarEndereco(Cliente cliente, @NotNull(message = "Endereco obrigatorio") @Valid EnderecoResponseDTO enderecoDTO) {
-        // Mantenha a referência original do endereço
+    private void atualizarEndereco(Cliente cliente, EnderecoResponseDTO enderecoDTO) {
         Endereco endereco = Optional.ofNullable(cliente.getEndereco())
                 .orElseGet(Endereco::new);
 
-        // Atualiza apenas campos não nulos (para não quebrar testes)
         if (enderecoDTO.getRua() != null) endereco.setRua(enderecoDTO.getRua());
         if (enderecoDTO.getBairro() != null) endereco.setBairro(enderecoDTO.getBairro());
         if (enderecoDTO.getNumero() != null) endereco.setNumero(enderecoDTO.getNumero());
         if (enderecoDTO.getCep() != null) endereco.setCep(enderecoDTO.getCep());
         if (enderecoDTO.getComplemento() != null) endereco.setComplemento(enderecoDTO.getComplemento());
 
-        // Mantém a lógica original de persistência
         if (cliente.getEndereco() == null) {
             cliente.setEndereco(enderecoRepository.save(endereco));
         }
@@ -134,20 +118,6 @@ public class ClienteServiceImpl implements ClienteService {
     @Transactional
     public void remover(Long id, String codigoAcesso) {
         Cliente cliente = autenticar(id, codigoAcesso);
-
-        // Cria cópia da referência ao endereço
-        Endereco endereco = cliente.getEndereco();
-
-        // Remove primeiro o endereço se existir
-        if (endereco != null) {
-            enderecoRepository.delete(endereco);
-        }
-
-        // Atualiza o cliente para remover a referência
-        cliente.setEndereco(null);
-        clienteRepository.saveAndFlush(cliente);
-
-        // Finalmente remove o cliente
         clienteRepository.delete(cliente);
     }
 
@@ -178,8 +148,8 @@ public class ClienteServiceImpl implements ClienteService {
     }
 
     @Override
-    public List<AtivoResponseDTO> listarAtivosDisponiveisPorPlano(Long idCliente, String codigoAcesso) {
-        Cliente cliente = autenticar(idCliente, codigoAcesso);
+    public List<AtivoResponseDTO> listarAtivosDisponiveisPorPlano(Long id, String codigoAcesso) {
+        Cliente cliente = autenticar(id, codigoAcesso);
 
         List<AtivoResponseDTO> ativosFiltrados = new ArrayList<>();
         List<AtivoResponseDTO> ativosDisponiveis = ativoService.listarAtivosDisponiveis();
@@ -198,8 +168,8 @@ public class ClienteServiceImpl implements ClienteService {
     }
 
     @Override
-    public void marcarInteresseAtivoIndisponivel(Long idCliente, String codigoAcesso, Long idAtivo) {
-        Cliente cliente = autenticar(idCliente, codigoAcesso);
+    public void marcarInteresseAtivoIndisponivel(Long id, String codigoAcesso, Long idAtivo) {
+        Cliente cliente = autenticar(id, codigoAcesso);
 
         AtivoResponseDTO ativoResponseDTO= ativoService.recuperarDetalhado(idAtivo);
 
@@ -211,8 +181,8 @@ public class ClienteServiceImpl implements ClienteService {
     }
     @Transactional
     @Override
-    public void marcarInteresseAtivoDisponivel(Long idCliente, String codigoAcesso, Long idAtivo) {
-        Cliente cliente = autenticar(idCliente, codigoAcesso);
+    public void marcarInteresseAtivoDisponivel(Long id, String codigoAcesso, Long idAtivo) {
+        Cliente cliente = autenticar(id, codigoAcesso);
 
         if (cliente.getPlano() == TipoPlano.NORMAL) {
             throw new ClienteNaoPremiumException();
@@ -228,8 +198,8 @@ public class ClienteServiceImpl implements ClienteService {
     }
 
     @Override
-    public AtivoResponseDTO visualizarDetalhesAtivo(Long idCliente, String codigoAcesso, Long idAtivo) {
-        Cliente cliente = autenticar(idCliente, codigoAcesso);
+    public AtivoResponseDTO visualizarDetalhesAtivo(Long id, String codigoAcesso, Long idAtivo) {
+        Cliente cliente = autenticar(id, codigoAcesso);
 
         AtivoResponseDTO ativo = ativoService.recuperarDetalhado(idAtivo);
 

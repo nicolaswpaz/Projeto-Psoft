@@ -1,10 +1,8 @@
 package com.ufcg.psoft.commerce.service.ativo;
 
-import com.ufcg.psoft.commerce.dto.Ativo.AtivoPostPutRequestDTO;
-import com.ufcg.psoft.commerce.dto.Ativo.AtivoResponseDTO;
-import com.ufcg.psoft.commerce.exception.Ativo.AtivoNaoExisteException;
-import com.ufcg.psoft.commerce.exception.Ativo.CotacaoNaoPodeAtualizarException;
-import com.ufcg.psoft.commerce.exception.Ativo.VariacaoCotacaoMenorQuerUmPorCentroException;
+import com.ufcg.psoft.commerce.dto.ativo.AtivoPostPutRequestDTO;
+import com.ufcg.psoft.commerce.dto.ativo.AtivoResponseDTO;
+import com.ufcg.psoft.commerce.exception.ativo.*;
 import com.ufcg.psoft.commerce.model.Ativo;
 import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
 import com.ufcg.psoft.commerce.repository.AtivoRepository;
@@ -13,12 +11,13 @@ import com.ufcg.psoft.commerce.service.ativo.tipoAtivo.Acao;
 import com.ufcg.psoft.commerce.service.ativo.tipoAtivo.Criptomoeda;
 import com.ufcg.psoft.commerce.service.ativo.tipoAtivo.TesouroDireto;
 import com.ufcg.psoft.commerce.service.ativo.tipoAtivo.TipoAtivoStrategy;
-import com.ufcg.psoft.commerce.service.cliente.ClienteService;
 import com.ufcg.psoft.commerce.service.conta.ContaService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -76,8 +75,8 @@ public class AtivoServiceImpl implements AtivoService {
     }
 
     @Override
-    public AtivoResponseDTO recuperarDetalhado(Long idAtivo) {
-        Ativo ativo = ativoRepository.findById(idAtivo)
+    public AtivoResponseDTO recuperarDetalhado(Long id) {
+        Ativo ativo = ativoRepository.findById(id)
                 .orElseThrow(AtivoNaoExisteException::new);
 
         return modelMapper.map(ativo, AtivoResponseDTO.class);
@@ -100,10 +99,14 @@ public class AtivoServiceImpl implements AtivoService {
     }
 
     @Override
-    public AtivoResponseDTO tornarDisponivel(String matriculaAdmin, Long ativoId) {
+    public AtivoResponseDTO tornarDisponivel(String matriculaAdmin, Long id) {
         administradorService.autenticar(matriculaAdmin);
 
-        Ativo ativo = ativoRepository.findById(ativoId).orElseThrow(AtivoNaoExisteException::new);
+        Ativo ativo = ativoRepository.findById(id).orElseThrow(AtivoNaoExisteException::new);
+
+        if(ativo.isDisponivel()) {
+            throw new AtivoDisponivelException();
+        }
 
         ativo.setDisponivel(true);
 
@@ -115,10 +118,14 @@ public class AtivoServiceImpl implements AtivoService {
     }
 
     @Override
-    public AtivoResponseDTO tornarIndisponivel(String matriculaAdmin, Long ativoId) {
+    public AtivoResponseDTO tornarIndisponivel(String matriculaAdmin, Long id) {
         administradorService.autenticar(matriculaAdmin);
 
-        Ativo ativo = ativoRepository.findById(ativoId).orElseThrow(AtivoNaoExisteException::new);
+        Ativo ativo = ativoRepository.findById(id).orElseThrow(AtivoNaoExisteException::new);
+
+        if(!ativo.isDisponivel()) {
+            throw new AtivoIndisponivelException();
+        }
 
         ativo.setDisponivel(false);
 
@@ -128,10 +135,10 @@ public class AtivoServiceImpl implements AtivoService {
     }
 
     @Override
-    public AtivoResponseDTO atualizarCotacao(String matriculaAdmin, Long idAtivo, double valor) {
+    public AtivoResponseDTO atualizarCotacao(String matriculaAdmin, Long id, BigDecimal valor) {
         administradorService.autenticar(matriculaAdmin);
 
-        Ativo ativo = ativoRepository.findById(idAtivo).orElseThrow(AtivoNaoExisteException::new);
+        Ativo ativo = ativoRepository.findById(id).orElseThrow(AtivoNaoExisteException::new);
 
         TipoAtivoStrategy tipoAtivoStrategy = tipoAtivoMap.get(ativo.getTipo());
 
@@ -139,17 +146,22 @@ public class AtivoServiceImpl implements AtivoService {
             throw new CotacaoNaoPodeAtualizarException();
         }
 
-        double valorAtual = Double.parseDouble(ativo.getCotacao());
-        double variacaoPercentual = Math.abs((valor - valorAtual) / valorAtual) * 100;
+        BigDecimal valorAtual = ativo.getCotacao();
 
-        if (variacaoPercentual < 1.0) {
+        BigDecimal diferenca = valor.subtract(valorAtual);
+        BigDecimal variacaoPercentual = diferenca
+                .divide(valorAtual, MathContext.DECIMAL64)
+                .abs()
+                .multiply(BigDecimal.valueOf(100));
+
+        if (variacaoPercentual.compareTo(BigDecimal.valueOf(1.0)) < 0) {
             throw new VariacaoCotacaoMenorQuerUmPorCentroException();
         }
 
-        ativo.setCotacao(String.valueOf(valor));
+        ativo.setCotacao(valor);
         ativoRepository.save(ativo);
 
-        if (variacaoPercentual > 10) {
+        if (variacaoPercentual.compareTo(BigDecimal.valueOf(10.0)) > 0) {
             contaService.notificarClientesPremiumComInteresse(ativo);
         }
 

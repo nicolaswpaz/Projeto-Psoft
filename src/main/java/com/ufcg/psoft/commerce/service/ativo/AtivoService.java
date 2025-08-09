@@ -1,8 +1,9 @@
 package com.ufcg.psoft.commerce.service.ativo;
 
-import com.ufcg.psoft.commerce.dto.Ativo.AtivoPostPutRequestDTO;
-import com.ufcg.psoft.commerce.dto.Ativo.AtivoResponseDTO;
+import com.ufcg.psoft.commerce.dto.ativo.AtivoPostPutRequestDTO;
+import com.ufcg.psoft.commerce.dto.ativo.AtivoResponseDTO;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public interface AtivoService {
@@ -13,17 +14,17 @@ public interface AtivoService {
 
     void remover(String matriculaAdmin, Long id);
 
-    AtivoResponseDTO recuperarDetalhado (Long ativoId);
+    AtivoResponseDTO recuperarDetalhado (Long id);
 
     List<AtivoResponseDTO> listar();
 
     List<AtivoResponseDTO> listarPorNome(String nome);
 
-    AtivoResponseDTO tornarDisponivel(String matriculaAdmin, Long ativoId);
+    AtivoResponseDTO tornarDisponivel(String matriculaAdmin, Long id);
 
-    AtivoResponseDTO tornarIndisponivel(String matriculaAdmin, Long ativoId);
+    AtivoResponseDTO tornarIndisponivel(String matriculaAdmin, Long id);
 
-    AtivoResponseDTO atualizarCotacao(String matriculaAdmin, Long idAtivo, double valor);
+    AtivoResponseDTO atualizarCotacao(String matriculaAdmin, Long id, BigDecimal valor);
 
     List<AtivoResponseDTO> listarAtivosDisponiveis();
 }

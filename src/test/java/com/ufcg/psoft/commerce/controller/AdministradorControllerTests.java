@@ -2,10 +2,10 @@ package com.ufcg.psoft.commerce.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.ufcg.psoft.commerce.dto.Administrador.AdministradorPostPutRequestDTO;
-import com.ufcg.psoft.commerce.dto.Administrador.AdministradorResponseDTO;
-import com.ufcg.psoft.commerce.dto.Ativo.AtivoPostPutRequestDTO;
-import com.ufcg.psoft.commerce.dto.Endereco.EnderecoPostPutRequestDTO;
+import com.ufcg.psoft.commerce.dto.administrador.AdministradorPostPutRequestDTO;
+import com.ufcg.psoft.commerce.dto.administrador.AdministradorResponseDTO;
+import com.ufcg.psoft.commerce.dto.ativo.AtivoPostPutRequestDTO;
+import com.ufcg.psoft.commerce.dto.endereco.EnderecoPostPutRequestDTO;
 import com.ufcg.psoft.commerce.exception.CustomErrorType;
 import com.ufcg.psoft.commerce.model.*;
 import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
@@ -18,6 +18,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.math.BigDecimal;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -28,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @DisplayName("Testes do controlador de Administrador")
 public class AdministradorControllerTests {
 
-    final String URI_ADMINISTRADORES = "/administrador";
+    final String URI_ADMINISTRADOR = "/administrador";
 
     @Autowired
     MockMvc driver;
@@ -47,7 +49,6 @@ public class AdministradorControllerTests {
 
     @BeforeEach
     void setup() {
-        // Object Mapper suporte para LocalDateTime
         objectMapper.registerModule(new JavaTimeModule());
 
         administrador = administradorRepository.save(Administrador.builder()
@@ -75,7 +76,7 @@ public class AdministradorControllerTests {
                 .tipo(TipoAtivo.ACAO)
                 .disponivel(true)
                 .descricao("Descrição do ativo 1")
-                .cotacao("1.00")
+                .cotacao(BigDecimal.valueOf(1.00))
                 .build()
         );
 
@@ -100,8 +101,7 @@ public class AdministradorControllerTests {
         @Test
         @DisplayName("Quando buscamos o único administrador existente")
         void quandoBuscamosAdministradorExistente() throws Exception {
-            // Act
-            String responseJsonString = driver.perform(get(URI_ADMINISTRADORES + "/" + administrador.getMatricula())
+            String responseJsonString = driver.perform(get(URI_ADMINISTRADOR)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(administradorPostPutRequestDTO)))
                     .andExpect(status().isOk())
@@ -110,14 +110,12 @@ public class AdministradorControllerTests {
 
             AdministradorResponseDTO resultado = objectMapper.readValue(responseJsonString, AdministradorResponseDTO.class);
 
-            // Assert
             assertEquals(administrador.getNome(), resultado.getNome());
         }
 
         @Test
         @DisplayName("Quando alteramos dados do único administrador")
         void quandoAlteramosAdministrador() throws Exception {
-            // Arrange
             administradorPostPutRequestDTO.setNome("Administrador Alterado");
 
             EnderecoPostPutRequestDTO enderecoAlterado = new EnderecoPostPutRequestDTO();
@@ -128,8 +126,7 @@ public class AdministradorControllerTests {
 
             administradorPostPutRequestDTO.setEnderecoDTO(enderecoAlterado);
 
-            // Act
-            String responseJsonString = driver.perform(put(URI_ADMINISTRADORES + "/" + administrador.getMatricula())
+            String responseJsonString = driver.perform(put(URI_ADMINISTRADOR + "/" + administrador.getMatricula())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(administradorPostPutRequestDTO)))
                     .andExpect(status().isOk())
@@ -138,7 +135,6 @@ public class AdministradorControllerTests {
 
             AdministradorResponseDTO resultado = objectMapper.readValue(responseJsonString, AdministradorResponseDTO.class);
 
-            // Assert
             assertEquals("Administrador Alterado", resultado.getNome());
         }
 
@@ -156,8 +152,7 @@ public class AdministradorControllerTests {
 
             administradorPostPutRequestDTO.setEnderecoDTO(enderecoAlterado);
 
-            // Act
-            String responseJsonString = driver.perform(put(URI_ADMINISTRADORES + "/" + matriculaInvalida)
+            String responseJsonString = driver.perform(put(URI_ADMINISTRADOR + "/" + matriculaInvalida)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(administradorPostPutRequestDTO)))
                     .andExpect(status().isBadRequest())
@@ -166,14 +161,12 @@ public class AdministradorControllerTests {
 
             CustomErrorType resultado = objectMapper.readValue(responseJsonString, CustomErrorType.class);
 
-            // Assert
             assertEquals("Autenticacao falhou!", resultado.getMessage());
         }
 
         @Test
         @DisplayName("Quando tentamos criar um segundo administrador")
         void quandoCriamosSegundoAdministrador() throws Exception {
-            // Arrange
             AdministradorPostPutRequestDTO novoAdmin = AdministradorPostPutRequestDTO.builder()
                     .matricula("novaMatricula")
                     .nome("Novo Admin")
@@ -181,7 +174,6 @@ public class AdministradorControllerTests {
                     .enderecoDTO(new EnderecoPostPutRequestDTO())
                     .build();
 
-            // Act
             String responseJsonString = driver.perform(post("/administrador")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(novoAdmin)))
@@ -191,7 +183,6 @@ public class AdministradorControllerTests {
 
             CustomErrorType resultado = objectMapper.readValue(responseJsonString, CustomErrorType.class);
 
-            // Assert
             assertEquals("Ja existe um administrador cadastrado no sistema.", resultado.getMessage());
         }
     }
