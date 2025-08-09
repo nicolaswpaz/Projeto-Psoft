@@ -41,16 +41,16 @@ public class AdministradorServiceImpl implements AdministradorService {
     }
 
     @Override
-    public AdministradorResponseDTO criar(AdministradorPostPutRequestDTO dto) {
+    public AdministradorResponseDTO criar(AdministradorPostPutRequestDTO administradorPostPutRequestDTO) {
 
         List<Administrador> adminObj = administradorRepository.findAll();
 
         if(adminObj.isEmpty()){
         
-            Administrador admin = modelMapper.map(dto, Administrador.class);
+            Administrador admin = modelMapper.map(administradorPostPutRequestDTO, Administrador.class);
 
-            if (dto.getEnderecoDTO() != null) {
-                Endereco endereco = modelMapper.map(dto.getEnderecoDTO(), Endereco.class);
+            if (administradorPostPutRequestDTO.getEnderecoDTO() != null) {
+                Endereco endereco = modelMapper.map(administradorPostPutRequestDTO.getEnderecoDTO(), Endereco.class);
                 endereco = enderecoRepository.save(endereco);
                 admin.setEndereco(endereco);
         }

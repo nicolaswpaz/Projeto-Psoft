@@ -40,9 +40,9 @@ public class ContaServiceImpl implements ContaService {
     }
 
     @Override
-    public void adicionarAtivoNaListaDeInteresse(Long idConta, AtivoResponseDTO ativoDTO) {
+    public void adicionarAtivoNaListaDeInteresse(Long id, AtivoResponseDTO ativoDTO) {
 
-        Conta conta = contaRepository.findById(idConta).orElseThrow(ContaNaoExisteException::new);
+        Conta conta = contaRepository.findById(id).orElseThrow(ContaNaoExisteException::new);
 
         Ativo ativo = modelMapper.map(ativoDTO, Ativo.class);
 
@@ -81,8 +81,8 @@ public class ContaServiceImpl implements ContaService {
     }
 
     @Override
-    public void notificarAtivoDisponivelClientesComInteresse(Ativo ativoDisponivel) {
-        notificarClientesComInteresse(ativoDisponivel, new NotificacaoAtivoDisponivel());
+    public void notificarAtivoDisponivelClientesComInteresse(Ativo ativo) {
+        notificarClientesComInteresse(ativo, new NotificacaoAtivoDisponivel());
     }
 
     @Override

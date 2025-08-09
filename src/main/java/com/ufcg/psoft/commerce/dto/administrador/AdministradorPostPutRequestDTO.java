@@ -28,7 +28,7 @@ public class AdministradorPostPutRequestDTO {
 
     @JsonProperty("cpf")
     @NotBlank(message = "Cpf obrigatorio")
-    @Pattern(regexp = "\\d{11}", message = "CPF deve conter exatamente 11 dígitos")
+    @Pattern(regexp = "\\d{11}", message = "CPF deve conter exatamente 11 digitos")
     private String cpf;
 
     @JsonProperty("matricula")

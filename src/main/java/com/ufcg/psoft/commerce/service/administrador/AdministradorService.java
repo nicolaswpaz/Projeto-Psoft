@@ -6,7 +6,7 @@ import com.ufcg.psoft.commerce.model.Administrador;
 
 public interface AdministradorService {
 
-    Administrador autenticar(String matriculaAdmin);
+    Administrador autenticar(String matricula);
 
     AdministradorResponseDTO criar(AdministradorPostPutRequestDTO administradorPostPutRequestDTO);
 

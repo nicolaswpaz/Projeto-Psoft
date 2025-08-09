@@ -75,8 +75,8 @@ public class AtivoServiceImpl implements AtivoService {
     }
 
     @Override
-    public AtivoResponseDTO recuperarDetalhado(Long idAtivo) {
-        Ativo ativo = ativoRepository.findById(idAtivo)
+    public AtivoResponseDTO recuperarDetalhado(Long id) {
+        Ativo ativo = ativoRepository.findById(id)
                 .orElseThrow(AtivoNaoExisteException::new);
 
         return modelMapper.map(ativo, AtivoResponseDTO.class);
@@ -99,10 +99,10 @@ public class AtivoServiceImpl implements AtivoService {
     }
 
     @Override
-    public AtivoResponseDTO tornarDisponivel(String matriculaAdmin, Long ativoId) {
+    public AtivoResponseDTO tornarDisponivel(String matriculaAdmin, Long id) {
         administradorService.autenticar(matriculaAdmin);
 
-        Ativo ativo = ativoRepository.findById(ativoId).orElseThrow(AtivoNaoExisteException::new);
+        Ativo ativo = ativoRepository.findById(id).orElseThrow(AtivoNaoExisteException::new);
 
         if(ativo.isDisponivel()) {
             throw new AtivoDisponivelException();
@@ -118,10 +118,10 @@ public class AtivoServiceImpl implements AtivoService {
     }
 
     @Override
-    public AtivoResponseDTO tornarIndisponivel(String matriculaAdmin, Long ativoId) {
+    public AtivoResponseDTO tornarIndisponivel(String matriculaAdmin, Long id) {
         administradorService.autenticar(matriculaAdmin);
 
-        Ativo ativo = ativoRepository.findById(ativoId).orElseThrow(AtivoNaoExisteException::new);
+        Ativo ativo = ativoRepository.findById(id).orElseThrow(AtivoNaoExisteException::new);
 
         if(!ativo.isDisponivel()) {
             throw new AtivoIndisponivelException();
@@ -135,10 +135,10 @@ public class AtivoServiceImpl implements AtivoService {
     }
 
     @Override
-    public AtivoResponseDTO atualizarCotacao(String matriculaAdmin, Long idAtivo, double valor) {
+    public AtivoResponseDTO atualizarCotacao(String matriculaAdmin, Long id, BigDecimal valor) {
         administradorService.autenticar(matriculaAdmin);
 
-        Ativo ativo = ativoRepository.findById(idAtivo).orElseThrow(AtivoNaoExisteException::new);
+        Ativo ativo = ativoRepository.findById(id).orElseThrow(AtivoNaoExisteException::new);
 
         TipoAtivoStrategy tipoAtivoStrategy = tipoAtivoMap.get(ativo.getTipo());
 
@@ -147,9 +147,8 @@ public class AtivoServiceImpl implements AtivoService {
         }
 
         BigDecimal valorAtual = ativo.getCotacao();
-        BigDecimal novoValor = BigDecimal.valueOf(valor);
 
-        BigDecimal diferenca = novoValor.subtract(valorAtual);
+        BigDecimal diferenca = valor.subtract(valorAtual);
         BigDecimal variacaoPercentual = diferenca
                 .divide(valorAtual, MathContext.DECIMAL64)
                 .abs()
@@ -159,7 +158,7 @@ public class AtivoServiceImpl implements AtivoService {
             throw new VariacaoCotacaoMenorQuerUmPorCentroException();
         }
 
-        ativo.setCotacao(novoValor);
+        ativo.setCotacao(valor);
         ativoRepository.save(ativo);
 
         if (variacaoPercentual.compareTo(BigDecimal.valueOf(10.0)) > 0) {

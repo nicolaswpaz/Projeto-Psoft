@@ -148,8 +148,8 @@ public class ClienteServiceImpl implements ClienteService {
     }
 
     @Override
-    public List<AtivoResponseDTO> listarAtivosDisponiveisPorPlano(Long idCliente, String codigoAcesso) {
-        Cliente cliente = autenticar(idCliente, codigoAcesso);
+    public List<AtivoResponseDTO> listarAtivosDisponiveisPorPlano(Long id, String codigoAcesso) {
+        Cliente cliente = autenticar(id, codigoAcesso);
 
         List<AtivoResponseDTO> ativosFiltrados = new ArrayList<>();
         List<AtivoResponseDTO> ativosDisponiveis = ativoService.listarAtivosDisponiveis();
@@ -168,8 +168,8 @@ public class ClienteServiceImpl implements ClienteService {
     }
 
     @Override
-    public void marcarInteresseAtivoIndisponivel(Long idCliente, String codigoAcesso, Long idAtivo) {
-        Cliente cliente = autenticar(idCliente, codigoAcesso);
+    public void marcarInteresseAtivoIndisponivel(Long id, String codigoAcesso, Long idAtivo) {
+        Cliente cliente = autenticar(id, codigoAcesso);
 
         AtivoResponseDTO ativoResponseDTO= ativoService.recuperarDetalhado(idAtivo);
 
@@ -181,8 +181,8 @@ public class ClienteServiceImpl implements ClienteService {
     }
 
     @Override
-    public void marcarInteresseAtivoDisponivel(Long idCliente, String codigoAcesso, Long idAtivo) {
-        Cliente cliente = autenticar(idCliente, codigoAcesso);
+    public void marcarInteresseAtivoDisponivel(Long id, String codigoAcesso, Long idAtivo) {
+        Cliente cliente = autenticar(id, codigoAcesso);
 
         if (cliente.getPlano() == TipoPlano.NORMAL) {
             throw new ClienteNaoPremiumException();
@@ -198,8 +198,8 @@ public class ClienteServiceImpl implements ClienteService {
     }
 
     @Override
-    public AtivoResponseDTO visualizarDetalhesAtivo(Long idCliente, String codigoAcesso, Long idAtivo) {
-        Cliente cliente = autenticar(idCliente, codigoAcesso);
+    public AtivoResponseDTO visualizarDetalhesAtivo(Long id, String codigoAcesso, Long idAtivo) {
+        Cliente cliente = autenticar(id, codigoAcesso);
 
         AtivoResponseDTO ativo = ativoService.recuperarDetalhado(idAtivo);
 

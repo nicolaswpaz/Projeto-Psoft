@@ -23,11 +23,11 @@ public interface ClienteService {
 
     List<ClienteResponseDTO> listar(String matriculaAdmin);
 
-    List<AtivoResponseDTO> listarAtivosDisponiveisPorPlano(Long idCliente, String codigoAcesso);
+    List<AtivoResponseDTO> listarAtivosDisponiveisPorPlano(Long id, String codigoAcesso);
 
-    void marcarInteresseAtivoIndisponivel(Long idCliente, String codigoAcesso, Long idAtivo);
+    void marcarInteresseAtivoIndisponivel(Long id, String codigoAcesso, Long idAtivo);
 
-    void marcarInteresseAtivoDisponivel(Long idCliente, String codigoAcesso, Long idAtivo);
+    void marcarInteresseAtivoDisponivel(Long id, String codigoAcesso, Long idAtivo);
 
-    AtivoResponseDTO visualizarDetalhesAtivo(Long idCliente, String codigoAcesso, Long idAtivo);
+    AtivoResponseDTO visualizarDetalhesAtivo(Long id, String codigoAcesso, Long idAtivo);
 }

@@ -8,7 +8,7 @@ public interface ContaService {
 
     Conta criarContaPadrao();
 
-    void adicionarAtivoNaListaDeInteresse(Long idConta, AtivoResponseDTO ativo);
+    void adicionarAtivoNaListaDeInteresse(Long id, AtivoResponseDTO ativo);
 
     void notificarAtivoDisponivelClientesComInteresse(Ativo ativo);
 

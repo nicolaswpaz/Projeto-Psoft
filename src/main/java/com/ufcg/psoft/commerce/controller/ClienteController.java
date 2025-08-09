@@ -24,7 +24,7 @@ public class ClienteController {
     ClienteService clienteService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> recuperarCliente(
+    public ResponseEntity<ClienteResponseDTO> recuperarCliente(
             @PathVariable Long id,
             @RequestParam String codigo) {
 
@@ -34,7 +34,7 @@ public class ClienteController {
     }
 
     @GetMapping("")
-    public ResponseEntity<?> listarClientes(
+    public ResponseEntity<List<ClienteResponseDTO>> listarClientes(
             @RequestParam String matriculaAdmin) {
 
         return ResponseEntity
@@ -110,10 +110,10 @@ public class ClienteController {
     public ResponseEntity<AtivoResponseDTO> detalharAtivoParaCompra(
             @PathVariable Long id,
             @PathVariable Long idAtivo,
-            @RequestParam String codigoAcesso
+            @RequestParam String codigo
     ) {
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(clienteService.visualizarDetalhesAtivo(id, codigoAcesso, idAtivo));
+                .body(clienteService.visualizarDetalhesAtivo(id, codigo, idAtivo));
     }
 }

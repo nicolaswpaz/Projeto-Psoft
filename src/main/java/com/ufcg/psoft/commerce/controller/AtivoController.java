@@ -10,6 +10,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -74,7 +75,7 @@ public class AtivoController {
     @PutMapping("/{id}/cotacao")
     public ResponseEntity<AtivoResponseDTO> atualizarCotacao(@PathVariable Long id,
                                               @RequestParam String matriculaAdmin,
-                                              @RequestParam double novoValor) {
+                                              @RequestParam BigDecimal novoValor) {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ativoService.atualizarCotacao(matriculaAdmin, id, novoValor));
