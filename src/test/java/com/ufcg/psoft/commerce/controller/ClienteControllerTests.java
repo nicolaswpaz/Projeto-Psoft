@@ -8,14 +8,22 @@ import com.ufcg.psoft.commerce.dto.Cliente.ClientePostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.Cliente.ClienteResponseDTO;
 import com.ufcg.psoft.commerce.dto.Endereco.EnderecoPostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.Endereco.EnderecoResponseDTO;
+import com.ufcg.psoft.commerce.exception.Ativo.AtivoDisponivelException;
+import com.ufcg.psoft.commerce.exception.Ativo.AtivoIndisponivelException;
+import com.ufcg.psoft.commerce.exception.Cliente.ClienteNaoPremiumException;
 import com.ufcg.psoft.commerce.exception.CustomErrorType;
 import com.ufcg.psoft.commerce.model.*;
 import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
 import com.ufcg.psoft.commerce.model.enums.TipoPlano;
 import com.ufcg.psoft.commerce.repository.*;
 import com.ufcg.psoft.commerce.service.cliente.ClienteService;
+import com.ufcg.psoft.commerce.service.conta.ContaService;
+import com.ufcg.psoft.commerce.service.conta.notificacao.NotificacaoAtivoDisponivel;
+import com.ufcg.psoft.commerce.service.conta.notificacao.NotificacaoAtivoVariouCotacao;
+import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.*;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -24,6 +32,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import com.ufcg.psoft.commerce.dto.Ativo.AtivoPostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.Ativo.AtivoResponseDTO;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -31,10 +40,14 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
+import org.slf4j.LoggerFactory;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Transactional
 @DisplayName("Testes do controlador de Clientes")
 public class ClienteControllerTests {
 
@@ -49,8 +62,8 @@ public class ClienteControllerTests {
     Ativo ativo1;
     Ativo ativo2;
     Ativo ativo3;
-    AtivoPostPutRequestDTO ativoPostPutRequestDTO;
-
+    Ativo ativoIndisponivel;
+    Ativo ativoDisponivel;
     @Autowired
     ClienteRepository clienteRepository;
 
@@ -58,6 +71,7 @@ public class ClienteControllerTests {
 
     Cliente cliente;
 
+    Cliente clientePremium;
     ClientePostPutRequestDTO clientePostPutRequestDTO;
 
     @Autowired
@@ -75,11 +89,30 @@ public class ClienteControllerTests {
     @Autowired
     AdministradorRepository administradorRepository;
 
+    @Autowired
+    ContaRepository contaRepository;
+    Conta contaCliente;
+    Conta contaClientePremium;
+    @Autowired
+    ContaService contaService;
 
+    @Autowired
+    EntityManager entityManager;
+    ListAppender<ILoggingEvent> listAppender;
+    ListAppender<ILoggingEvent> listAppenderAtivoDisponivel;
     @BeforeEach
     @Transactional
     void setup() {
-        // Object Mapper suporte para LocalDateTime
+
+        Logger logger = (Logger) LoggerFactory.getLogger(NotificacaoAtivoVariouCotacao.class);
+        Logger loggerNotificacaoAtivoDisponivel = (Logger) LoggerFactory.getLogger(NotificacaoAtivoDisponivel.class);
+        listAppender = new ListAppender<>();
+        listAppenderAtivoDisponivel = new ListAppender<>();
+        listAppender.start();
+        listAppenderAtivoDisponivel.start();
+        logger.addAppender(listAppender);
+        loggerNotificacaoAtivoDisponivel.addAppender(listAppenderAtivoDisponivel);
+
         objectMapper.registerModule(new JavaTimeModule());
 
         endereco = /*enderecoRepository.save(*/Endereco.builder()
@@ -95,6 +128,27 @@ public class ClienteControllerTests {
                 .cpf("12345678910")
                 .codigo("123456")
                 .build()
+        );
+
+        clientePremium = clienteRepository.save(Cliente.builder()
+                        .nome("Cliente Premium da Silva")
+                        .endereco(endereco)
+                        .cpf("01987654321")
+                        .codigo("123456")
+                        .plano(TipoPlano.PREMIUM)
+                        .conta(contaClientePremium)
+                        .build()
+        );
+
+        contaCliente = contaRepository.save(Conta.builder()
+                .saldo("10000.00")
+                .build()
+        );
+
+        contaClientePremium = contaRepository.save(Conta.builder()
+                .saldo("500.00")
+                .build()
+
         );
         enderecoDTO = EnderecoResponseDTO.builder()
                 .numero(endereco.getNumero())
@@ -131,13 +185,31 @@ public class ClienteControllerTests {
                 .descricao("Descrição do ativo3")
                 .cotacao("30000.00")
                 .build();
+        ativoIndisponivel = ativoRepository.save(Ativo.builder()
+                .nome("Ação Rara S.A.")
+                .cotacao("250.00")
+                .tipo(TipoAtivo.ACAO)
+                .descricao("Ativo indisponivel")
+                .disponivel(false)
+                .build()
+        );
+        ativoDisponivel = ativoRepository.save(Ativo.builder()
+                .nome("AtivoDisponivel")
+                .cotacao("100.00")
+                .tipo(TipoAtivo.ACAO)
+                .descricao("Ativo disponivel")
+                .disponivel(true)
+                .build());
         ativoRepository.saveAll(Arrays.asList(ativo1, ativo2, ativo3));
     }
 
     @AfterEach
     void tearDown() {
+
         ativoRepository.deleteAll();
         clienteRepository.deleteAll();
+        contaRepository.deleteAll();
+        listAppender.stop();
     }
 
     @Nested
@@ -1292,5 +1364,183 @@ public class ClienteControllerTests {
         assertAll(
                 () -> assertEquals("Codigo de acesso invalido!", resultado.getMessage())
         );
+    }
+
+    //Tests US -06
+    @Test
+    @DisplayName("Cliente Premium registra interesse em ativo disponível com sucesso")
+    void testeclienteRegistraInteresseAtivoDisponivel() {
+        // set o cliente como Premium
+        cliente.setPlano(TipoPlano.PREMIUM);
+        cliente.setConta(contaCliente);
+        clienteRepository.save(cliente);
+        // Act
+
+        //Usamos o Ativo 2 como sendo do tipo ACAO
+        clienteService.marcarInteresseAtivoDisponivel(cliente.getId(), cliente.getCodigo(), ativo2.getId());
+
+        // Assert
+        Conta contaAtualizada = contaRepository.findById(cliente.getConta().getId()).orElseThrow();
+        entityManager.flush(); //faz ele executar todos os inserts
+        entityManager.refresh(contaAtualizada);// Atualiza o cash do hibernete
+        assertTrue(contaAtualizada.getAtivosDeInteresse().stream().anyMatch(a -> a.getId().equals(ativo2.getId())));
+    }
+
+    @Test
+    @DisplayName("Notificar cliente Premium quando cotação de ativo de interesse varia mais de 10%")
+    void testeNotificarclienteQuandoCotacaoVariaMaisDe10PorCento() {
+        // Arrange
+        cliente.setPlano(TipoPlano.PREMIUM);
+        cliente.setConta(contaCliente);
+        clienteRepository.save(cliente);
+
+        clienteService.marcarInteresseAtivoDisponivel(cliente.getId(), cliente.getCodigo(), ativo2.getId());
+
+        // Simula a variação de cotação superior a 10%
+        ativo2.setCotacao("23.00"); // Variação > 10%
+        Ativo ativoAtualizado = ativoRepository.save(ativo2);
+
+        // Act
+
+        contaService.notificarClientesPremiumComInteresse(ativoAtualizado);
+
+        // Assert
+        List<ILoggingEvent> logsList = listAppender.list;
+        assertEquals(1, logsList.size());
+        String logMessage = logsList.get(0).getFormattedMessage();
+
+        assertTrue(logMessage.contains("Caro cliente " + cliente.getNome() + ", o ativo que você marcou interesse, teve uma taxa de variação de cotação acima de 10%!"));
+        assertTrue(logMessage.contains("Nome do ativo: " + ativoAtualizado.getNome()));
+        assertTrue(logMessage.contains("O tipo do ativo: " + ativoAtualizado.getTipo().toString()));
+        assertTrue(logMessage.contains("Cotação do ativo: " + ativoAtualizado.getCotacao()));
+        assertTrue(logMessage.contains("Descrição do ativo: " + ativoAtualizado.getDescricao()));
+    }
+
+    @Test
+    @DisplayName("Notificar cliente Premium quando cotação de ativo de interesse varia mais de 10%, MAS ELE NÃO MARCOU INTERESSE")
+    void testeNotificarclienteQuandoCotacaoVariaMaisDe10PorCentoMasClienteNaoMarcouInteresse() {
+        // Arrange
+        cliente.setPlano(TipoPlano.PREMIUM);
+        cliente.setConta(contaCliente);
+        clienteRepository.save(cliente);
+
+        ativo2.setCotacao("23.00"); // Variação > 10%
+        Ativo ativoAtualizado = ativoRepository.save(ativo2);
+
+        // Act
+
+        contaService.notificarClientesPremiumComInteresse(ativoAtualizado);
+
+        // Assert
+        List<ILoggingEvent> logsList = listAppender.list;
+        assertEquals(0, logsList.size());
+
+    }
+    @Test
+    @DisplayName("Cliente Normal não pode registrar interesse em ativo disponível (deve lançar exceção)")
+    void testeClienteNormalNaoPodeRegistrarInteresseEmAtivoDisponivel() {
+        // Arrange
+        cliente.setPlano(TipoPlano.NORMAL);
+        cliente.setConta(contaCliente);
+        clienteRepository.save(cliente);
+        // Act & AssertClienteNaoPremiumException()
+        assertThrows( ClienteNaoPremiumException.class, () -> {
+            clienteService.marcarInteresseAtivoDisponivel(cliente.getId(), cliente.getCodigo(), ativo2.getId());
+        });
+    }
+
+    @Test
+    @DisplayName("Cliente Premium não pode registrar interesse em ativo indisponível (deve lançar exceção)")
+    void testeClientePremiumNaoPodeRegistrarInteresseEmAtivoIndisponivel() {
+        cliente.setPlano(TipoPlano.PREMIUM);
+        cliente.setConta(contaCliente);
+        clienteRepository.save(cliente);
+
+        ativo2.setDisponivel(false);
+        // Act & Assert
+        assertThrows(AtivoIndisponivelException.class, () -> {
+            clienteService.marcarInteresseAtivoDisponivel(cliente.getId(), cliente.getCodigo(), ativo2.getId());
+        });
+    }
+    @Test
+    @DisplayName("Cliente (NORMAL) com interesse deve ser notificado quando ativo fica disponível")
+    void testeClienteNormalComInteresseQuandoAtivoFicaDisponivelEntaoDeveSerNotificado() {
+
+        cliente.setPlano(TipoPlano.NORMAL);
+        cliente.setConta(contaCliente);
+        clienteRepository.save(cliente);
+
+        clienteService.marcarInteresseAtivoIndisponivel(cliente.getId(), cliente.getCodigo(), ativoIndisponivel.getId());
+
+        // O ativo se torna disponível
+        ativoIndisponivel.setDisponivel(true);
+        Ativo ativoAgoraDisponivel = ativoRepository.save(ativoIndisponivel);
+
+        // Act
+        contaService.notificarAtivoDisponivelClientesComInteresse(ativoAgoraDisponivel);
+
+        // Assert
+        List<ILoggingEvent> logsList = listAppenderAtivoDisponivel.list;
+        assertEquals(1, logsList.size());
+        String logMessage = logsList.get(0).getFormattedMessage();
+
+        assertTrue(logMessage.contains("Caro cliente " + cliente.getNome() + ", o ativo indisponível que você marcou interesse está disponível!"));
+        assertTrue(logMessage.contains("Dados do Ativo:"));
+        assertTrue(logMessage.contains("Nome do ativo: " + ativoAgoraDisponivel.getNome()));
+        assertTrue(logMessage.contains("O tipo do ativo: " + ativoAgoraDisponivel.getTipo().toString()));
+        assertTrue(logMessage.contains("Cotação do ativo: " + ativoAgoraDisponivel.getCotacao().toString()));
+        assertTrue(logMessage.contains("Descrição do ativo: " + ativoAgoraDisponivel.getDescricao()));
+    }
+
+    @Test
+    @DisplayName("Cliente (PREMIUM) com interesse deve ser notificado quando ativo fica disponível")
+    void testeClientePremiumComInteresseQuandoAtivoFicaDisponivelEntaoDeveSerNotificado() {
+
+        clienteService.marcarInteresseAtivoIndisponivel(clientePremium.getId(), clientePremium.getCodigo(), ativoIndisponivel.getId());
+
+        // O ativo se torna disponível
+        ativoIndisponivel.setDisponivel(true);
+        Ativo ativoAgoraDisponivel = ativoRepository.save(ativoIndisponivel);
+
+        // Act
+        contaService.notificarAtivoDisponivelClientesComInteresse(ativoAgoraDisponivel);
+
+        // Assert
+        List<ILoggingEvent> logsList = listAppenderAtivoDisponivel.list;
+        assertEquals(1, logsList.size());
+        String logMessage = logsList.get(0).getFormattedMessage();
+
+        assertTrue(logMessage.contains("Caro cliente " + clientePremium.getNome() + ", o ativo indisponível que você marcou interesse está disponível!"));
+        assertTrue(logMessage.contains("Dados do Ativo:"));
+        assertTrue(logMessage.contains("Nome do ativo: " + ativoAgoraDisponivel.getNome()));
+        assertTrue(logMessage.contains("O tipo do ativo: " + ativoAgoraDisponivel.getTipo().toString()));
+        assertTrue(logMessage.contains("Cotação do ativo: " + ativoAgoraDisponivel.getCotacao().toString()));
+        assertTrue(logMessage.contains("Descrição do ativo: " + ativoAgoraDisponivel.getDescricao()));
+    }
+
+    @Test
+    @DisplayName("Nenhuma notificação deve ser enviada se ninguém tiver interesse no ativo")
+    void testeNenhumaNotificacaoSeNinguemTiverInteresse() {
+        // Arrange
+
+        ativoIndisponivel.setDisponivel(true);
+        Ativo ativoAgoraDisponivel = ativoRepository.save(ativoIndisponivel);
+
+        // Act
+        contaService.notificarAtivoDisponivelClientesComInteresse(ativoAgoraDisponivel);
+
+
+        assertTrue(listAppenderAtivoDisponivel.list.isEmpty(), "Nenhuma notificação deveria ter sido gerada.");
+    }
+    @Test
+    @DisplayName("Deve falhar ao tentar registrar interesse em ativo que já está disponível")
+    void testeFalhaAoMarcarInteresseEmAtivoJaDisponivel() {
+        // Arrange
+        // Usa-se o 'ativoJaDisponivel' criado no setUp
+
+        // Act & Assert
+        assertThrows(AtivoDisponivelException.class, () -> {
+            clienteService.marcarInteresseAtivoIndisponivel(clientePremium.getId(), clientePremium.getCodigo(), ativoDisponivel.getId());
+        }, "Deveria lançar AtivoDisponivelException ao marcar interesse em ativo já disponível.");
     }
 }

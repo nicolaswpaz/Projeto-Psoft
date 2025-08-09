@@ -209,7 +209,7 @@ public class ClienteServiceImpl implements ClienteService {
             throw new AtivoDisponivelException();
         }
     }
-
+    @Transactional
     @Override
     public void marcarInteresseAtivoDisponivel(Long idCliente, String codigoAcesso, Long idAtivo) {
         Cliente cliente = autenticar(idCliente, codigoAcesso);
