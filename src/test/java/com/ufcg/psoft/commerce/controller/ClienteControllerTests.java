@@ -79,7 +79,7 @@ public class ClienteControllerTests {
 
     Endereco endereco;
     EnderecoResponseDTO enderecoDTO;
-
+    Endereco endereco2;
     @Autowired
     ClienteService clienteService;
 
@@ -115,13 +115,20 @@ public class ClienteControllerTests {
 
         objectMapper.registerModule(new JavaTimeModule());
 
-        endereco = /*enderecoRepository.save(*/Endereco.builder()
+        endereco = enderecoRepository.save(Endereco.builder()
                 .rua("Rua dos testes")
                 .bairro("Bairro testado")
                 .numero("123")
                 .complemento("")
                 .cep("58400-000")
-                .build();
+                .build());
+        endereco2 = enderecoRepository.save(Endereco.builder()
+                .rua("Rua dos testes2")
+                .bairro("Bairro testado")
+                .numero("123")
+                .complemento("")
+                .cep("58400-000")
+                .build());
         contaClientePremium = contaRepository.save(Conta.builder()
                 .saldo("500.00")
                 .build()
@@ -137,7 +144,7 @@ public class ClienteControllerTests {
 
         clientePremium = clienteRepository.save(Cliente.builder()
                         .nome("Cliente Premium da Silva")
-                        .endereco(endereco)
+                        .endereco(endereco2)
                         .cpf("01987654321")
                         .codigo("123456")
                         .plano(TipoPlano.PREMIUM)
@@ -569,8 +576,8 @@ public class ClienteControllerTests {
         @DisplayName("Quando buscamos por todos clientes salvos")
         void quandoBuscamosPorTodosClienteSalvos() throws Exception {
             // Arrange
-            clienteRepository.deleteAll();
-
+           clienteRepository.deleteAll();
+           contaRepository.deleteAll();
             administrador = administradorRepository.save(Administrador.builder()
                     .matricula("admin123")
                     .nome("Admin Teste")
@@ -1288,13 +1295,13 @@ public class ClienteControllerTests {
                 .andReturn().getResponse().getContentAsString();
 
         List<AtivoResponseDTO> resultado = objectMapper.readValue(responseJsonString, new TypeReference<>() {});
-        List<String> nomesEsperados = List.of("Ativo1", "Ativo2");
+        List<String> nomesEsperados = List.of("Ativo1", "Ativo2", "AtivoDisponivel");
         List<String> nomesRetornados = resultado.stream().map(AtivoResponseDTO::getNome).toList();
 
 
         // Assert
         assertTrue(nomesRetornados.containsAll(nomesEsperados));
-        assertEquals(2, nomesRetornados.size());
+        assertEquals(3, nomesRetornados.size());
         assertFalse(nomesRetornados.isEmpty());
     }
 
@@ -1326,6 +1333,7 @@ public class ClienteControllerTests {
         //Arrange
         ativo1.setDisponivel(false);
         ativo2.setDisponivel(false);
+        ativoDisponivel.setDisponivel(false);
         ativoRepository.saveAll(List.of(ativo1, ativo2));
 
         cliente.setPlano(TipoPlano.PREMIUM);
