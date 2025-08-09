@@ -1,6 +1,6 @@
 package com.ufcg.psoft.commerce.controller;
 
-import com.ufcg.psoft.commerce.dto.ativo.AtivoResponseDTO;
+import  com.ufcg.psoft.commerce.dto.ativo.AtivoResponseDTO;
 import com.ufcg.psoft.commerce.dto.cliente.ClientePostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.cliente.ClienteResponseDTO;
 import com.ufcg.psoft.commerce.service.cliente.ClienteService;
@@ -106,7 +106,7 @@ public class ClienteController {
                 .build();
     }
 
-    @GetMapping("/{id}/ativos/{idAtivo}")
+    @GetMapping("/{id}/detalharAtivo/{idAtivo}")
     public ResponseEntity<AtivoResponseDTO> detalharAtivoParaCompra(
             @PathVariable Long id,
             @PathVariable Long idAtivo,
