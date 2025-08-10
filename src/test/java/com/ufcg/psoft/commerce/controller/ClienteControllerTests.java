@@ -8,6 +8,8 @@ import com.ufcg.psoft.commerce.dto.cliente.ClientePostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.cliente.ClienteResponseDTO;
 import com.ufcg.psoft.commerce.dto.endereco.EnderecoPostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.endereco.EnderecoResponseDTO;
+import com.ufcg.psoft.commerce.dto.ativo.AtivoPostPutRequestDTO;
+import com.ufcg.psoft.commerce.dto.ativo.AtivoResponseDTO;
 import com.ufcg.psoft.commerce.exception.ativo.AtivoDisponivelException;
 import com.ufcg.psoft.commerce.exception.ativo.AtivoIndisponivelException;
 import com.ufcg.psoft.commerce.exception.cliente.ClienteNaoPremiumException;
@@ -150,13 +152,13 @@ public class    ClienteControllerTests {
         );
 
         clientePremium = clienteRepository.save(Cliente.builder()
-                        .nome("Cliente Premium da Silva")
-                        .endereco(endereco2)
-                        .cpf("01987654321")
-                        .codigo("123456")
-                        .plano(TipoPlano.PREMIUM)
-                        .conta(contaClientePremium)
-                        .build()
+                .nome("Cliente Premium da Silva")
+                .endereco(endereco2)
+                .cpf("01987654321")
+                .codigo("123456")
+                .plano(TipoPlano.PREMIUM)
+                .conta(contaClientePremium)
+                .build()
         );
 
         enderecoDTO = EnderecoResponseDTO.builder()
@@ -172,7 +174,18 @@ public class    ClienteControllerTests {
                 .codigo(cliente.getCodigo())
                 .cpf(cliente.getCpf())
                 .build();
-
+        administrador = administradorRepository.save(Administrador.builder()
+                .matricula("admin1234")
+                .nome("Admin Teste")
+                .cpf("11122233344")
+                .endereco(Endereco.builder()
+                        .cep("12345678")
+                        .bairro("Um lugar aí")
+                        .rua("Avenida Qualquer")
+                        .numero("15")
+                        .build())
+                .build()
+        );
         ativo1 = Ativo.builder()
                 .nome("Ativo1")
                 .tipo(TipoAtivo.TESOURO_DIRETO)
@@ -230,7 +243,7 @@ public class    ClienteControllerTests {
         void quandoRecuperamosNomeDoClienteValido() throws Exception {
 
             String responseJsonString = driver.perform(get(URI_CLIENTES + "/" + cliente.getId())
-                    .param("codigo", cliente.getCodigo()))
+                            .param("codigo", cliente.getCodigo()))
                     .andExpect(status().isOk())
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
@@ -1289,47 +1302,57 @@ public class    ClienteControllerTests {
 
         @Test
         @DisplayName("Quando cliente Premium registra interesse em ativo disponível com sucesso")
-        void quandoClienteRegistraInteresseAtivoDisponivel() {
+        void quandoClienteRegistraInteresseAtivoDisponivel() throws Exception{
 
-            clienteService.marcarInteresseAtivoDisponivel(clientePremium.getId(), clientePremium.getCodigo(), ativoDisponivel.getId());
+            driver.perform(put(URI_CLIENTES + "/" + clientePremium.getId() + "/interesseAtivoDisponivel")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .param("codigo", clientePremium.getCodigo())
+                            .param("idAtivo", ativoDisponivel.getId().toString()))
+                    .andExpect(status().isNoContent());
 
             Conta contaAtualizada = contaRepository.findById(clientePremium.getConta().getId()).orElseThrow();
             entityManager.flush();
             entityManager.refresh(contaAtualizada);
+
             assertTrue(contaAtualizada.getAtivosDeInteresse().stream().anyMatch(a -> a.getId().equals(ativoDisponivel.getId())));
         }
 
         @Test
         @DisplayName("quando Notificamos o cliente Premium quando cotação de ativo de interesse variar mais de 10%")
-        void quandoClientePremiumeNotificadoPorCotacaoVariarMaisDe10PorCento() {
+        void quandoClientePremiumeNotificadoPorCotacaoVariarMaisDe10PorCento() throws Exception{
 
             clienteService.marcarInteresseAtivoDisponivel(clientePremium.getId(), clientePremium.getCodigo(), ativoDisponivel.getId());
 
-            ativoDisponivel.setCotacao(BigDecimal.valueOf(101.00));
-            Ativo ativoAtualizado = ativoRepository.save(ativoDisponivel);
+            BigDecimal novaCotacao = new BigDecimal("110.00");
 
-            contaService.notificarClientesPremiumComInteresse(ativoAtualizado);
-
+            driver.perform(put(URI_ATIVOS + "/" + ativoDisponivel.getId() + "/cotacao")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .param("matriculaAdmin", administrador.getMatricula())
+                            .param("novoValor", novaCotacao.toString()))
+                    .andExpect(status().isOk());
 
             List<ILoggingEvent> logsList = listAppender.list;
             assertEquals(1, logsList.size());
             String logMessage = logsList.get(0).getFormattedMessage();
 
             assertTrue(logMessage.contains("Caro cliente " + clientePremium.getNome() + ", o ativo que você marcou interesse, teve uma taxa de variação de cotação acima de 10%!"));
-            assertTrue(logMessage.contains("Nome do ativo: " + ativoAtualizado.getNome()));
-            assertTrue(logMessage.contains("O tipo do ativo: " + ativoAtualizado.getTipo().toString()));
-            assertTrue(logMessage.contains("Cotação do ativo: " + ativoAtualizado.getCotacao()));
-            assertTrue(logMessage.contains("Descrição do ativo: " + ativoAtualizado.getDescricao()));
+            assertTrue(logMessage.contains("Nome do ativo: " + ativoDisponivel.getNome()));
+            assertTrue(logMessage.contains("O tipo do ativo: " + ativoDisponivel.getTipo().toString()));
+            assertTrue(logMessage.contains("Cotação do ativo: " + ativoDisponivel.getCotacao()));
+            assertTrue(logMessage.contains("Descrição do ativo: " + ativoDisponivel.getDescricao()));
         }
 
         @Test
         @DisplayName("Notificar cliente Premium quando cotação de ativo de interesse varia mais de 10%, MAS ELE NÃO MARCOU INTERESSE")
-        void quandoClienteNaoMarcaInteresseEmAtivoDisponiveleNaoRecebeNotificacaoQuandoEleVariaMaisDe10PorCento() {
+        void quandoClienteNaoMarcaInteresseEmAtivoDisponiveleNaoRecebeNotificacaoQuandoEleVariaMaisDe10PorCento() throws Exception{
 
-            ativoDisponivel.setCotacao(BigDecimal.valueOf(111.00));
-            Ativo ativoAtualizado = ativoRepository.save(ativoDisponivel);
+            BigDecimal novaCotacao = new BigDecimal("110.00");
 
-            contaService.notificarClientesPremiumComInteresse(ativoAtualizado);
+            driver.perform(put(URI_ATIVOS + "/" + ativoDisponivel.getId() + "/cotacao")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .param("matriculaAdmin", administrador.getMatricula())
+                            .param("novoValor", novaCotacao.toString()))
+                    .andExpect(status().isOk());
 
             List<ILoggingEvent> logsList = listAppender.list;
             assertEquals(0, logsList.size());
@@ -1337,43 +1360,47 @@ public class    ClienteControllerTests {
 
         @Test
         @DisplayName("Cliente Normal não pode registrar interesse em ativo disponível (deve lançar exceção)")
-        void quandoClienteNormalTentaRegistrarInteresseEmAtivoDisponiveleNaoConsegue() {
+        void quandoClienteNormalTentaRegistrarInteresseEmAtivoDisponiveleNaoConsegue() throws Exception{
 
-            assertThrows(ClienteNaoPremiumException.class, () -> {
-                clienteService.marcarInteresseAtivoDisponivel(cliente.getId(), cliente.getCodigo(), ativo2.getId());
-            });
+            driver.perform(put(URI_CLIENTES + "/" + cliente.getId() + "/interesseAtivoDisponivel")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .param("codigo", cliente.getCodigo())
+                            .param("idAtivo", ativoDisponivel.getId().toString()))
+                    .andExpect(status().isBadRequest());
         }
 
         @Test
         @DisplayName("Cliente Premium não pode registrar interesse em ativo indisponível pelo metodo de ativo disponível(deve lançar exceção)")
-        void quandoClientePremiumTentaRegistrarInteresseemUmAtivoIndisponivelPeloMetododeAtivoDisponivel() {
+        void quandoClientePremiumTentaRegistrarInteresseemUmAtivoIndisponivelPeloMetododeAtivoDisponivel() throws Exception{
 
-            ativoDisponivel.setDisponivel(false);
-
-            assertThrows(AtivoIndisponivelException.class, () -> {
-                clienteService.marcarInteresseAtivoDisponivel(clientePremium.getId(), clientePremium.getCodigo(), ativoDisponivel.getId());
-            });
+            driver.perform(put(URI_CLIENTES + "/" + clientePremium.getId() + "/interesseAtivoDisponivel")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .param("codigo", clientePremium.getCodigo())
+                            .param("idAtivo", ativoIndisponivel.getId().toString()))
+                    .andExpect(status().isBadRequest());
         }
 
         @Test
         @DisplayName("Cliente (NORMAL) com interesse em ativo indisponivel que não seja tesouro direto")
-        void quandoClienteNormalTentaMarcarInteresseEmAtivoIndisponivelQueNaoSejaTesouroDireto() {
+        void quandoClienteNormalTentaMarcarInteresseEmAtivoIndisponivelQueNaoSejaTesouroDireto() throws Exception{
 
-            assertThrows(ClienteNaoPremiumException.class, () -> {
-                clienteService.marcarInteresseAtivoIndisponivel(cliente.getId(), cliente.getCodigo(), ativoIndisponivel.getId());
-            });
+            driver.perform(put(URI_CLIENTES + "/" + cliente.getId() + "/interesseAtivoIndisponivel")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .param("codigo", cliente.getCodigo())
+                            .param("idAtivo", ativoIndisponivel.getId().toString()))
+                    .andExpect(status().isBadRequest());
         }
 
         @Test
         @DisplayName("Cliente (PREMIUM) com interesse deve ser notificado quando ativo fica disponível")
-        void quandoClientePremiumMarcaInteresseEmAtivoIndisponivelFicaDisponivelDeveSerNotificado() {
+        void quandoClientePremiumMarcaInteresseEmAtivoIndisponivelFicaDisponivelDeveSerNotificado() throws Exception{
 
             clienteService.marcarInteresseAtivoIndisponivel(clientePremium.getId(), clientePremium.getCodigo(), ativoIndisponivel.getId());
 
-            ativoIndisponivel.setDisponivel(true);
-            Ativo ativoAgoraDisponivel = ativoRepository.save(ativoIndisponivel);
-
-            contaService.notificarAtivoDisponivelClientesComInteresse(ativoAgoraDisponivel);
+            driver.perform(put(URI_ATIVOS + "/" + ativoIndisponivel.getId() + "/disponibilizar")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .param("matriculaAdmin", administrador.getMatricula()))
+                    .andExpect(status().isOk());
 
             List<ILoggingEvent> logsList = listAppenderAtivoDisponivel.list;
             assertEquals(1, logsList.size());
@@ -1381,30 +1408,33 @@ public class    ClienteControllerTests {
 
             assertTrue(logMessage.contains("Caro cliente " + clientePremium.getNome() + ", o ativo indisponível que você marcou interesse está disponível!"));
             assertTrue(logMessage.contains("Dados do Ativo:"));
-            assertTrue(logMessage.contains("Nome do ativo: " + ativoAgoraDisponivel.getNome()));
-            assertTrue(logMessage.contains("O tipo do ativo: " + ativoAgoraDisponivel.getTipo().toString()));
-            assertTrue(logMessage.contains("Cotação do ativo: " + ativoAgoraDisponivel.getCotacao().toString()));
-            assertTrue(logMessage.contains("Descrição do ativo: " + ativoAgoraDisponivel.getDescricao()));
+            assertTrue(logMessage.contains("Nome do ativo: " + ativoIndisponivel.getNome()));
+            assertTrue(logMessage.contains("O tipo do ativo: " + ativoIndisponivel.getTipo().toString()));
+            assertTrue(logMessage.contains("Cotação do ativo: " + ativoIndisponivel.getCotacao().toString()));
+            assertTrue(logMessage.contains("Descrição do ativo: " + ativoIndisponivel.getDescricao()));
         }
 
         @Test
         @DisplayName("Nenhuma notificação deve ser enviada se ninguém tiver interesse no ativo")
-        void nenhumaNotificacaoDeveChegarQuandoNinguemTiverInteresseNoAtivo() {
+        void nenhumaNotificacaoDeveChegarQuandoNinguemTiverInteresseNoAtivo() throws Exception{
 
-            ativoIndisponivel.setDisponivel(true);
-            Ativo ativoAgoraDisponivel = ativoRepository.save(ativoIndisponivel);
-
-            contaService.notificarAtivoDisponivelClientesComInteresse(ativoAgoraDisponivel);
+            driver.perform(put(URI_ATIVOS + "/" + ativoIndisponivel.getId() + "/disponibilizar")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .param("matriculaAdmin", administrador.getMatricula()))
+                    .andExpect(status().isOk());
 
             assertTrue(listAppenderAtivoDisponivel.list.isEmpty(), "Nenhuma notificação deveria ter sido gerada.");
         }
 
         @Test
         @DisplayName("Deve falhar ao tentar registrar interesse em ativo que já está disponível")
-        void quandoTentamosRegistrarInteresseEmAtivoDisponivelPeloMetodoDeAtivoIndisponivel() {
-            assertThrows(AtivoDisponivelException.class, () -> {
-                clienteService.marcarInteresseAtivoIndisponivel(clientePremium.getId(), clientePremium.getCodigo(), ativoDisponivel.getId());
-            }, "Deveria lançar AtivoDisponivelException ao marcar interesse em ativo já disponível.");
+        void quandoTentamosRegistrarInteresseEmAtivoDisponivelPeloMetodoDeAtivoIndisponivel() throws Exception{
+
+            driver.perform(put(URI_CLIENTES + "/" + clientePremium.getId() + "/interesseAtivoIndisponivel")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .param("codigo", clientePremium.getCodigo())
+                            .param("idAtivo", ativoDisponivel.getId().toString()))
+                    .andExpect(status().isBadRequest());
         }
     }
 
