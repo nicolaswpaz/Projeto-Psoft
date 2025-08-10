@@ -24,5 +24,4 @@ public class Conta {
     @ManyToMany
     @JsonProperty("ativosDeInteresse")
     private List<Ativo> ativosDeInteresse;
-
 }

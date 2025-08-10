@@ -14,6 +14,6 @@ public enum TipoAtivo {
         return Arrays.stream(TipoAtivo.values())
                 .filter(e -> e.name().equalsIgnoreCase(value.replace(" ", "_")))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("TipoAtivo inválido: " + value));
+                .orElseThrow(() -> new IllegalArgumentException("TipoAtivo invalido: " + value));
     }
 }
