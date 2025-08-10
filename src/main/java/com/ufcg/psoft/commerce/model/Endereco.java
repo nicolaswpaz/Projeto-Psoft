@@ -1,5 +1,6 @@
 package com.ufcg.psoft.commerce.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -12,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "endereços")
+@Table(name = "endereco")
 public class Endereco {
 
     @JsonProperty("id")

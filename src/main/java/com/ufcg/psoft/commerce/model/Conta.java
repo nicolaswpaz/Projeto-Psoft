@@ -1,21 +1,27 @@
 package com.ufcg.psoft.commerce.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.util.List;
 
 @Entity
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "contas")
+@Table(name = "conta")
 public class Conta {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
+
+    @JsonProperty("saldo")
+    private String saldo;
+
+    @ManyToMany
+    @JsonProperty("ativosDeInteresse")
+    private List<Ativo> ativosDeInteresse;
 }

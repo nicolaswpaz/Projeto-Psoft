@@ -17,6 +17,7 @@ import com.ufcg.psoft.commerce.model.enums.TipoPlano;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "cliente")
 public class Cliente extends Usuario {
 
     @Enumerated(EnumType.STRING)
