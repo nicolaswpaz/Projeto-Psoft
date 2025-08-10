@@ -174,6 +174,10 @@ public class ClienteServiceImpl implements ClienteService {
 
         AtivoResponseDTO ativoResponseDTO= ativoService.recuperarDetalhado(idAtivo);
 
+        if (cliente.getPlano() == TipoPlano.NORMAL && ativoResponseDTO.getTipo() != TipoAtivo.TESOURO_DIRETO) {
+            throw new ClienteNaoPremiumException();
+        }
+
         if(!ativoResponseDTO.isDisponivel()) {
             contaService.adicionarAtivoNaListaDeInteresse(cliente.getConta().getId(), ativoResponseDTO);
         }else{
