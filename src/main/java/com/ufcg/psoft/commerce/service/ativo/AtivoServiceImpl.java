@@ -59,6 +59,10 @@ public class AtivoServiceImpl implements AtivoService {
 
         Ativo ativo = ativoRepository.findById(id).orElseThrow(AtivoNaoExisteException::new);
 
+        if (ativo.getTipo() != ativoPostPutRequestDTO.getTipo()){
+            throw new AtivoNaoPodeMudarTipoException();
+        }
+
         modelMapper.map(ativoPostPutRequestDTO, ativo);
         ativoRepository.save(ativo);
 
