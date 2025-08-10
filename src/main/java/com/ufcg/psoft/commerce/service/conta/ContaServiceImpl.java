@@ -2,7 +2,7 @@ package com.ufcg.psoft.commerce.service.conta;
 
 import com.ufcg.psoft.commerce.dto.ativo.AtivoResponseDTO;
 import com.ufcg.psoft.commerce.exception.conta.ContaNaoExisteException;
-import com.ufcg.psoft.commerce.exception.conta.OperacaoInvalidaException;
+import com.ufcg.psoft.commerce.exception.cliente.OperacaoInvalidaException;
 import com.ufcg.psoft.commerce.model.Ativo;
 import com.ufcg.psoft.commerce.model.Conta;
 import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
@@ -53,14 +53,7 @@ public class ContaServiceImpl implements ContaService {
             conta.getAtivosDeInteresse().add(ativo);
         }
 
-        trataCasoAtivoDisponivel(ativo);
         contaRepository.save(conta);
-    }
-
-    private void trataCasoAtivoDisponivel(Ativo ativo){
-        if(ativo.isDisponivel() && ativo.getTipo() == TipoAtivo.TESOURO_DIRETO){
-            throw new OperacaoInvalidaException();
-        }
     }
 
     private void notificarClientesComInteresse(Ativo ativo, Notificacao notificacao) {

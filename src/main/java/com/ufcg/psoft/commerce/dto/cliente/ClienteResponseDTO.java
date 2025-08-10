@@ -35,13 +35,10 @@ public class ClienteResponseDTO {
         this.id = cliente.getId();
         this.nome = cliente.getNome();
 
-        //Tratando endereço
         this.endereco = cliente.getEndereco() != null
                 ? new EnderecoResponseDTO(cliente.getEndereco())
                 : null;
 
-
-        //Tratando Plano
         this.plano = cliente.getPlano() != null
                 ? cliente.getPlano()
                 : TipoPlano.NORMAL;

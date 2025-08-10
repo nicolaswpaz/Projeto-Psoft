@@ -5,6 +5,7 @@ import com.ufcg.psoft.commerce.dto.endereco.EnderecoResponseDTO;
 import com.ufcg.psoft.commerce.exception.ativo.AtivoDisponivelException;
 import com.ufcg.psoft.commerce.exception.ativo.AtivoIndisponivelException;
 import com.ufcg.psoft.commerce.exception.cliente.*;
+import com.ufcg.psoft.commerce.exception.cliente.OperacaoInvalidaException;
 import com.ufcg.psoft.commerce.model.Conta;
 import com.ufcg.psoft.commerce.model.Endereco;
 import com.ufcg.psoft.commerce.model.enums.TipoPlano;
@@ -16,8 +17,6 @@ import com.ufcg.psoft.commerce.model.Cliente;
 import com.ufcg.psoft.commerce.service.administrador.AdministradorService;
 import com.ufcg.psoft.commerce.service.ativo.AtivoService;
 import com.ufcg.psoft.commerce.service.conta.ContaService;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -67,11 +66,9 @@ public class ClienteServiceImpl implements ClienteService {
     public ClienteResponseDTO criar(ClientePostPutRequestDTO clientePostPutRequestDTO) {
         Cliente cliente = modelMapper.map(clientePostPutRequestDTO, Cliente.class);
 
-        if (clientePostPutRequestDTO.getEnderecoDTO() != null) {
-            Endereco endereco = modelMapper.map(clientePostPutRequestDTO.getEnderecoDTO(), Endereco.class);
-            endereco = enderecoRepository.save(endereco);
-            cliente.setEndereco(endereco);
-        }
+        Endereco endereco = modelMapper.map(clientePostPutRequestDTO.getEnderecoDTO(), Endereco.class);
+        endereco = enderecoRepository.save(endereco);
+        cliente.setEndereco(endereco);
 
         Conta novaConta = contaService.criarContaPadrao();
         cliente.setConta(novaConta);
@@ -172,7 +169,7 @@ public class ClienteServiceImpl implements ClienteService {
     public void marcarInteresseAtivoIndisponivel(Long id, String codigoAcesso, Long idAtivo) {
         Cliente cliente = autenticar(id, codigoAcesso);
 
-        AtivoResponseDTO ativoResponseDTO= ativoService.recuperarDetalhado(idAtivo);
+        AtivoResponseDTO ativoResponseDTO = ativoService.recuperarDetalhado(idAtivo);
 
         if (cliente.getPlano() == TipoPlano.NORMAL && ativoResponseDTO.getTipo() != TipoAtivo.TESOURO_DIRETO) {
             throw new ClienteNaoPremiumException();
@@ -193,7 +190,11 @@ public class ClienteServiceImpl implements ClienteService {
             throw new ClienteNaoPremiumException();
         }
 
-        AtivoResponseDTO ativoResponseDTO= ativoService.recuperarDetalhado(idAtivo);
+        AtivoResponseDTO ativoResponseDTO = ativoService.recuperarDetalhado(idAtivo);
+
+        if(ativoResponseDTO.getTipo() == TipoAtivo.TESOURO_DIRETO){
+            throw new OperacaoInvalidaException();
+        }
 
         if (ativoResponseDTO.isDisponivel()){
             contaService.adicionarAtivoNaListaDeInteresse(cliente.getConta().getId(), ativoResponseDTO);

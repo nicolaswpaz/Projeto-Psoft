@@ -161,7 +161,7 @@ public class AtivoServiceImpl implements AtivoService {
         ativo.setCotacao(valor);
         ativoRepository.save(ativo);
 
-        if (variacaoPercentual.compareTo(BigDecimal.valueOf(10.0)) >= 0) {
+        if (variacaoPercentual.compareTo(BigDecimal.valueOf(10.0)) >= 0 && ativo.isDisponivel()) {
             contaService.notificarClientesPremiumComInteresse(ativo);
         }
 

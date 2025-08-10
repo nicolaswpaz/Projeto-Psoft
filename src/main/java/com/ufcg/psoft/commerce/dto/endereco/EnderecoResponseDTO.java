@@ -1,5 +1,6 @@
 package com.ufcg.psoft.commerce.dto.endereco;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.ufcg.psoft.commerce.model.Endereco;
 import jakarta.validation.constraints.NotBlank;
@@ -16,6 +17,7 @@ import lombok.NoArgsConstructor;
 public class EnderecoResponseDTO {
 
     @JsonProperty("id")
+    @JsonIgnore
     private Long id;
 
     @NotBlank(message = "Rua obrigatoria")
