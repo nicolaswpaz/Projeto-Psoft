@@ -1,6 +1,4 @@
-package com.ufcg.psoft.commerce.model;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.ufcg.psoft.commerce.model.tipoOperacao.TipoOperacaoStrategy;
+package com.ufcg.psoft.commerce.service.operacao.tipoOperacao;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
