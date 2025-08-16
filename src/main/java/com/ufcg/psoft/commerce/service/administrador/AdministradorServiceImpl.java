@@ -1,6 +1,5 @@
 package com.ufcg.psoft.commerce.service.administrador;
 
-
 import com.ufcg.psoft.commerce.dto.administrador.AdministradorResponseDTO;
 import com.ufcg.psoft.commerce.dto.administrador.AdministradorPostPutRequestDTO;
 import com.ufcg.psoft.commerce.exception.administrador.AdminJaExisteException;
