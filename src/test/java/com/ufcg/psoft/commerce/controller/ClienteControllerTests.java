@@ -133,12 +133,12 @@ public class    ClienteControllerTests {
                 .cep("58400-000")
                 .build());
         contaClientePremium = contaRepository.save(Conta.builder()
-                .saldo("500.00")
+                .saldo(BigDecimal.valueOf(500.00))
                 .build()
 
         );
         contaCliente = contaRepository.save(Conta.builder()
-                .saldo("10000.00")
+                .saldo(BigDecimal.valueOf(10000.00))
                 .build()
         );
         cliente = clienteRepository.save(Cliente.builder()
@@ -1304,10 +1304,9 @@ public class    ClienteControllerTests {
         @DisplayName("Quando cliente Premium registra interesse em ativo disponível com sucesso")
         void quandoClienteRegistraInteresseAtivoDisponivel() throws Exception{
 
-            driver.perform(put(URI_CLIENTES + "/" + clientePremium.getId() + "/interesseAtivoDisponivel")
+            driver.perform(put(URI_CLIENTES + "/" + clientePremium.getId() + "/interesseAtivoDisponivel" + "/" + ativoDisponivel.getId())
                             .contentType(MediaType.APPLICATION_JSON)
-                            .param("codigo", clientePremium.getCodigo())
-                            .param("idAtivo", ativoDisponivel.getId().toString()))
+                            .param("codigo", clientePremium.getCodigo()))
                     .andExpect(status().isNoContent());
 
             Conta contaAtualizada = contaRepository.findById(clientePremium.getConta().getId()).orElseThrow();
@@ -1362,10 +1361,9 @@ public class    ClienteControllerTests {
         @DisplayName("Cliente Normal não pode registrar interesse em ativo disponível (deve lançar exceção)")
         void quandoClienteNormalTentaRegistrarInteresseEmAtivoDisponiveleNaoConsegue() throws Exception{
 
-            driver.perform(put(URI_CLIENTES + "/" + cliente.getId() + "/interesseAtivoDisponivel")
+            driver.perform(put(URI_CLIENTES + "/" + cliente.getId() + "/interesseAtivoDisponivel" + "/" + ativoDisponivel.getId())
                             .contentType(MediaType.APPLICATION_JSON)
-                            .param("codigo", cliente.getCodigo())
-                            .param("idAtivo", ativoDisponivel.getId().toString()))
+                            .param("codigo", cliente.getCodigo()))
                     .andExpect(status().isBadRequest());
         }
 
@@ -1373,10 +1371,9 @@ public class    ClienteControllerTests {
         @DisplayName("Cliente Premium não pode registrar interesse em ativo indisponível pelo metodo de ativo disponível(deve lançar exceção)")
         void quandoClientePremiumTentaRegistrarInteresseemUmAtivoIndisponivelPeloMetododeAtivoDisponivel() throws Exception{
 
-            driver.perform(put(URI_CLIENTES + "/" + clientePremium.getId() + "/interesseAtivoDisponivel")
+            driver.perform(put(URI_CLIENTES + "/" + clientePremium.getId() + "/interesseAtivoDisponivel" + "/" + ativoIndisponivel.getId())
                             .contentType(MediaType.APPLICATION_JSON)
-                            .param("codigo", clientePremium.getCodigo())
-                            .param("idAtivo", ativoIndisponivel.getId().toString()))
+                            .param("codigo", clientePremium.getCodigo()))
                     .andExpect(status().isBadRequest());
         }
 
@@ -1384,10 +1381,9 @@ public class    ClienteControllerTests {
         @DisplayName("Cliente (NORMAL) com interesse em ativo indisponivel que não seja tesouro direto")
         void quandoClienteNormalTentaMarcarInteresseEmAtivoIndisponivelQueNaoSejaTesouroDireto() throws Exception{
 
-            driver.perform(put(URI_CLIENTES + "/" + cliente.getId() + "/interesseAtivoIndisponivel")
+            driver.perform(put(URI_CLIENTES + "/" + cliente.getId() + "/interesseAtivoIndisponivel" + "/" + ativoIndisponivel.getId())
                             .contentType(MediaType.APPLICATION_JSON)
-                            .param("codigo", cliente.getCodigo())
-                            .param("idAtivo", ativoIndisponivel.getId().toString()))
+                            .param("codigo", cliente.getCodigo()))
                     .andExpect(status().isBadRequest());
         }
 
@@ -1430,10 +1426,9 @@ public class    ClienteControllerTests {
         @DisplayName("Deve falhar ao tentar registrar interesse em ativo que já está disponível")
         void quandoTentamosRegistrarInteresseEmAtivoDisponivelPeloMetodoDeAtivoIndisponivel() throws Exception{
 
-            driver.perform(put(URI_CLIENTES + "/" + clientePremium.getId() + "/interesseAtivoIndisponivel")
+            driver.perform(put(URI_CLIENTES + "/" + clientePremium.getId() + "/interesseAtivoIndisponivel" + "/" + ativoDisponivel.getId())
                             .contentType(MediaType.APPLICATION_JSON)
-                            .param("codigo", clientePremium.getCodigo())
-                            .param("idAtivo", ativoDisponivel.getId().toString()))
+                            .param("codigo", clientePremium.getCodigo()))
                     .andExpect(status().isBadRequest());
         }
     }

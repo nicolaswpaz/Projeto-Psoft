@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Entity
@@ -19,9 +20,13 @@ public class Conta {
     private Long id;
 
     @JsonProperty("saldo")
-    private String saldo;
+    private BigDecimal saldo;
 
     @ManyToMany
     @JsonProperty("ativosDeInteresse")
     private List<Ativo> ativosDeInteresse;
+
+    @ManyToMany
+    @JsonProperty("operacoes")
+    private List<Operacao> operacoes;
 }

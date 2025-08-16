@@ -1,12 +1,14 @@
 package com.ufcg.psoft.commerce.service.operacao;
 
-import com.ufcg.psoft.commerce.dto.Operacao.OperacaoPostPutRequestDTO;
-import com.ufcg.psoft.commerce.dto.Operacao.OperacaoResponseDTO;
-
+import com.ufcg.psoft.commerce.dto.operacao.OperacaoResponseDTO;
+import com.ufcg.psoft.commerce.model.Ativo;
+import com.ufcg.psoft.commerce.model.Cliente;
+import com.ufcg.psoft.commerce.model.Operacao;
 import java.util.List;
 
 public interface OperacaoService {
-    OperacaoResponseDTO criarOperacaoCompra(OperacaoPostPutRequestDTO compraPostPutRequestDTO);
+
+    Operacao criarOperacaoCompra(Cliente cliente, Ativo ativo, int quantidade);
 
     OperacaoResponseDTO buscarOperacaoCompra(Long id);
 

@@ -6,6 +6,7 @@ import com.ufcg.psoft.commerce.exception.ativo.AtivoDisponivelException;
 import com.ufcg.psoft.commerce.exception.ativo.AtivoIndisponivelException;
 import com.ufcg.psoft.commerce.exception.cliente.*;
 import com.ufcg.psoft.commerce.exception.cliente.OperacaoInvalidaException;
+import com.ufcg.psoft.commerce.model.Ativo;
 import com.ufcg.psoft.commerce.model.Conta;
 import com.ufcg.psoft.commerce.model.Endereco;
 import com.ufcg.psoft.commerce.model.enums.TipoPlano;
@@ -21,7 +22,6 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -169,14 +169,14 @@ public class ClienteServiceImpl implements ClienteService {
     public void marcarInteresseAtivoIndisponivel(Long id, String codigoAcesso, Long idAtivo) {
         Cliente cliente = autenticar(id, codigoAcesso);
 
-        AtivoResponseDTO ativoResponseDTO = ativoService.recuperarDetalhado(idAtivo);
+        Ativo ativo =  modelMapper.map(ativoService.recuperarDetalhado(idAtivo), Ativo.class);
 
-        if (cliente.getPlano() == TipoPlano.NORMAL && ativoResponseDTO.getTipo() != TipoAtivo.TESOURO_DIRETO) {
+        if (cliente.getPlano() == TipoPlano.NORMAL && ativo.getTipo() != TipoAtivo.TESOURO_DIRETO) {
             throw new ClienteNaoPremiumException();
         }
 
-        if(!ativoResponseDTO.isDisponivel()) {
-            contaService.adicionarAtivoNaListaDeInteresse(cliente.getConta().getId(), ativoResponseDTO);
+        if(!ativo.isDisponivel()) {
+            contaService.adicionarAtivoNaListaDeInteresse(cliente.getConta().getId(), ativo);
         }else{
             throw new AtivoDisponivelException();
         }
@@ -190,14 +190,14 @@ public class ClienteServiceImpl implements ClienteService {
             throw new ClienteNaoPremiumException();
         }
 
-        AtivoResponseDTO ativoResponseDTO = ativoService.recuperarDetalhado(idAtivo);
+        Ativo ativo =  modelMapper.map(ativoService.recuperarDetalhado(idAtivo), Ativo.class);
 
-        if(ativoResponseDTO.getTipo() == TipoAtivo.TESOURO_DIRETO){
+        if(ativo.getTipo() == TipoAtivo.TESOURO_DIRETO){
             throw new OperacaoInvalidaException();
         }
 
-        if (ativoResponseDTO.isDisponivel()){
-            contaService.adicionarAtivoNaListaDeInteresse(cliente.getConta().getId(), ativoResponseDTO);
+        if (ativo.isDisponivel()){
+            contaService.adicionarAtivoNaListaDeInteresse(cliente.getConta().getId(), ativo);
         } else {
             throw new AtivoIndisponivelException();
         }
@@ -214,5 +214,22 @@ public class ClienteServiceImpl implements ClienteService {
         }
 
         return ativo;
+    }
+
+    @Override
+    public void comprarAtivo(Long id, String codigoAcesso, Long idAtivo, int quantidade) {
+        Cliente cliente = autenticar(id, codigoAcesso);
+
+        Ativo ativo =  modelMapper.map(ativoService.recuperarDetalhado(idAtivo), Ativo.class);
+
+        if (cliente.getPlano() == TipoPlano.NORMAL && ativo.getTipo() != TipoAtivo.TESOURO_DIRETO) {
+            throw new ClienteNaoPremiumException();
+        }
+
+        if(ativo.isDisponivel()){
+            contaService.efetuarCompraAtivo(cliente, ativo, quantidade);
+        }else{
+            throw new AtivoIndisponivelException();
+        }
     }
 }

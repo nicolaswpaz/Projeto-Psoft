@@ -1,15 +1,25 @@
 package com.ufcg.psoft.commerce.service.operacao;
 
-import com.ufcg.psoft.commerce.dto.Operacao.OperacaoPostPutRequestDTO;
-import com.ufcg.psoft.commerce.dto.Operacao.OperacaoResponseDTO;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.ufcg.psoft.commerce.dto.operacao.OperacaoPostPutRequestDTO;
+import com.ufcg.psoft.commerce.dto.operacao.OperacaoResponseDTO;
 import com.ufcg.psoft.commerce.exception.compra.CompraNaoExisteException;
+import com.ufcg.psoft.commerce.model.Ativo;
+import com.ufcg.psoft.commerce.model.Cliente;
+import com.ufcg.psoft.commerce.model.Conta;
 import com.ufcg.psoft.commerce.model.Operacao;
 import com.ufcg.psoft.commerce.model.enums.TipoOperacao;
 import com.ufcg.psoft.commerce.repository.OperacaoRepository;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.ManyToOne;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,10 +33,18 @@ public class OperacaoServiceImpl implements OperacaoService {
     ModelMapper modelMapper;
 
     @Override
-    public OperacaoResponseDTO criarOperacaoCompra(OperacaoPostPutRequestDTO operacaoPostPutRequestDTO) {
-        Operacao compra = modelMapper.map(operacaoPostPutRequestDTO, Operacao.class);
+    public Operacao criarOperacaoCompra(Cliente cliente, Ativo ativo, int quantidade) {
+        Operacao compra = Operacao.builder()
+                .dataSolicitacao(LocalDate.now())
+                .ativo(ativo)
+                .quantidade(quantidade)
+                .valorVenda(BigDecimal.valueOf(quantidade).multiply(ativo.getCotacao()))
+                .cliente(cliente)
+                .tipo(TipoOperacao.COMPRA)
+                .build();
+
         operacaoRepository.save(compra);
-        return modelMapper.map(compra, OperacaoResponseDTO.class);
+        return compra;
     }
 
     @Override

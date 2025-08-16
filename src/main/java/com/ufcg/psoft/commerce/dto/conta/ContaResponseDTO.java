@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.ufcg.psoft.commerce.model.Ativo;
 import com.ufcg.psoft.commerce.model.Conta;
 import lombok.*;
+
+import java.math.BigDecimal;
 import java.util.List;
 
 @Data
@@ -18,7 +20,7 @@ public class ContaResponseDTO {
     private Long id;
 
     @JsonProperty("saldo")
-    private String saldo;
+    private BigDecimal saldo;
 
     @JsonProperty("ativosDeInteresse")
     private List<Ativo> ativosDeInteresse;

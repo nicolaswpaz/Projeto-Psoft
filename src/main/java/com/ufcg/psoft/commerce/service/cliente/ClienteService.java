@@ -4,7 +4,6 @@ import com.ufcg.psoft.commerce.dto.ativo.AtivoResponseDTO;
 import com.ufcg.psoft.commerce.dto.cliente.ClientePostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.cliente.ClienteResponseDTO;
 import com.ufcg.psoft.commerce.model.Cliente;
-
 import java.util.List;
 
 public interface ClienteService {
@@ -30,4 +29,6 @@ public interface ClienteService {
     void marcarInteresseAtivoDisponivel(Long id, String codigoAcesso, Long idAtivo);
 
     AtivoResponseDTO visualizarDetalhesAtivo(Long id, String codigoAcesso, Long idAtivo);
+
+    void comprarAtivo(Long id, String codigoAcesso, Long idAtivo, int quantidade);
 }
