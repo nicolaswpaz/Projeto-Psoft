@@ -15,4 +15,6 @@ public interface AdministradorService {
     void removerAdmin(String matricula);
 
     AdministradorResponseDTO buscarAdmin();
+
+    void confirmarDisponibilidadeCompra(Long idCompra, String matricula);
 }

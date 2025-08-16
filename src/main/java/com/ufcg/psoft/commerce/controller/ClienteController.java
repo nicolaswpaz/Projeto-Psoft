@@ -11,7 +11,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -117,18 +116,4 @@ public class ClienteController {
                 .status(HttpStatus.OK)
                 .body(clienteService.visualizarDetalhesAtivo(id, codigo, idAtivo));
     }
-
-    @PutMapping("/{id}/comprarAtivo/{idAtivo}")
-    public ResponseEntity<Void> comprarAtivo(
-            @PathVariable Long id,
-            @PathVariable Long idAtivo,
-            @RequestParam String codigo,
-            @RequestParam int quantidade) {
-
-        clienteService.comprarAtivo(id, codigo, idAtivo, quantidade);
-        return ResponseEntity
-                .status(HttpStatus.NO_CONTENT)
-                .build();
-    }
-
 }

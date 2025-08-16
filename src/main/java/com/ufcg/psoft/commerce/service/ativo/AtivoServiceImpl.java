@@ -185,4 +185,11 @@ public class AtivoServiceImpl implements AtivoService {
                 .map(AtivoResponseDTO::new)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public Ativo verificarAtivoExistente(Long idAtivo) {
+        return ativoRepository.findById(idAtivo)
+                .orElseThrow(() -> new AtivoNaoExisteException());
+    }
+
 }

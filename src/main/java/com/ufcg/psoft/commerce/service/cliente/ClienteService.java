@@ -3,6 +3,7 @@ package com.ufcg.psoft.commerce.service.cliente;
 import com.ufcg.psoft.commerce.dto.ativo.AtivoResponseDTO;
 import com.ufcg.psoft.commerce.dto.cliente.ClientePostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.cliente.ClienteResponseDTO;
+import com.ufcg.psoft.commerce.dto.compra.CompraResponseDTO;
 import com.ufcg.psoft.commerce.model.Cliente;
 import java.util.List;
 
@@ -30,5 +31,7 @@ public interface ClienteService {
 
     AtivoResponseDTO visualizarDetalhesAtivo(Long id, String codigoAcesso, Long idAtivo);
 
-    void comprarAtivo(Long id, String codigoAcesso, Long idAtivo, int quantidade);
+    void confirmarCompraAtivo(Long idCliente, Long idCompra, String codigoAcesso);
+
+    void adicionarAtivoNaCarteira(Long idCliente, String codigoAcesso, Long idCompra);
 }

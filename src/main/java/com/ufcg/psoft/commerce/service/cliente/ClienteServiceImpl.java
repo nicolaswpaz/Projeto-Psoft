@@ -1,20 +1,18 @@
 package com.ufcg.psoft.commerce.service.cliente;
 
 import com.ufcg.psoft.commerce.dto.ativo.AtivoResponseDTO;
+import com.ufcg.psoft.commerce.dto.compra.CompraResponseDTO;
 import com.ufcg.psoft.commerce.dto.endereco.EnderecoResponseDTO;
 import com.ufcg.psoft.commerce.exception.ativo.AtivoDisponivelException;
 import com.ufcg.psoft.commerce.exception.ativo.AtivoIndisponivelException;
 import com.ufcg.psoft.commerce.exception.cliente.*;
 import com.ufcg.psoft.commerce.exception.cliente.OperacaoInvalidaException;
-import com.ufcg.psoft.commerce.model.Ativo;
-import com.ufcg.psoft.commerce.model.Conta;
-import com.ufcg.psoft.commerce.model.Endereco;
+import com.ufcg.psoft.commerce.model.*;
 import com.ufcg.psoft.commerce.model.enums.TipoPlano;
 import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
 import com.ufcg.psoft.commerce.repository.ClienteRepository;
 import com.ufcg.psoft.commerce.dto.cliente.ClientePostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.cliente.ClienteResponseDTO;
-import com.ufcg.psoft.commerce.model.Cliente;
 import com.ufcg.psoft.commerce.service.administrador.AdministradorService;
 import com.ufcg.psoft.commerce.service.ativo.AtivoService;
 import com.ufcg.psoft.commerce.service.conta.ContaService;
@@ -217,19 +215,26 @@ public class ClienteServiceImpl implements ClienteService {
     }
 
     @Override
-    public void comprarAtivo(Long id, String codigoAcesso, Long idAtivo, int quantidade) {
-        Cliente cliente = autenticar(id, codigoAcesso);
+    public void confirmarCompraAtivo(Long idCliente, Long idCompra, String codigoAcesso) {
+        Cliente cliente = clienteRepository.findById(idCliente)
+                .orElseThrow(ClienteNaoExisteException::new);
 
-        Ativo ativo =  modelMapper.map(ativoService.recuperarDetalhado(idAtivo), Ativo.class);
-
-        if (cliente.getPlano() == TipoPlano.NORMAL && ativo.getTipo() != TipoAtivo.TESOURO_DIRETO) {
-            throw new ClienteNaoPremiumException();
+        if (!cliente.getCodigo().equals(codigoAcesso)) {
+            throw new CodigoDeAcessoInvalidoException();
         }
 
-        if(ativo.isDisponivel()){
-            contaService.efetuarCompraAtivo(cliente, ativo, quantidade);
-        }else{
-            throw new AtivoIndisponivelException();
+        contaService.confirmarCompra(idCliente, idCompra);
+    }
+
+    @Override
+    public void adicionarAtivoNaCarteira(Long idCliente, String codigoAcesso, Long idCompra) {
+        Cliente cliente = clienteRepository.findById(idCliente)
+                .orElseThrow(ClienteNaoExisteException::new);
+
+        if (!cliente.getCodigo().equals(codigoAcesso)) {
+            throw new CodigoDeAcessoInvalidoException();
         }
+
+        contaService.adicionarNaCarteira(idCliente, idCompra);
     }
 }

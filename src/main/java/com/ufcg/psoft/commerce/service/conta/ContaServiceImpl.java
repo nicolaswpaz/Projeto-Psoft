@@ -1,19 +1,21 @@
 package com.ufcg.psoft.commerce.service.conta;
 
 import com.ufcg.psoft.commerce.dto.ativo.AtivoResponseDTO;
+import com.ufcg.psoft.commerce.dto.compra.CompraResponseDTO;
+import com.ufcg.psoft.commerce.exception.compra.CompraNaoExisteException;
+import com.ufcg.psoft.commerce.exception.compra.StatusCompraInvalidoException;
 import com.ufcg.psoft.commerce.exception.conta.ContaNaoExisteException;
 import com.ufcg.psoft.commerce.exception.conta.SaldoInsuficienteException;
 import com.ufcg.psoft.commerce.model.Ativo;
-import com.ufcg.psoft.commerce.model.Cliente;
 import com.ufcg.psoft.commerce.model.Conta;
 import com.ufcg.psoft.commerce.model.Operacao;
+import com.ufcg.psoft.commerce.model.enums.StatusCompra;
 import com.ufcg.psoft.commerce.repository.ClienteRepository;
 import com.ufcg.psoft.commerce.repository.ContaRepository;
+import com.ufcg.psoft.commerce.repository.OperacaoRepository;
 import com.ufcg.psoft.commerce.service.conta.notificacao.Notificacao;
 import com.ufcg.psoft.commerce.service.conta.notificacao.NotificacaoAtivoDisponivel;
 import com.ufcg.psoft.commerce.service.conta.notificacao.NotificacaoAtivoVariouCotacao;
-import com.ufcg.psoft.commerce.service.operacao.OperacaoService;
-import com.ufcg.psoft.commerce.service.operacao.OperacaoServiceImpl;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,7 +30,7 @@ public class ContaServiceImpl implements ContaService {
     ContaRepository contaRepository;
 
     @Autowired
-    OperacaoService operacaoService;
+    OperacaoRepository operacaoRepository;
 
     @Autowired
     ModelMapper modelMapper;
@@ -89,15 +91,40 @@ public class ContaServiceImpl implements ContaService {
     }
 
     @Override
-    public void efetuarCompraAtivo(Cliente cliente, Ativo ativo, int quantidade) {
+    public CompraResponseDTO confirmarCompra(Long idCliente, Long idCompra) {
+        Operacao compra = operacaoRepository.findById(idCompra)
+                .orElseThrow(CompraNaoExisteException::new);
 
-        Conta conta = contaRepository.findById(cliente.getId()).orElseThrow(ContaNaoExisteException::new);
+        if (compra.getStatusCompra() != StatusCompra.DISPONIVEL) {
+            throw new StatusCompraInvalidoException();
+        }
 
-        if (conta.getSaldo().compareTo(BigDecimal.valueOf(quantidade).multiply(ativo.getCotacao())) < 0) {
+        Conta conta = compra.getCliente().getConta();
+        if (conta.getSaldo().compareTo(compra.getValorVenda()) < 0) {
             throw new SaldoInsuficienteException();
         }
 
-        conta.getOperacoes().add(operacaoService.criarOperacaoCompra(cliente, ativo, quantidade));
+        conta.setSaldo(conta.getSaldo().subtract(compra.getValorVenda()));
+        contaRepository.save(conta);
+
+        compra.avancarStatus();
+        operacaoRepository.save(compra);
+
+        return modelMapper.map(compra, CompraResponseDTO.class);
     }
 
+    @Override
+    public CompraResponseDTO adicionarNaCarteira(Long idCliente, Long idCompra) {
+        Operacao compra = operacaoRepository.findById(idCompra)
+                .orElseThrow(CompraNaoExisteException::new);
+
+        if (compra.getStatusCompra() != StatusCompra.COMPRADO) {
+            throw new StatusCompraInvalidoException();
+        }
+
+        compra.avancarStatus();
+        operacaoRepository.save(compra);
+
+        return modelMapper.map(compra, CompraResponseDTO.class);
+    }
 }

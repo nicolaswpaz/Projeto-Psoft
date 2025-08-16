@@ -4,6 +4,6 @@ import com.ufcg.psoft.commerce.exception.CommerceException;
 
 public class CompraNaoExisteException extends CommerceException {
     public CompraNaoExisteException() {
-        super("A compra não existe");
+        super("A compra nao existe!");
     }
 }
