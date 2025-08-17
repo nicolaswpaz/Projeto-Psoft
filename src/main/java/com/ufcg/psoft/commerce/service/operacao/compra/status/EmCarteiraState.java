@@ -1,13 +1,13 @@
 package com.ufcg.psoft.commerce.service.operacao.compra.status;
 
-import com.ufcg.psoft.commerce.model.Operacao;
+import com.ufcg.psoft.commerce.model.Compra;
 
 public class EmCarteiraState implements StatusCompraState {
 
-    private Operacao operacao;
+    private Compra compra;
 
-    public EmCarteiraState(Operacao operacao) {
-        this.operacao = operacao;
+    public EmCarteiraState(Compra compra) {
+        this.compra = compra;
     }
 
     @Override

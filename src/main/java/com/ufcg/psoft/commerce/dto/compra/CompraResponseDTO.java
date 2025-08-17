@@ -3,7 +3,7 @@ package com.ufcg.psoft.commerce.dto.compra;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.ufcg.psoft.commerce.model.Ativo;
 import com.ufcg.psoft.commerce.model.Cliente;
-import com.ufcg.psoft.commerce.model.Operacao;
+import com.ufcg.psoft.commerce.model.Compra;
 import com.ufcg.psoft.commerce.model.enums.StatusCompra;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -40,13 +40,13 @@ public class CompraResponseDTO {
     @JsonProperty("status")
     private StatusCompra statusCompra;
 
-    public CompraResponseDTO(Operacao operacao) {
-        this.id = operacao.getId();
-        this.dataSolicitacao = operacao.getDataSolicitacao();
-        this.ativo = operacao.getAtivo();
-        this.quantidade = operacao.getQuantidade();
-        this.valorVenda = operacao.getValorVenda();
-        this.cliente = operacao.getCliente();
-        this.statusCompra = operacao.getStatusCompra();
+    public CompraResponseDTO(Compra compra) {
+        this.id = compra.getId();
+        this.dataSolicitacao = compra.getDataSolicitacao();
+        this.ativo = compra.getAtivo();
+        this.quantidade = compra.getQuantidade();
+        this.valorVenda = compra.getValorVenda();
+        this.cliente = compra.getCliente();
+        this.statusCompra = compra.getStatusCompra();
     }
 }

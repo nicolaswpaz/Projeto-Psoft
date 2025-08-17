@@ -2,25 +2,29 @@ package com.ufcg.psoft.commerce.service.operacao.compra;
 
 import com.ufcg.psoft.commerce.dto.compra.CompraResponseDTO;
 import com.ufcg.psoft.commerce.exception.cliente.ClienteNaoExisteException;
+import com.ufcg.psoft.commerce.exception.cliente.ClienteNaoPremiumException;
 import com.ufcg.psoft.commerce.exception.compra.CompraNaoExisteException;
 import com.ufcg.psoft.commerce.exception.compra.CompraNaoPertenceAoClienteException;
 import com.ufcg.psoft.commerce.exception.compra.StatusCompraInvalidoException;
 import com.ufcg.psoft.commerce.model.Ativo;
 import com.ufcg.psoft.commerce.model.Cliente;
+import com.ufcg.psoft.commerce.model.Compra;
 import com.ufcg.psoft.commerce.model.Operacao;
 import com.ufcg.psoft.commerce.model.enums.StatusCompra;
-import com.ufcg.psoft.commerce.model.enums.TipoOperacao;
+import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
+import com.ufcg.psoft.commerce.model.enums.TipoPlano;
 import com.ufcg.psoft.commerce.repository.ClienteRepository;
+import com.ufcg.psoft.commerce.repository.CompraRepository;
 import com.ufcg.psoft.commerce.repository.ContaRepository;
-import com.ufcg.psoft.commerce.repository.OperacaoRepository;
 import com.ufcg.psoft.commerce.service.administrador.AdministradorService;
 import com.ufcg.psoft.commerce.service.ativo.AtivoService;
 import com.ufcg.psoft.commerce.service.cliente.ClienteService;
-import com.ufcg.psoft.commerce.service.operacao.strategy.CompraStrategy;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,13 +32,10 @@ import java.util.stream.Collectors;
 public class CompraServiceImpl implements CompraService{
 
     @Autowired
-    ClienteRepository clienteRepository;
-
-    @Autowired
     ContaRepository contaRepository;
 
     @Autowired
-    OperacaoRepository operacaoRepository;
+    CompraRepository compraRepository;
 
     @Autowired
     ClienteService clienteService;
@@ -46,9 +47,6 @@ public class CompraServiceImpl implements CompraService{
     AtivoService ativoService;
 
     @Autowired
-    CompraStrategy compraStrategy;
-
-    @Autowired
     ModelMapper modelMapper;
 
     @Override
@@ -56,15 +54,25 @@ public class CompraServiceImpl implements CompraService{
         Ativo ativo = ativoService.verificarAtivoExistente(idAtivo);
         Cliente cliente = clienteService.autenticar(idCliente, codigoAcesso);
 
-        Operacao compra = compraStrategy.solicitar(cliente, ativo, quantidade);
+        if (cliente.getPlano() == TipoPlano.NORMAL && ativo.getTipo() != TipoAtivo.TESOURO_DIRETO) {
+            throw new ClienteNaoPremiumException();
+        }
 
-        operacaoRepository.save(compra);
+        Compra compra = Compra.builder()
+                .dataSolicitacao(LocalDate.now())
+                .ativo(ativo)
+                .quantidade(quantidade)
+                .valorVenda(BigDecimal.valueOf(quantidade).multiply(ativo.getCotacao()))
+                .cliente(cliente)
+                .build();
+
+        compraRepository.save(compra);
         return modelMapper.map(compra, CompraResponseDTO.class);
     }
 
     @Override
     public CompraResponseDTO disponibilizarCompra(Long idCompra, String matriculaAdmin) {
-        Operacao compra = operacaoRepository.findById(idCompra)
+        Compra compra = compraRepository.findById(idCompra)
                 .orElseThrow(CompraNaoExisteException::new);
 
         if (compra.getStatusCompra() != StatusCompra.SOLICITADO) {
@@ -77,7 +85,7 @@ public class CompraServiceImpl implements CompraService{
 
     @Override
     public CompraResponseDTO confirmarCompra(Long idCliente, String codigoAcesso, Long idCompra) {
-        Operacao compra = operacaoRepository.findById(idCompra)
+        Compra compra = compraRepository.findById(idCompra)
                 .orElseThrow(CompraNaoExisteException::new);
 
         if (compra.getStatusCompra() != StatusCompra.DISPONIVEL) {
@@ -90,7 +98,7 @@ public class CompraServiceImpl implements CompraService{
 
     @Override
     public CompraResponseDTO adicionarNaCarteira(Long idCliente, String codigoAcesso, Long idCompra) {
-        Operacao compra = operacaoRepository.findById(idCompra)
+        Compra compra = compraRepository.findById(idCompra)
                 .orElseThrow(CompraNaoExisteException::new);
 
         if (compra.getStatusCompra() != StatusCompra.COMPRADO) {
@@ -103,27 +111,23 @@ public class CompraServiceImpl implements CompraService{
 
     @Override
     public CompraResponseDTO consultar(Long idCliente, String codigoAcesso, Long idCompra) {
-        Cliente cliente = clienteRepository.findById(idCliente)
-                .orElseThrow(ClienteNaoExisteException::new);
-
         clienteService.autenticar(idCliente, codigoAcesso);
 
-        Operacao operacao = operacaoRepository.findById(idCompra)
+        Compra compra = compraRepository.findById(idCompra)
                 .orElseThrow(CompraNaoExisteException::new);
 
-        if (!operacao.getCliente().getId().equals(idCliente)) {
+        if (!compra.getCliente().getId().equals(idCliente)) {
             throw new CompraNaoPertenceAoClienteException();
         }
 
-        return modelMapper.map(operacao, CompraResponseDTO.class);
+        return modelMapper.map(compra, CompraResponseDTO.class);
     }
 
     @Override
     public List<CompraResponseDTO> listar(String matriculaAdmin) {
         administradorService.autenticar(matriculaAdmin);
 
-        return operacaoRepository.findAll().stream()
-                .filter(op -> op.getTipo() == TipoOperacao.COMPRA)
+        return compraRepository.findAll().stream()
                 .map(CompraResponseDTO::new)
                 .collect(Collectors.toList());
     }

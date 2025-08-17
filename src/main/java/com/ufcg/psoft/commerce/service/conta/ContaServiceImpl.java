@@ -7,12 +7,13 @@ import com.ufcg.psoft.commerce.exception.compra.StatusCompraInvalidoException;
 import com.ufcg.psoft.commerce.exception.conta.ContaNaoExisteException;
 import com.ufcg.psoft.commerce.exception.conta.SaldoInsuficienteException;
 import com.ufcg.psoft.commerce.model.Ativo;
+import com.ufcg.psoft.commerce.model.Compra;
 import com.ufcg.psoft.commerce.model.Conta;
 import com.ufcg.psoft.commerce.model.Operacao;
 import com.ufcg.psoft.commerce.model.enums.StatusCompra;
 import com.ufcg.psoft.commerce.repository.ClienteRepository;
+import com.ufcg.psoft.commerce.repository.CompraRepository;
 import com.ufcg.psoft.commerce.repository.ContaRepository;
-import com.ufcg.psoft.commerce.repository.OperacaoRepository;
 import com.ufcg.psoft.commerce.service.conta.notificacao.Notificacao;
 import com.ufcg.psoft.commerce.service.conta.notificacao.NotificacaoAtivoDisponivel;
 import com.ufcg.psoft.commerce.service.conta.notificacao.NotificacaoAtivoVariouCotacao;
@@ -30,7 +31,7 @@ public class ContaServiceImpl implements ContaService {
     ContaRepository contaRepository;
 
     @Autowired
-    OperacaoRepository operacaoRepository;
+    CompraRepository compraRepository;
 
     @Autowired
     ModelMapper modelMapper;
@@ -92,7 +93,7 @@ public class ContaServiceImpl implements ContaService {
 
     @Override
     public CompraResponseDTO confirmarCompra(Long idCliente, Long idCompra) {
-        Operacao compra = operacaoRepository.findById(idCompra)
+        Compra compra = compraRepository.findById(idCompra)
                 .orElseThrow(CompraNaoExisteException::new);
 
         if (compra.getStatusCompra() != StatusCompra.DISPONIVEL) {
@@ -108,14 +109,14 @@ public class ContaServiceImpl implements ContaService {
         contaRepository.save(conta);
 
         compra.avancarStatus();
-        operacaoRepository.save(compra);
+        compraRepository.save(compra);
 
         return modelMapper.map(compra, CompraResponseDTO.class);
     }
 
     @Override
     public CompraResponseDTO adicionarNaCarteira(Long idCliente, Long idCompra) {
-        Operacao compra = operacaoRepository.findById(idCompra)
+        Compra compra = compraRepository.findById(idCompra)
                 .orElseThrow(CompraNaoExisteException::new);
 
         if (compra.getStatusCompra() != StatusCompra.COMPRADO) {
@@ -123,7 +124,7 @@ public class ContaServiceImpl implements ContaService {
         }
 
         compra.avancarStatus();
-        operacaoRepository.save(compra);
+        compraRepository.save(compra);
 
         return modelMapper.map(compra, CompraResponseDTO.class);
     }

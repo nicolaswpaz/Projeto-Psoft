@@ -1,19 +1,19 @@
 package com.ufcg.psoft.commerce.service.operacao.compra.status;
 
-import com.ufcg.psoft.commerce.model.Operacao;
+import com.ufcg.psoft.commerce.model.Compra;
 import com.ufcg.psoft.commerce.model.enums.StatusCompra;
 
 public class CompradoState implements StatusCompraState {
-    private Operacao operacao;
+    private Compra compra;
 
-    public CompradoState(Operacao operacao) {
-        this.operacao = operacao;
+    public CompradoState(Compra compra) {
+        this.compra = compra;
     }
 
     @Override
     public void mover() {
-        operacao.setStatusCompra(StatusCompra.EM_CARTEIRA);
-        operacao.setStatusState(new EmCarteiraState(operacao));
+        compra.setStatusCompra(StatusCompra.EM_CARTEIRA);
+        compra.setStatusState(new EmCarteiraState(compra));
     }
 
     @Override

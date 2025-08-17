@@ -5,19 +5,17 @@ import com.ufcg.psoft.commerce.dto.administrador.AdministradorPostPutRequestDTO;
 import com.ufcg.psoft.commerce.exception.administrador.AdminJaExisteException;
 import com.ufcg.psoft.commerce.exception.administrador.AdminNaoExisteException;
 import com.ufcg.psoft.commerce.exception.administrador.MatriculaInvalidaException;
-import com.ufcg.psoft.commerce.exception.compra.OperacaoNaoEUmaCompraException;
+import com.ufcg.psoft.commerce.exception.compra.CompraNaoExisteException;
 import com.ufcg.psoft.commerce.exception.conta.SaldoInsuficienteException;
-import com.ufcg.psoft.commerce.exception.operacao.OperacaoNaoExisteException;
 import com.ufcg.psoft.commerce.model.*;
-import com.ufcg.psoft.commerce.model.enums.TipoOperacao;
 import com.ufcg.psoft.commerce.repository.AdministradorRepository;
+import com.ufcg.psoft.commerce.repository.CompraRepository;
 import com.ufcg.psoft.commerce.repository.EnderecoRepository;
 
 import java.math.BigDecimal;
 import java.util.List;
 
 
-import com.ufcg.psoft.commerce.repository.OperacaoRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,7 +33,7 @@ public class AdministradorServiceImpl implements AdministradorService {
     EnderecoRepository enderecoRepository;
 
     @Autowired
-    OperacaoRepository operacaoRepository;
+    CompraRepository compraRepository;
 
     @Override
     public Administrador autenticar(String matricula) {
@@ -108,26 +106,20 @@ public class AdministradorServiceImpl implements AdministradorService {
 
     @Override
     public void confirmarDisponibilidadeCompra(Long idCompra, String matricula) {
-        Administrador admin = autenticar(matricula);
+        Compra compra = compraRepository.findById(idCompra)
+                .orElseThrow(CompraNaoExisteException::new);
 
-        Operacao operacao = operacaoRepository.findById(idCompra)
-                .orElseThrow(OperacaoNaoExisteException::new);
-
-        if (operacao.getTipo() != TipoOperacao.COMPRA) {
-            throw new OperacaoNaoEUmaCompraException();
-        }
-
-        Cliente cliente = operacao.getCliente();
+        Cliente cliente = compra.getCliente();
         Conta conta = cliente.getConta();
 
-        BigDecimal valorCompra = operacao.getAtivo().getCotacao()
-                .multiply(BigDecimal.valueOf(operacao.getQuantidade()));
+        BigDecimal valorCompra = compra.getAtivo().getCotacao()
+                .multiply(BigDecimal.valueOf(compra.getQuantidade()));
 
         if (conta.getSaldo().compareTo(valorCompra) < 0) {
             throw new SaldoInsuficienteException();
         }
 
-        operacao.avancarStatus();
-        operacaoRepository.save(operacao);
+        compra.avancarStatus();
+        compraRepository.save(compra);
     }
 }
