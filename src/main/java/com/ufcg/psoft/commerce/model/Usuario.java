@@ -1,0 +1,37 @@
+package com.ufcg.psoft.commerce.model;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
+
+@Entity
+@Data
+@SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
+@Inheritance(strategy = InheritanceType.JOINED)
+public abstract class Usuario {
+
+    @JsonProperty("id")
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    private Long id;
+
+    @JsonProperty("nome")
+    @Column(nullable = false)
+    private String nome;
+
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @Valid
+    @NotNull(message = "Endereco obrigatorio")
+    private Endereco endereco;
+
+    @JsonProperty("cpf")
+    @Column(nullable = false)
+    private String cpf;
+}

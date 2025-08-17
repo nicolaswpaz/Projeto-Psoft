@@ -1,6 +1,6 @@
 package com.ufcg.psoft.commerce.controller;
 
-import com.ufcg.psoft.commerce.dto.ClientePostPutRequestDTO;
+import com.ufcg.psoft.commerce.dto.Cliente.ClientePostPutRequestDTO;
 import com.ufcg.psoft.commerce.service.cliente.ClienteService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,24 +21,20 @@ public class ClienteController {
 
     @GetMapping("/{id}")
     public ResponseEntity<?> recuperarCliente(
-            @PathVariable Long id) {
+            @PathVariable Long id,
+            @RequestParam String codigo) {
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(clienteService.recuperar(id));
+                .body(clienteService.recuperar(id, codigo));
     }
 
     @GetMapping("")
     public ResponseEntity<?> listarClientes(
-            @RequestParam(required = false, defaultValue = "") String nome) {
+            @RequestParam String matriculaAdmin) {
 
-        if (nome != null && !nome.isEmpty()) {
-            return ResponseEntity
-                    .status(HttpStatus.OK)
-                    .body(clienteService.listarPorNome(nome));
-        }
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(clienteService.listar());
+                .body(clienteService.listar(matriculaAdmin));
     }
 
     @PostMapping()
@@ -67,5 +63,13 @@ public class ClienteController {
         return ResponseEntity
                 .status(HttpStatus.NO_CONTENT)
                 .body("");
+    }
+
+    @GetMapping("/{id}/ativos-disponiveis")
+    public ResponseEntity<?> listarAtivosDisponiveisPorPlano(@PathVariable Long id, @RequestParam String codigo) {
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(clienteService.listarAtivosDisponiveisPorPlano(id, codigo));
     }
 }

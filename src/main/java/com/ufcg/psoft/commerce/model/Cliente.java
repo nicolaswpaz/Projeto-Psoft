@@ -4,31 +4,37 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
+import com.ufcg.psoft.commerce.model.enums.TipoPlano;
 
+
+@EqualsAndHashCode(callSuper = true)
 @Entity
 @Data
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Cliente {
+public class Cliente extends Usuario {
 
-    @JsonProperty("id")
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private Long id;
-
-    @JsonProperty("nome")
-    @Column(nullable = false)
-    private String nome;
-
-    @JsonProperty("endereco")
-    @Column(nullable = false)
-    private String endereco;
+    @Enumerated(EnumType.STRING)
+    @JsonProperty("tipoPlano")
+    private TipoPlano plano;
 
     @JsonIgnore
     @Column(nullable = false)
     private String codigo;
+
+    @ManyToOne
+    @JsonIgnore
+    private Conta conta;
+
+    @PrePersist
+    public void prePersist(){
+        if (this.plano == null){
+            this.plano = TipoPlano.NORMAL;
+        }
+    }
 }
