@@ -1,7 +1,7 @@
 package com.ufcg.psoft.commerce.controller;
 
 import com.ufcg.psoft.commerce.dto.compra.CompraResponseDTO;
-import com.ufcg.psoft.commerce.service.operacao.compra.CompraService;
+import com.ufcg.psoft.commerce.service.compra.CompraService;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;

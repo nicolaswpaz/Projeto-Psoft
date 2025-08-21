@@ -1,23 +1,24 @@
 package com.ufcg.psoft.commerce.service.conta;
 
-import com.ufcg.psoft.commerce.dto.ativo.AtivoResponseDTO;
 import com.ufcg.psoft.commerce.dto.carteira.AtivoEmCarteiraResponseDTO;
 import com.ufcg.psoft.commerce.dto.compra.CompraResponseDTO;
+import com.ufcg.psoft.commerce.events.EventoAtivo;
 import com.ufcg.psoft.commerce.exception.cliente.ClienteNaoExisteException;
 import com.ufcg.psoft.commerce.exception.compra.CompraNaoExisteException;
 import com.ufcg.psoft.commerce.exception.compra.StatusCompraInvalidoException;
-import com.ufcg.psoft.commerce.exception.conta.ContaNaoExisteException;
 import com.ufcg.psoft.commerce.exception.conta.SaldoInsuficienteException;
+import com.ufcg.psoft.commerce.model.Compra;
+import com.ufcg.psoft.commerce.model.Conta;
 import com.ufcg.psoft.commerce.model.*;
 import com.ufcg.psoft.commerce.model.enums.StatusCompra;
 import com.ufcg.psoft.commerce.repository.ClienteRepository;
 import com.ufcg.psoft.commerce.repository.CompraRepository;
 import com.ufcg.psoft.commerce.repository.ContaRepository;
-import com.ufcg.psoft.commerce.repository.ItemCarteiraRepository;
-import com.ufcg.psoft.commerce.service.conta.notificacao.Notificacao;
-import com.ufcg.psoft.commerce.service.conta.notificacao.NotificacaoAtivoDisponivel;
-import com.ufcg.psoft.commerce.service.conta.notificacao.NotificacaoAtivoVariouCotacao;
+import com.ufcg.psoft.commerce.repository.ItemCarteiraRepository;;
+import com.ufcg.psoft.commerce.listener.NotificacaoAtivoDisponivel;
+import com.ufcg.psoft.commerce.listener.NotificacaoAtivoVariouCotacao;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -27,23 +28,20 @@ import java.util.stream.Collectors;
 @Service
 public class ContaServiceImpl implements ContaService {
 
+    @Autowired
     ContaRepository contaRepository;
-    CompraRepository compraRepository;
-    ModelMapper modelMapper;
-    ClienteRepository clienteRepository;
-    ItemCarteiraRepository itemCarteiraRepository;
 
-    public ContaServiceImpl(ContaRepository contaRepository,
-                            CompraRepository compraRepository,
-                            ModelMapper modelMapper,
-                            ClienteRepository clienteRepository,
-                            ItemCarteiraRepository itemCarteiraRepository) {
-        this.contaRepository = contaRepository;
-        this.compraRepository = compraRepository;
-        this.modelMapper = modelMapper;
-        this.clienteRepository = clienteRepository;
-        this.itemCarteiraRepository = itemCarteiraRepository;
-    }
+    @Autowired
+    CompraRepository compraRepository;
+
+    @Autowired
+    ModelMapper modelMapper;
+
+    @Autowired
+    ClienteRepository clienteRepository;
+
+    @Autowired
+    ItemCarteiraRepository itemCarteiraRepository;
 
     @Override
     public Conta criarContaPadrao() {
@@ -56,46 +54,16 @@ public class ContaServiceImpl implements ContaService {
         return contaRepository.save(conta);
     }
 
-    @Override
-    public void adicionarAtivoNaListaDeInteresse(Long id, Ativo ativo) {
-
-        Conta conta = contaRepository.findById(id).orElseThrow(ContaNaoExisteException::new);
-
-        if (conta.getAtivosDeInteresse() == null) {
-            conta.setAtivosDeInteresse(new ArrayList<>());
-        }
-        if (!conta.getAtivosDeInteresse().contains(ativo)) {
-            conta.getAtivosDeInteresse().add(ativo);
-        }
-
-        contaRepository.save(conta);
+    @Override //provavelmente aqui é melhor implementar o metodo direto da interface notificacaoListener
+    public void notificarAtivoDisponivelClientesComInteresse(EventoAtivo evento) {
+        NotificacaoAtivoDisponivel notificacao = new NotificacaoAtivoDisponivel();
+        notificacao.notificarAtivoDisponivel(evento);
     }
 
-    private void notificarClientesComInteresse(Ativo ativo, Notificacao notificacao) {
-        List<Conta> contas = contaRepository.findAll();
-
-        for (Conta conta : contas) {
-            List<Ativo> interesses = conta.getAtivosDeInteresse();
-
-            if (interesses == null || interesses.stream().noneMatch(a -> a.getId().equals(ativo.getId()))) {
-                continue;
-            }
-
-            clienteRepository.findByContaId(conta.getId()).ifPresent(cliente -> {
-                AtivoResponseDTO dto = modelMapper.map(ativo, AtivoResponseDTO.class);
-                notificacao.notificarCliente(cliente.getNome(), dto);
-            });
-        }
-    }
-
-    @Override
-    public void notificarAtivoDisponivelClientesComInteresse(Ativo ativo) {
-        notificarClientesComInteresse(ativo, new NotificacaoAtivoDisponivel());
-    }
-
-    @Override
-    public void notificarClientesPremiumComInteresse(Ativo ativo){
-        notificarClientesComInteresse(ativo, new NotificacaoAtivoVariouCotacao());
+    @Override //provavelmente aqui é melhor implementar o metodo direto da interface notificacaoListener
+    public void notificarClientesPremiumComInteresse(EventoAtivo evento){
+        NotificacaoAtivoVariouCotacao notificacao = new NotificacaoAtivoVariouCotacao();
+        notificacao.notificarAtivoVariouCotacao(evento);
     }
 
     @Override
@@ -168,5 +136,6 @@ public class ContaServiceImpl implements ContaService {
                 })
                 .collect(Collectors.toList());
     }
+
 
 }

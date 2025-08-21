@@ -1,7 +1,7 @@
 package com.ufcg.psoft.commerce.model;
 
 import com.ufcg.psoft.commerce.model.enums.StatusCompra;
-import com.ufcg.psoft.commerce.service.operacao.compra.status.*;
+import com.ufcg.psoft.commerce.service.compra.status.*;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;

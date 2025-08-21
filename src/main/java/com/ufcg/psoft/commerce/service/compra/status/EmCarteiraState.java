@@ -1,4 +1,4 @@
-package com.ufcg.psoft.commerce.service.operacao.compra.status;
+package com.ufcg.psoft.commerce.service.compra.status;
 
 import com.ufcg.psoft.commerce.model.Compra;
 

@@ -29,4 +29,8 @@ public class Conta {
     @OneToMany
     @JsonProperty("cateira")
     private List<AtivoEmCarteira> carteira;
+
+    @ManyToMany
+    @JsonProperty("operacoes")
+    private List<Operacao> operacoes;
 }

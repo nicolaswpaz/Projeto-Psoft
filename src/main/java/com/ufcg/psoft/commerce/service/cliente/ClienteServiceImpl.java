@@ -176,12 +176,12 @@ public class ClienteServiceImpl implements ClienteService {
         }
 
         if(!ativo.isDisponivel()) {
-            contaService.adicionarAtivoNaListaDeInteresse(cliente.getConta().getId(), ativo);
+            ativoService.adicionarClienteNaListaDeInteresseIndisponivel(cliente, ativo);
         }else{
             throw new AtivoDisponivelException();
         }
     }
-    @Transactional
+
     @Override
     public void marcarInteresseAtivoDisponivel(Long id, String codigoAcesso, Long idAtivo) {
         Cliente cliente = autenticar(id, codigoAcesso);
@@ -197,7 +197,7 @@ public class ClienteServiceImpl implements ClienteService {
         }
 
         if (ativo.isDisponivel()){
-            contaService.adicionarAtivoNaListaDeInteresse(cliente.getConta().getId(), ativo);
+            ativoService.adicionarClienteNaListaDeInteresseDisponivel(cliente, ativo);
         } else {
             throw new AtivoIndisponivelException();
         }

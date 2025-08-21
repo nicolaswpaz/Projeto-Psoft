@@ -22,12 +22,8 @@ public class ContaResponseDTO {
     @JsonProperty("saldo")
     private BigDecimal saldo;
 
-    @JsonProperty("ativosDeInteresse")
-    private List<Ativo> ativosDeInteresse;
-
     public ContaResponseDTO(Conta conta) {
         this.id = conta.getId();
         this.saldo = conta.getSaldo();
-        this.ativosDeInteresse = conta.getAtivosDeInteresse();
     }
 }

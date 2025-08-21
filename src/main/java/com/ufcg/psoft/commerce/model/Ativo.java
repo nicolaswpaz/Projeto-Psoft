@@ -6,6 +6,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.List;
 
 @Entity
 @Data
@@ -34,6 +36,15 @@ public class Ativo {
 
     @JsonProperty("disponivel")
     private Boolean disponivel;
+
+    @ManyToMany //nao gosto da ideia de ter duas listas
+    @JsonProperty("clientesInteressados")
+    private List<Cliente> clientesInteresseIndisponivel;
+
+    @ManyToMany
+    @JsonProperty("clientesInteressados")
+    private List<Cliente> clientesInteresseDisponivel;
+
 
     @PrePersist
     public void setDefaultValues() {

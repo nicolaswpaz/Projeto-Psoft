@@ -3,6 +3,7 @@ package com.ufcg.psoft.commerce.service.ativo;
 import com.ufcg.psoft.commerce.dto.ativo.AtivoPostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.ativo.AtivoResponseDTO;
 import com.ufcg.psoft.commerce.model.Ativo;
+import com.ufcg.psoft.commerce.model.Cliente;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -30,4 +31,8 @@ public interface AtivoService {
     List<AtivoResponseDTO> listarAtivosDisponiveis();
 
     Ativo verificarAtivoExistente(Long id);
+
+    void adicionarClienteNaListaDeInteresseDisponivel(Cliente cliente, Ativo ativo);
+
+    void adicionarClienteNaListaDeInteresseIndisponivel(Cliente cliente, Ativo ativo);
 }

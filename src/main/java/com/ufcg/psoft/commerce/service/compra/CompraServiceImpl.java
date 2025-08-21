@@ -1,4 +1,4 @@
-package com.ufcg.psoft.commerce.service.operacao.compra;
+package com.ufcg.psoft.commerce.service.compra;
 
 import com.ufcg.psoft.commerce.dto.compra.CompraResponseDTO;
 import com.ufcg.psoft.commerce.exception.cliente.ClienteNaoPremiumException;
