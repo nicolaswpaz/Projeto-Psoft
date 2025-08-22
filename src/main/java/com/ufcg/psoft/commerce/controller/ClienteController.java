@@ -1,11 +1,11 @@
 package com.ufcg.psoft.commerce.controller;
 
 import  com.ufcg.psoft.commerce.dto.ativo.AtivoResponseDTO;
+import com.ufcg.psoft.commerce.dto.carteira.AtivoEmCarteiraResponseDTO;
 import com.ufcg.psoft.commerce.dto.cliente.ClientePostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.cliente.ClienteResponseDTO;
 import com.ufcg.psoft.commerce.service.cliente.ClienteService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -119,5 +119,15 @@ public class ClienteController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(clienteService.visualizarDetalhesAtivo(id, codigo, idAtivo));
+    }
+
+    @GetMapping("/{idCliente}/carteira")
+    public ResponseEntity<List<AtivoEmCarteiraResponseDTO>> visualizarCarteira(
+            @PathVariable Long idCliente,
+            @RequestParam String codigoAcesso) {
+
+        List<AtivoEmCarteiraResponseDTO> carteira = clienteService.visualizarCarteira(idCliente, codigoAcesso);
+
+        return ResponseEntity.ok(carteira);
     }
 }

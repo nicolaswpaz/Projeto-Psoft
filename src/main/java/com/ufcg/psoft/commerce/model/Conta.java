@@ -28,5 +28,5 @@ public class Conta {
 
     @OneToMany
     @JsonProperty("cateira")
-    private List<ItemCarteira> carteira;
+    private List<AtivoEmCarteira> carteira;
 }

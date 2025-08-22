@@ -1,6 +1,7 @@
 package com.ufcg.psoft.commerce.service.cliente;
 
 import com.ufcg.psoft.commerce.dto.ativo.AtivoResponseDTO;
+import com.ufcg.psoft.commerce.dto.carteira.AtivoEmCarteiraResponseDTO;
 import com.ufcg.psoft.commerce.dto.endereco.EnderecoResponseDTO;
 import com.ufcg.psoft.commerce.exception.ativo.AtivoDisponivelException;
 import com.ufcg.psoft.commerce.exception.ativo.AtivoIndisponivelException;
@@ -225,5 +226,17 @@ public class ClienteServiceImpl implements ClienteService {
         }
 
         contaService.confirmarCompra(idCliente, idCompra);
+    }
+
+    @Override
+    public List<AtivoEmCarteiraResponseDTO> visualizarCarteira(Long idCliente, String codigoAcesso) {
+        Cliente cliente = clienteRepository.findById(idCliente)
+                .orElseThrow(ClienteNaoExisteException::new);
+
+        if (!cliente.getCodigo().equals(codigoAcesso)) {
+            throw new CodigoDeAcessoInvalidoException();
+        }
+
+        return contaService.visualizarCarteira(idCliente);
     }
 }

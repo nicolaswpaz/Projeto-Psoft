@@ -1,23 +1,19 @@
 package com.ufcg.psoft.commerce.service.conta;
 
 import com.ufcg.psoft.commerce.dto.ativo.AtivoResponseDTO;
-import com.ufcg.psoft.commerce.dto.carteira.AtivoEmCarteiraDTO;
+import com.ufcg.psoft.commerce.dto.carteira.AtivoEmCarteiraResponseDTO;
 import com.ufcg.psoft.commerce.dto.compra.CompraResponseDTO;
+import com.ufcg.psoft.commerce.exception.cliente.ClienteNaoExisteException;
 import com.ufcg.psoft.commerce.exception.compra.CompraNaoExisteException;
 import com.ufcg.psoft.commerce.exception.compra.StatusCompraInvalidoException;
 import com.ufcg.psoft.commerce.exception.conta.ContaNaoExisteException;
 import com.ufcg.psoft.commerce.exception.conta.SaldoInsuficienteException;
 import com.ufcg.psoft.commerce.model.*;
-import com.ufcg.psoft.commerce.model.Ativo;
-import com.ufcg.psoft.commerce.model.Compra;
-import com.ufcg.psoft.commerce.model.Conta;
-import com.ufcg.psoft.commerce.model.ItemCarteira;
 import com.ufcg.psoft.commerce.model.enums.StatusCompra;
 import com.ufcg.psoft.commerce.repository.ClienteRepository;
 import com.ufcg.psoft.commerce.repository.CompraRepository;
 import com.ufcg.psoft.commerce.repository.ContaRepository;
 import com.ufcg.psoft.commerce.repository.ItemCarteiraRepository;
-import com.ufcg.psoft.commerce.service.cliente.ClienteService;
 import com.ufcg.psoft.commerce.service.conta.notificacao.Notificacao;
 import com.ufcg.psoft.commerce.service.conta.notificacao.NotificacaoAtivoDisponivel;
 import com.ufcg.psoft.commerce.service.conta.notificacao.NotificacaoAtivoVariouCotacao;
@@ -26,32 +22,28 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
 public class ContaServiceImpl implements ContaService {
 
-    private final ContaRepository contaRepository;
-    private final CompraRepository compraRepository;
-    private final ModelMapper modelMapper;
-    private final ClienteRepository clienteRepository;
-    private final ItemCarteiraRepository itemCarteiraRepository;
+    ContaRepository contaRepository;
+    CompraRepository compraRepository;
+    ModelMapper modelMapper;
+    ClienteRepository clienteRepository;
+    ItemCarteiraRepository itemCarteiraRepository;
 
     public ContaServiceImpl(ContaRepository contaRepository,
                             CompraRepository compraRepository,
                             ModelMapper modelMapper,
-                            ClienteRepository clienteRepository, ItemCarteiraRepository itemCarteiraRepository) {
+                            ClienteRepository clienteRepository,
+                            ItemCarteiraRepository itemCarteiraRepository) {
         this.contaRepository = contaRepository;
         this.compraRepository = compraRepository;
         this.modelMapper = modelMapper;
         this.clienteRepository = clienteRepository;
         this.itemCarteiraRepository = itemCarteiraRepository;
     }
-
-    @Autowired
-    ClienteService clienteService;
 
     @Override
     public Conta criarContaPadrao() {
@@ -126,13 +118,12 @@ public class ContaServiceImpl implements ContaService {
         compra.avancarStatus();
         compraRepository.save(compra);
 
-        ItemCarteira item = new ItemCarteira();
-        Ativo ativo = compra.getAtivo();
-        item.setAtivo(ativo);
+        AtivoEmCarteira item = new AtivoEmCarteira();
+        item.setAtivo(compra.getAtivo());
         item.setQuantidadeTotal(compra.getQuantidade());
-        item.setValorDeAquisicao(ativo.getCotacao());
-        item.setDesempenho(new BigDecimal(0));
-        item.setValorAtual(ativo.getCotacao());
+        item.setValorDeAquisicao(compra.getValorVenda().divide(new BigDecimal(item.getQuantidadeTotal()))); //valor unitario
+        item.setValorAtual(item.getValorAtual());
+        item.setDesempenho(item.getDesempenho());
         item.setConta(conta);
 
         itemCarteiraRepository.save(item);
@@ -144,50 +135,38 @@ public class ContaServiceImpl implements ContaService {
 
         return modelMapper.map(compra, CompraResponseDTO.class);
     }
+
     @Override
-    public List<AtivoEmCarteiraDTO> visualizarCarteira(Long idCliente, String codigoAcesso) {
+    public List<AtivoEmCarteiraResponseDTO> visualizarCarteira(Long idCliente) {
+        Cliente cliente = clienteRepository.findById(idCliente)
+                .orElseThrow(ClienteNaoExisteException::new);
 
-        clienteService.autenticar(idCliente, codigoAcesso);
+        List<AtivoEmCarteira> carteira = cliente.getConta().getCarteira();
 
-        List<Compra> comprasEmCarteira = compraRepository.findAllByClienteIdAndStatusCompra(
-                idCliente,
-                StatusCompra.EM_CARTEIRA
-        );
+        return carteira.stream()
+                .map(item -> {
+                    Ativo ativo = item.getAtivo();
 
-        Map<Ativo, List<Compra>> comprasAgrupadasPorAtivo = comprasEmCarteira.stream()
-                .collect(Collectors.groupingBy(Compra::getAtivo));
+                    Integer quantidadeTotal = item.getQuantidadeTotal();
 
-        List<AtivoEmCarteiraDTO> carteiraConsolidada = comprasAgrupadasPorAtivo.entrySet().stream()
-                .map(entry -> {
-                    Ativo ativo = entry.getKey();
-                    List<Compra> comprasDoAtivo = entry.getValue();
+                    BigDecimal valorDeAquisicao = item.getValorDeAquisicao();
 
-                    int quantidadeTotal = comprasDoAtivo.stream()
-                            .mapToInt(Compra::getQuantidade)
-                            .sum();
+                    BigDecimal valorAtual = ativo.getCotacao()
+                            .multiply(BigDecimal.valueOf(quantidadeTotal));
 
-                    BigDecimal valorTotalAquisicao = comprasDoAtivo.stream()
-                            .map(Compra::getValorVenda)
-                            .reduce(BigDecimal.ZERO, BigDecimal::add);
+                    BigDecimal desempenho = valorAtual.subtract(valorDeAquisicao);
 
-                    BigDecimal valorTotalAtual = new BigDecimal(quantidadeTotal)
-                            .multiply(ativo.getCotacao());
-
-                    BigDecimal desempenho = valorTotalAtual.subtract(valorTotalAquisicao);
-
-                    return AtivoEmCarteiraDTO.builder()
+                    return AtivoEmCarteiraResponseDTO.builder()
                             .ativoId(ativo.getId())
                             .nomeAtivo(ativo.getNome())
                             .tipo(ativo.getTipo())
                             .quantidadeTotal(quantidadeTotal)
-                            .valorTotalDeAquisicao(valorTotalAquisicao)
-                            .valorTotalAtual(valorTotalAtual)
+                            .valorDeAquisicao(valorDeAquisicao)
+                            .valorAtual(valorAtual)
                             .desempenho(desempenho)
                             .build();
                 })
                 .collect(Collectors.toList());
-
-        return carteiraConsolidada;
     }
 
 }

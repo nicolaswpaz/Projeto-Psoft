@@ -1,8 +1,8 @@
-package com.ufcg.psoft.commerce.dto.item.carteira;
+package com.ufcg.psoft.commerce.dto.carteira;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.ufcg.psoft.commerce.model.Ativo;
-import com.ufcg.psoft.commerce.model.ItemCarteira;
+import com.ufcg.psoft.commerce.model.AtivoEmCarteira;
 import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,7 +16,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ItemCarteiraResponseDTO {
+public class AtivoEmCarteiraResponseDTO {
 
     private Long ativoId;
     private String nomeAtivo;
@@ -26,7 +26,7 @@ public class ItemCarteiraResponseDTO {
     private BigDecimal valorAtual;
     private BigDecimal desempenho;
 
-    public ItemCarteiraResponseDTO(ItemCarteira item) {
+    public AtivoEmCarteiraResponseDTO(AtivoEmCarteira item) {
         Ativo temp_ativo = item.getAtivo();
         this.ativoId = temp_ativo.getId();
         this.nomeAtivo = temp_ativo.getNome();

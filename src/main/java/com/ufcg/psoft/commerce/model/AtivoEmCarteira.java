@@ -1,5 +1,6 @@
 package com.ufcg.psoft.commerce.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -16,7 +17,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @Inheritance(strategy = InheritanceType.JOINED)
 @Table(name = "item_carteira")
-public class ItemCarteira {
+public class AtivoEmCarteira {
     @Id
     @JsonProperty("id")
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
@@ -36,8 +37,10 @@ public class ItemCarteira {
     @JoinColumn(name = "conta_id")
     private Conta conta;
 
+    @JsonIgnore
     private BigDecimal valorAtual;
 
+    @JsonIgnore
     private BigDecimal desempenho;
 
     @Transient
