@@ -17,8 +17,11 @@ import java.util.List;
 @RequestMapping(value = "/ativos", produces = MediaType.APPLICATION_JSON_VALUE)
 public class AtivoController {
 
-    @Autowired
-    AtivoService ativoService;
+    private final AtivoService ativoService;
+
+    public AtivoController(AtivoService ativoService) {
+        this.ativoService = ativoService;
+    }
 
     @PostMapping()
     public ResponseEntity<AtivoResponseDTO> criarAtivo(@RequestParam String matriculaAdmin,

@@ -8,16 +8,20 @@ import com.ufcg.psoft.commerce.exception.compra.StatusCompraInvalidoException;
 import com.ufcg.psoft.commerce.exception.conta.ContaNaoExisteException;
 import com.ufcg.psoft.commerce.exception.conta.SaldoInsuficienteException;
 import com.ufcg.psoft.commerce.model.*;
+import com.ufcg.psoft.commerce.model.Ativo;
+import com.ufcg.psoft.commerce.model.Compra;
+import com.ufcg.psoft.commerce.model.Conta;
+import com.ufcg.psoft.commerce.model.ItemCarteira;
 import com.ufcg.psoft.commerce.model.enums.StatusCompra;
 import com.ufcg.psoft.commerce.repository.ClienteRepository;
 import com.ufcg.psoft.commerce.repository.CompraRepository;
 import com.ufcg.psoft.commerce.repository.ContaRepository;
+import com.ufcg.psoft.commerce.repository.ItemCarteiraRepository;
 import com.ufcg.psoft.commerce.service.cliente.ClienteService;
 import com.ufcg.psoft.commerce.service.conta.notificacao.Notificacao;
 import com.ufcg.psoft.commerce.service.conta.notificacao.NotificacaoAtivoDisponivel;
 import com.ufcg.psoft.commerce.service.conta.notificacao.NotificacaoAtivoVariouCotacao;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -29,17 +33,22 @@ import java.util.stream.Collectors;
 @Service
 public class ContaServiceImpl implements ContaService {
 
-    @Autowired
-    ContaRepository contaRepository;
+    private final ContaRepository contaRepository;
+    private final CompraRepository compraRepository;
+    private final ModelMapper modelMapper;
+    private final ClienteRepository clienteRepository;
+    private final ItemCarteiraRepository itemCarteiraRepository;
 
-    @Autowired
-    CompraRepository compraRepository;
-
-    @Autowired
-    ModelMapper modelMapper;
-
-    @Autowired
-    ClienteRepository clienteRepository;
+    public ContaServiceImpl(ContaRepository contaRepository,
+                            CompraRepository compraRepository,
+                            ModelMapper modelMapper,
+                            ClienteRepository clienteRepository, ItemCarteiraRepository itemCarteiraRepository) {
+        this.contaRepository = contaRepository;
+        this.compraRepository = compraRepository;
+        this.modelMapper = modelMapper;
+        this.clienteRepository = clienteRepository;
+        this.itemCarteiraRepository = itemCarteiraRepository;
+    }
 
     @Autowired
     ClienteService clienteService;
@@ -49,6 +58,7 @@ public class ContaServiceImpl implements ContaService {
         Conta conta = Conta.builder()
                 .saldo(BigDecimal.valueOf(0.00))
                 .ativosDeInteresse(new ArrayList<>())
+                .carteira(new ArrayList<>())
                 .build();
 
         return contaRepository.save(conta);
@@ -116,17 +126,18 @@ public class ContaServiceImpl implements ContaService {
         compra.avancarStatus();
         compraRepository.save(compra);
 
-        return modelMapper.map(compra, CompraResponseDTO.class);
-    }
+        ItemCarteira item = new ItemCarteira();
+        Ativo ativo = compra.getAtivo();
+        item.setAtivo(ativo);
+        item.setQuantidadeTotal(compra.getQuantidade());
+        item.setValorDeAquisicao(ativo.getCotacao());
+        item.setDesempenho(new BigDecimal(0));
+        item.setValorAtual(ativo.getCotacao());
+        item.setConta(conta);
 
-    @Override
-    public CompraResponseDTO adicionarNaCarteira(Long idCliente, Long idCompra) {
-        Compra compra = compraRepository.findById(idCompra)
-                .orElseThrow(CompraNaoExisteException::new);
-
-        if (compra.getStatusCompra() != StatusCompra.COMPRADO) {
-            throw new StatusCompraInvalidoException();
-        }
+        itemCarteiraRepository.save(item);
+        conta.getCarteira().add(item);
+        contaRepository.save(conta);
 
         compra.avancarStatus();
         compraRepository.save(compra);

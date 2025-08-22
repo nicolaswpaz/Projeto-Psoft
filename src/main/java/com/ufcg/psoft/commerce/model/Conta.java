@@ -26,7 +26,7 @@ public class Conta {
     @JsonProperty("ativosDeInteresse")
     private List<Ativo> ativosDeInteresse;
 
-    @ManyToMany
-    @JsonProperty("operacoes")
-    private List<Operacao> operacoes;
+    @OneToMany
+    @JsonProperty("cateira")
+    private List<ItemCarteira> carteira;
 }

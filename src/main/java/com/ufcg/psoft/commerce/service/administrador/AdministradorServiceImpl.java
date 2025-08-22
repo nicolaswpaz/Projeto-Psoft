@@ -23,17 +23,20 @@ import org.springframework.stereotype.Service;
 @Service
 public class AdministradorServiceImpl implements AdministradorService {
 
-    @Autowired
-    private AdministradorRepository administradorRepository;
+    private final AdministradorRepository administradorRepository;
+    private final ModelMapper modelMapper;
+    private final EnderecoRepository enderecoRepository;
+    private final CompraRepository compraRepository;
 
-    @Autowired
-    ModelMapper modelMapper;
-
-    @Autowired
-    EnderecoRepository enderecoRepository;
-
-    @Autowired
-    CompraRepository compraRepository;
+    public AdministradorServiceImpl(AdministradorRepository administradorRepository,
+                                    ModelMapper modelMapper,
+                                    EnderecoRepository enderecoRepository,
+                                    CompraRepository compraRepository) {
+        this.administradorRepository = administradorRepository;
+        this.modelMapper = modelMapper;
+        this.enderecoRepository = enderecoRepository;
+        this.compraRepository = compraRepository;
+    }
 
     @Override
     public Administrador autenticar(String matricula) {
@@ -94,7 +97,7 @@ public class AdministradorServiceImpl implements AdministradorService {
 
     private Administrador getAdmin() {
         return administradorRepository.findTopBy()
-                .orElseThrow(() -> new AdminNaoExisteException());
+                .orElseThrow(AdminNaoExisteException::new);
     }
 
     @Override

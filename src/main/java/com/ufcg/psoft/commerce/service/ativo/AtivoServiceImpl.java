@@ -25,17 +25,20 @@ import java.util.stream.Collectors;
 @Service
 public class AtivoServiceImpl implements AtivoService {
 
-    @Autowired
-    AtivoRepository ativoRepository;
+    private final AtivoRepository ativoRepository;
+    private final AdministradorService administradorService;
+    private final ContaService contaService;
+    private final ModelMapper modelMapper;
 
-    @Autowired
-    AdministradorService administradorService;
-
-    @Autowired
-    ContaService contaService;
-
-    @Autowired
-    ModelMapper modelMapper;
+    public AtivoServiceImpl(AtivoRepository ativoRepository,
+                            AdministradorService administradorService,
+                            ContaService contaService,
+                            ModelMapper modelMapper) {
+        this.ativoRepository = ativoRepository;
+        this.administradorService = administradorService;
+        this.contaService = contaService;
+        this.modelMapper = modelMapper;
+    }
 
     private final Map<TipoAtivo, TipoAtivoStrategy> tipoAtivoMap = Map.of(
             TipoAtivo.ACAO, new Acao(),
@@ -189,7 +192,7 @@ public class AtivoServiceImpl implements AtivoService {
     @Override
     public Ativo verificarAtivoExistente(Long idAtivo) {
         return ativoRepository.findById(idAtivo)
-                .orElseThrow(() -> new AtivoNaoExisteException());
+                .orElseThrow(AtivoNaoExisteException::new);
     }
 
 }

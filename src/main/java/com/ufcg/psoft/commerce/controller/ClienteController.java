@@ -20,8 +20,12 @@ import java.util.List;
 )
 public class ClienteController {
 
-    @Autowired
-    ClienteService clienteService;
+
+    private final ClienteService clienteService;
+
+    public ClienteController(ClienteService clienteService) {
+        this.clienteService = clienteService;
+    }
 
     @GetMapping("/{id}")
     public ResponseEntity<ClienteResponseDTO> recuperarCliente(

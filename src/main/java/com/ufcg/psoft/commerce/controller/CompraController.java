@@ -3,7 +3,6 @@ package com.ufcg.psoft.commerce.controller;
 import com.ufcg.psoft.commerce.dto.compra.CompraResponseDTO;
 import com.ufcg.psoft.commerce.service.operacao.compra.CompraService;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -18,11 +17,13 @@ import java.util.List;
 )
 public class CompraController {
 
-    @Autowired
-    CompraService compraService;
+    private final CompraService compraService;
+    protected final ModelMapper modelMapper;
 
-    @Autowired
-    ModelMapper modelMapper;
+    public CompraController(CompraService compraService, ModelMapper modelMapper) {
+        this.compraService = compraService;
+        this.modelMapper = modelMapper;
+    }
 
     @PostMapping("/{idCliente}/{idAtivo}")
     public ResponseEntity<CompraResponseDTO> solicitarCompra(
@@ -51,16 +52,6 @@ public class CompraController {
             @RequestParam String codigoAcesso) {
 
         CompraResponseDTO compraDTO = compraService.confirmarCompra(idCliente, codigoAcesso, idCompra);
-        return ResponseEntity.ok(compraDTO);
-    }
-
-    @PutMapping("/{idCliente}/{idCompra}/adicionarCarteira")
-    public ResponseEntity<CompraResponseDTO> adicionarNaCarteira(
-            @PathVariable Long idCliente,
-            @PathVariable Long idCompra,
-            @RequestParam String codigoAcesso) {
-
-        CompraResponseDTO compraDTO = compraService.adicionarNaCarteira(idCliente, codigoAcesso, idCompra);
         return ResponseEntity.ok(compraDTO);
     }
 

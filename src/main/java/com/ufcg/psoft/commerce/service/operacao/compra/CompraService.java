@@ -12,8 +12,6 @@ public interface CompraService {
 
     CompraResponseDTO confirmarCompra(Long idCliente, String codigoAcesso, Long idCompra);
 
-    CompraResponseDTO adicionarNaCarteira(Long idCliente, String codigoAcesso, Long idCompra);
-
     CompraResponseDTO consultar(Long idCliente, String codigoAcesso, Long idCompra);
 
     List<CompraResponseDTO> listar(String matriculaAdmin);

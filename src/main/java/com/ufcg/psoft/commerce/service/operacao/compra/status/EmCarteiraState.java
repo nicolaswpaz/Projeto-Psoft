@@ -4,7 +4,7 @@ import com.ufcg.psoft.commerce.model.Compra;
 
 public class EmCarteiraState implements StatusCompraState {
 
-    private Compra compra;
+    private final Compra compra;
 
     public EmCarteiraState(Compra compra) {
         this.compra = compra;

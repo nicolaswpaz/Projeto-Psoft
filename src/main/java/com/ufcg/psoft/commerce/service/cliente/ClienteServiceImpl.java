@@ -1,7 +1,6 @@
 package com.ufcg.psoft.commerce.service.cliente;
 
 import com.ufcg.psoft.commerce.dto.ativo.AtivoResponseDTO;
-import com.ufcg.psoft.commerce.dto.compra.CompraResponseDTO;
 import com.ufcg.psoft.commerce.dto.endereco.EnderecoResponseDTO;
 import com.ufcg.psoft.commerce.exception.ativo.AtivoDisponivelException;
 import com.ufcg.psoft.commerce.exception.ativo.AtivoIndisponivelException;
@@ -17,7 +16,6 @@ import com.ufcg.psoft.commerce.service.administrador.AdministradorService;
 import com.ufcg.psoft.commerce.service.ativo.AtivoService;
 import com.ufcg.psoft.commerce.service.conta.ContaService;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
@@ -30,23 +28,26 @@ import com.ufcg.psoft.commerce.repository.EnderecoRepository;
 @Service
 public class ClienteServiceImpl implements ClienteService {
 
-    @Autowired
-    ClienteRepository clienteRepository;
+    private final ClienteRepository clienteRepository;
+    private final ModelMapper modelMapper;
+    private final EnderecoRepository enderecoRepository;
+    private final AdministradorService administradorService;
+    private final AtivoService ativoService;
+    private final ContaService contaService;
 
-    @Autowired
-    ModelMapper modelMapper;
-
-    @Autowired
-    EnderecoRepository enderecoRepository;
-
-    @Autowired
-    AdministradorService administradorService;
-
-    @Autowired
-    AtivoService ativoService;
-
-    @Autowired
-    ContaService contaService;
+    public ClienteServiceImpl(ClienteRepository clienteRepository,
+                              ModelMapper modelMapper,
+                              EnderecoRepository enderecoRepository,
+                              AdministradorService administradorService,
+                              AtivoService ativoService,
+                              ContaService contaService) {
+        this.clienteRepository = clienteRepository;
+        this.modelMapper = modelMapper;
+        this.enderecoRepository = enderecoRepository;
+        this.administradorService = administradorService;
+        this.ativoService = ativoService;
+        this.contaService = contaService;
+    }
 
     @Override
     public Cliente autenticar(Long id, String codigoAcesso) {
@@ -224,17 +225,5 @@ public class ClienteServiceImpl implements ClienteService {
         }
 
         contaService.confirmarCompra(idCliente, idCompra);
-    }
-
-    @Override
-    public void adicionarAtivoNaCarteira(Long idCliente, String codigoAcesso, Long idCompra) {
-        Cliente cliente = clienteRepository.findById(idCliente)
-                .orElseThrow(ClienteNaoExisteException::new);
-
-        if (!cliente.getCodigo().equals(codigoAcesso)) {
-            throw new CodigoDeAcessoInvalidoException();
-        }
-
-        contaService.adicionarNaCarteira(idCliente, idCompra);
     }
 }

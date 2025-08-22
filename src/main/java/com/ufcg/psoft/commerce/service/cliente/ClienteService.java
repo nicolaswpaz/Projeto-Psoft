@@ -33,5 +33,4 @@ public interface ClienteService {
 
     void confirmarCompraAtivo(Long idCliente, Long idCompra, String codigoAcesso);
 
-    void adicionarAtivoNaCarteira(Long idCliente, String codigoAcesso, Long idCompra);
 }
