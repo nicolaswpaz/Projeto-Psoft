@@ -4,6 +4,7 @@ import com.ufcg.psoft.commerce.dto.ativo.AtivoPostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.ativo.AtivoResponseDTO;
 import com.ufcg.psoft.commerce.model.Ativo;
 import com.ufcg.psoft.commerce.model.Cliente;
+import com.ufcg.psoft.commerce.model.enums.TipoInteresse;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -32,7 +33,5 @@ public interface AtivoService {
 
     Ativo verificarAtivoExistente(Long id);
 
-    void adicionarClienteNaListaDeInteresseDisponivel(Cliente cliente, Ativo ativo);
-
-    void adicionarClienteNaListaDeInteresseIndisponivel(Cliente cliente, Ativo ativo);
+    void registrarInteresse(Cliente cliente, Ativo ativo, TipoInteresse tipoInteresse);
 }

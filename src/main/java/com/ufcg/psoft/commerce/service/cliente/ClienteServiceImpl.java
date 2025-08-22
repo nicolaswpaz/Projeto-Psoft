@@ -10,6 +10,7 @@ import com.ufcg.psoft.commerce.exception.cliente.OperacaoInvalidaException;
 import com.ufcg.psoft.commerce.model.*;
 import com.ufcg.psoft.commerce.model.enums.TipoPlano;
 import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
+import com.ufcg.psoft.commerce.model.enums.TipoInteresse;
 import com.ufcg.psoft.commerce.repository.ClienteRepository;
 import com.ufcg.psoft.commerce.dto.cliente.ClientePostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.cliente.ClienteResponseDTO;
@@ -29,26 +30,23 @@ import com.ufcg.psoft.commerce.repository.EnderecoRepository;
 @Service
 public class ClienteServiceImpl implements ClienteService {
 
-    private final ClienteRepository clienteRepository;
-    private final ModelMapper modelMapper;
-    private final EnderecoRepository enderecoRepository;
-    private final AdministradorService administradorService;
-    private final AtivoService ativoService;
-    private final ContaService contaService;
+    @Autowired
+    ClienteRepository clienteRepository;
 
-    public ClienteServiceImpl(ClienteRepository clienteRepository,
-                              ModelMapper modelMapper,
-                              EnderecoRepository enderecoRepository,
-                              AdministradorService administradorService,
-                              AtivoService ativoService,
-                              ContaService contaService) {
-        this.clienteRepository = clienteRepository;
-        this.modelMapper = modelMapper;
-        this.enderecoRepository = enderecoRepository;
-        this.administradorService = administradorService;
-        this.ativoService = ativoService;
-        this.contaService = contaService;
-    }
+    @Autowired
+    ModelMapper modelMapper;
+
+    @Autowired
+    EnderecoRepository enderecoRepository;
+
+    @Autowired
+    AdministradorService administradorService;
+
+    @Autowired
+    AtivoService ativoService;
+
+    @Autowired
+    ContaService contaService;
 
     @Override
     public Cliente autenticar(Long id, String codigoAcesso) {
@@ -176,7 +174,7 @@ public class ClienteServiceImpl implements ClienteService {
         }
 
         if(!ativo.isDisponivel()) {
-            ativoService.adicionarClienteNaListaDeInteresseIndisponivel(cliente, ativo);
+            ativoService.registrarInteresse(cliente, ativo, TipoInteresse.DISPONIBILIDADE);
         }else{
             throw new AtivoDisponivelException();
         }
@@ -197,7 +195,7 @@ public class ClienteServiceImpl implements ClienteService {
         }
 
         if (ativo.isDisponivel()){
-            ativoService.adicionarClienteNaListaDeInteresseDisponivel(cliente, ativo);
+            ativoService.registrarInteresse(cliente, ativo, TipoInteresse.VARIACAO_COTACAO);
         } else {
             throw new AtivoIndisponivelException();
         }

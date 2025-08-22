@@ -17,6 +17,7 @@ import com.ufcg.psoft.commerce.repository.ContaRepository;
 import com.ufcg.psoft.commerce.repository.ItemCarteiraRepository;;
 import com.ufcg.psoft.commerce.listener.NotificacaoAtivoDisponivel;
 import com.ufcg.psoft.commerce.listener.NotificacaoAtivoVariouCotacao;
+import com.ufcg.psoft.commerce.service.notificacao.NotificacaoServiceImpl;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -43,6 +44,9 @@ public class ContaServiceImpl implements ContaService {
     @Autowired
     ItemCarteiraRepository itemCarteiraRepository;
 
+    @Autowired
+    NotificacaoServiceImpl notificacaoService;
+
     @Override
     public Conta criarContaPadrao() {
         Conta conta = Conta.builder()
@@ -54,16 +58,14 @@ public class ContaServiceImpl implements ContaService {
         return contaRepository.save(conta);
     }
 
-    @Override //provavelmente aqui é melhor implementar o metodo direto da interface notificacaoListener
+    @Override
     public void notificarAtivoDisponivelClientesComInteresse(EventoAtivo evento) {
-        NotificacaoAtivoDisponivel notificacao = new NotificacaoAtivoDisponivel();
-        notificacao.notificarAtivoDisponivel(evento);
+        notificacaoService.notificarDisponibilidade(evento.getAtivo());
     }
 
-    @Override //provavelmente aqui é melhor implementar o metodo direto da interface notificacaoListener
-    public void notificarClientesPremiumComInteresse(EventoAtivo evento){
-        NotificacaoAtivoVariouCotacao notificacao = new NotificacaoAtivoVariouCotacao();
-        notificacao.notificarAtivoVariouCotacao(evento);
+    @Override
+    public void notificarClientesPremiumComInteresse(EventoAtivo evento) {
+        notificacaoService.notificarVariacaoCotacao(evento.getAtivo());
     }
 
     @Override

@@ -2,25 +2,27 @@ package com.ufcg.psoft.commerce.service.ativo;
 
 import com.ufcg.psoft.commerce.dto.ativo.AtivoPostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.ativo.AtivoResponseDTO;
-import com.ufcg.psoft.commerce.events.EventoAtivo;
 import com.ufcg.psoft.commerce.exception.ativo.*;
 import com.ufcg.psoft.commerce.model.Ativo;
 import com.ufcg.psoft.commerce.model.Cliente;
+import com.ufcg.psoft.commerce.model.InteresseAtivo;
 import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
+import com.ufcg.psoft.commerce.model.enums.TipoInteresse;
 import com.ufcg.psoft.commerce.repository.AtivoRepository;
+import com.ufcg.psoft.commerce.repository.InteresseAtivoRepository;
 import com.ufcg.psoft.commerce.service.administrador.AdministradorService;
 import com.ufcg.psoft.commerce.service.ativo.tipoAtivo.Acao;
 import com.ufcg.psoft.commerce.service.ativo.tipoAtivo.Criptomoeda;
 import com.ufcg.psoft.commerce.service.ativo.tipoAtivo.TesouroDireto;
 import com.ufcg.psoft.commerce.service.ativo.tipoAtivo.TipoAtivoStrategy;
 import com.ufcg.psoft.commerce.service.conta.ContaService;
+import com.ufcg.psoft.commerce.service.notificacao.NotificacaoServiceImpl;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -28,20 +30,23 @@ import java.util.stream.Collectors;
 @Service
 public class AtivoServiceImpl implements AtivoService {
 
-    private final AtivoRepository ativoRepository;
-    private final AdministradorService administradorService;
-    private final ContaService contaService;
-    private final ModelMapper modelMapper;
+    @Autowired
+    AtivoRepository ativoRepository;
 
-    public AtivoServiceImpl(AtivoRepository ativoRepository,
-                            AdministradorService administradorService,
-                            ContaService contaService,
-                            ModelMapper modelMapper) {
-        this.ativoRepository = ativoRepository;
-        this.administradorService = administradorService;
-        this.contaService = contaService;
-        this.modelMapper = modelMapper;
-    }
+    @Autowired
+    InteresseAtivoRepository interesseAtivoRepository;
+
+    @Autowired
+    AdministradorService administradorService;
+
+    @Autowired
+    ContaService contaService;
+
+    @Autowired
+    NotificacaoServiceImpl notificacaoService;
+
+    @Autowired
+    ModelMapper modelMapper;
 
     private final Map<TipoAtivo, TipoAtivoStrategy> tipoAtivoMap = Map.of(
             TipoAtivo.ACAO, new Acao(),
@@ -126,23 +131,9 @@ public class AtivoServiceImpl implements AtivoService {
         ativo.setDisponivel(true);
 
         ativoRepository.save(ativo);
-
-        notificarAtivoDisponivel(ativo);
+        notificacaoService.notificarDisponibilidade(ativo);
 
         return modelMapper.map(ativo, AtivoResponseDTO.class);
-    }
-
-    private void notificarAtivoDisponivel(Ativo ativo) {
-        List<Cliente> copiaLista;
-
-        synchronized (this) {
-            copiaLista = new ArrayList<>(ativo.getClientesInteresseIndisponivel());
-        }
-
-        for (Cliente cliente : copiaLista) {
-            EventoAtivo evento = new EventoAtivo(ativo, cliente);
-           contaService.notificarAtivoDisponivelClientesComInteresse(evento);
-        }
     }
 
     @Override
@@ -156,7 +147,6 @@ public class AtivoServiceImpl implements AtivoService {
         }
 
         ativo.setDisponivel(false);
-
         ativoRepository.save(ativo);
 
         return modelMapper.map(ativo, AtivoResponseDTO.class);
@@ -189,24 +179,10 @@ public class AtivoServiceImpl implements AtivoService {
         ativo.setCotacao(valor);
         ativoRepository.save(ativo);
 
-        if (variacaoPercentual.compareTo(BigDecimal.valueOf(10.0)) >= 0 && ativo.isDisponivel()) {
-            notificarAtivoVariouCotacao(ativo);
-        }
+        if (variacaoPercentual.compareTo(BigDecimal.valueOf(10.0)) >= 0 && ativo.isDisponivel())
+            notificacaoService.notificarVariacaoCotacao(ativo);
 
         return modelMapper.map(ativo, AtivoResponseDTO.class);
-    }
-
-    private void notificarAtivoVariouCotacao(Ativo ativo) {
-        List<Cliente> copiaLista;
-
-        synchronized (this) {
-            copiaLista = new ArrayList<>(ativo.getClientesInteresseDisponivel());
-        }
-
-        for (Cliente cliente : copiaLista) {
-            EventoAtivo evento = new EventoAtivo(ativo, cliente);
-            contaService.notificarClientesPremiumComInteresse(evento);
-        }
     }
 
     @Override
@@ -224,26 +200,14 @@ public class AtivoServiceImpl implements AtivoService {
                 .orElseThrow(AtivoNaoExisteException::new);
     }
 
-    @Override //metodos praticamente identicos
-    public void adicionarClienteNaListaDeInteresseIndisponivel(Cliente cliente, Ativo ativo) {
-        if (ativo.getClientesInteresseIndisponivel() == null) {
-            ativo.setClientesInteresseIndisponivel(new ArrayList<>());
-        }
-        if (!ativo.getClientesInteresseIndisponivel().contains(cliente)) {
-            ativo.getClientesInteresseIndisponivel().add(cliente);
-            ativoRepository.save(ativo);
-        }
-    }
-
-    @Override //metodos praticamente identicos
-    public void adicionarClienteNaListaDeInteresseDisponivel(Cliente cliente, Ativo ativo) {
-        if (ativo.getClientesInteresseDisponivel() == null) {
-            ativo.setClientesInteresseDisponivel(new ArrayList<>());
-        }
-        if (!ativo.getClientesInteresseDisponivel().contains(cliente)) {
-            ativo.getClientesInteresseDisponivel().add(cliente);
-            ativoRepository.save(ativo);
-        }
+    @Override
+    public void registrarInteresse(Cliente cliente, Ativo ativo, TipoInteresse tipoInteresse) {
+        InteresseAtivo interesse = InteresseAtivo.builder()
+                .cliente(cliente)
+                .ativo(ativo)
+                .tipoInteresse(tipoInteresse)
+                .build();
+        interesseAtivoRepository.save(interesse);
     }
 
 }

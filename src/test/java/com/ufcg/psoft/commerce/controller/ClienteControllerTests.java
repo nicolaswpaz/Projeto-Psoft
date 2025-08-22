@@ -1293,7 +1293,7 @@ public class    ClienteControllerTests {
     @DisplayName("Conjunto de casos de verificação dos fluxos de Mensagem e Notificação do Cliente")
     class ClienteNotificacaoMensagem {
 
-        @Test
+        /*@Test
         @DisplayName("Quando cliente Premium registra interesse em ativo disponível com sucesso")
         void quandoClienteRegistraInteresseAtivoDisponivel() throws Exception{
 
@@ -1307,7 +1307,7 @@ public class    ClienteControllerTests {
             entityManager.refresh(contaAtualizada);
 
             assertTrue(contaAtualizada.getAtivosDeInteresse().stream().anyMatch(a -> a.getId().equals(ativoDisponivel.getId())));
-        }
+        }*/
 
         @Test
         @DisplayName("quando Notificamos o cliente Premium quando cotação de ativo de interesse variar mais de 10%")

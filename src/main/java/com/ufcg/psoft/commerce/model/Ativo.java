@@ -37,14 +37,8 @@ public class Ativo {
     @JsonProperty("disponivel")
     private Boolean disponivel;
 
-    @ManyToMany //nao gosto da ideia de ter duas listas
-    @JsonProperty("clientesInteressados")
-    private List<Cliente> clientesInteresseIndisponivel;
-
-    @ManyToMany
-    @JsonProperty("clientesInteressados")
-    private List<Cliente> clientesInteresseDisponivel;
-
+    @OneToMany(mappedBy = "ativo", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<InteresseAtivo> interesses;
 
     @PrePersist
     public void setDefaultValues() {

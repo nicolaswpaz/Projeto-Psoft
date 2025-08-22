@@ -28,7 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Transactional
 @DisplayName("Testes do controlador de Compras")
-public class CompraControllerTests {
+class CompraControllerTests {
 
     final String URI_COMPRAS = "/compras";
 
