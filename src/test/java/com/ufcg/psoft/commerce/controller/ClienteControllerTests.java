@@ -73,6 +73,9 @@ public class    ClienteControllerTests {
     @Autowired
     EnderecoRepository enderecoRepository;
 
+    @Autowired
+    InteresseAtivoRepository interesseAtivoRepository;
+
     Endereco endereco;
     EnderecoResponseDTO enderecoDTO;
     Endereco endereco2;
@@ -221,6 +224,7 @@ public class    ClienteControllerTests {
     @AfterEach
     void tearDown() {
 
+        interesseAtivoRepository.deleteAll();
         ativoRepository.deleteAll();
         clienteRepository.deleteAll();
         contaRepository.deleteAll();

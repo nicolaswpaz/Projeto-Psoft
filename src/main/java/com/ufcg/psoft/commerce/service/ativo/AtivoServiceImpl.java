@@ -2,14 +2,17 @@ package com.ufcg.psoft.commerce.service.ativo;
 
 import com.ufcg.psoft.commerce.dto.ativo.AtivoPostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.ativo.AtivoResponseDTO;
+import com.ufcg.psoft.commerce.dto.carteira.AtivoEmCarteiraResponseDTO;
 import com.ufcg.psoft.commerce.exception.ativo.*;
 import com.ufcg.psoft.commerce.model.Ativo;
+import com.ufcg.psoft.commerce.model.AtivoEmCarteira;
 import com.ufcg.psoft.commerce.model.Cliente;
 import com.ufcg.psoft.commerce.model.InteresseAtivo;
 import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
 import com.ufcg.psoft.commerce.model.enums.TipoInteresse;
 import com.ufcg.psoft.commerce.repository.AtivoRepository;
 import com.ufcg.psoft.commerce.repository.InteresseAtivoRepository;
+import com.ufcg.psoft.commerce.repository.ItemCarteiraRepository;
 import com.ufcg.psoft.commerce.service.administrador.AdministradorService;
 import com.ufcg.psoft.commerce.service.ativo.tipoAtivo.Acao;
 import com.ufcg.psoft.commerce.service.ativo.tipoAtivo.Criptomoeda;
@@ -35,6 +38,9 @@ public class AtivoServiceImpl implements AtivoService {
 
     @Autowired
     InteresseAtivoRepository interesseAtivoRepository;
+
+    @Autowired
+    ItemCarteiraRepository itemCarteiraRepository;
 
     @Autowired
     AdministradorService administradorService;
@@ -178,6 +184,11 @@ public class AtivoServiceImpl implements AtivoService {
 
         ativo.setCotacao(valor);
         ativoRepository.save(ativo);
+
+        List<AtivoEmCarteira> itensCarteiraAtualizados = itemCarteiraRepository.findByAtivoId(id);
+        List<AtivoEmCarteiraResponseDTO> itensDTO = itensCarteiraAtualizados.stream()
+                .map(AtivoEmCarteiraResponseDTO::new)
+                .collect(Collectors.toList());
 
         if (variacaoPercentual.compareTo(BigDecimal.valueOf(10.0)) >= 0 && ativo.isDisponivel())
             notificacaoService.notificarVariacaoCotacao(ativo);

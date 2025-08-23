@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -37,7 +38,7 @@ public class Ativo {
     @JsonProperty("disponivel")
     private Boolean disponivel;
 
-    @OneToMany(mappedBy = "ativo", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "ativo", cascade = CascadeType.ALL)
     private List<InteresseAtivo> interesses;
 
     @PrePersist
