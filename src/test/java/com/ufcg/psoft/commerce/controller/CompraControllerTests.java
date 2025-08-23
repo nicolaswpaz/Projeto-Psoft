@@ -1,12 +1,21 @@
 package com.ufcg.psoft.commerce.controller;
 
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
+import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.ufcg.psoft.commerce.dto.carteira.AtivoEmCarteiraResponseDTO;
 import com.ufcg.psoft.commerce.dto.compra.CompraResponseDTO;
 import com.ufcg.psoft.commerce.exception.CustomErrorType;
+import com.ufcg.psoft.commerce.exception.administrador.MatriculaInvalidaException;
+import com.ufcg.psoft.commerce.exception.compra.CompraNaoExisteException;
+import com.ufcg.psoft.commerce.exception.compra.StatusCompraInvalidoException;
+import com.ufcg.psoft.commerce.exception.conta.SaldoInsuficienteException;
 import com.ufcg.psoft.commerce.model.*;
+import com.ufcg.psoft.commerce.model.enums.StatusCompra;
 import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
 import com.ufcg.psoft.commerce.model.enums.TipoPlano;
 import com.ufcg.psoft.commerce.repository.*;
@@ -21,7 +30,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -131,6 +139,9 @@ class CompraControllerTests {
                 .build()
         );
 
+        contaClienteNormal.setCliente(clienteNormal);
+        contaRepository.save(contaClienteNormal);
+
         clientePremium = clienteRepository.save(Cliente.builder()
                 .nome("Cliente Premium da Silva")
                 .endereco(enderecoClientePremium)
@@ -140,6 +151,9 @@ class CompraControllerTests {
                 .conta(contaClientePremium)
                 .build()
         );
+
+        contaClientePremium.setCliente(clientePremium);
+        contaRepository.save(contaClientePremium);
 
         ativoTesouro = ativoRepository.save(Ativo.builder()
                 .nome("Tesouro Teste")
@@ -162,7 +176,6 @@ class CompraControllerTests {
     void tearDown() {
         ativoRepository.deleteAll();
         clienteRepository.deleteAll();
-        contaRepository.deleteAll();
     }
 
     @Nested
@@ -231,7 +244,7 @@ class CompraControllerTests {
 
             CompraResponseDTO compra = objectMapper.readValue(responseJsonString, CompraResponseDTO.class);
 
-            assertEquals(clienteNormal.getId(), compra.getCliente().getId());
+            assertEquals(clienteNormal.getId(), compra.getConta().getCliente().getId());
             assertEquals(ativoTesouro.getId(), compra.getAtivo().getId());
             assertEquals(2, compra.getQuantidade());
         }
@@ -265,7 +278,7 @@ class CompraControllerTests {
 
             CompraResponseDTO compra = objectMapper.readValue(responseJsonString, CompraResponseDTO.class);
 
-            assertEquals(clientePremium.getId(), compra.getCliente().getId());
+            assertEquals(clientePremium.getId(), compra.getConta().getCliente().getId());
             assertEquals(ativoAcao.getId(), compra.getAtivo().getId());
         }
 
@@ -282,10 +295,114 @@ class CompraControllerTests {
 
             CompraResponseDTO compra = objectMapper.readValue(responseJsonString, CompraResponseDTO.class);
 
-            assertEquals(clientePremium.getId(), compra.getCliente().getId());
+            assertEquals(clientePremium.getId(), compra.getConta().getCliente().getId());
             assertEquals(ativoAcao.getId(), compra.getAtivo().getId());
             assertEquals(9999, compra.getQuantidade());
         }
+    }
+
+    @Nested
+    @DisplayName("Fluxo de disponibilização de compras pelo administrador")
+    class FluxoDisponibilizarCompra {
+
+        @Test
+        @DisplayName("Administrador disponibiliza compra com sucesso e cliente é notificado")
+        void disponibilizarCompraSucesso() throws Exception {
+            Logger compraLogger = (Logger) LoggerFactory.getLogger(CompraService.class);
+            ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
+            listAppender.start();
+            compraLogger.addAppender(listAppender);
+
+            CompraResponseDTO novaCompra = compraService.solicitarCompra(
+                    clientePremium.getId(),
+                    clientePremium.getCodigo(),
+                    ativoAcao.getId(),
+                    2
+            );
+
+            String matriculaAdmin = administrador.getMatricula();
+
+            CompraResponseDTO compraDisponivel = compraService.disponibilizarCompra(
+                    novaCompra.getId(),
+                    matriculaAdmin
+            );
+
+            assertNotNull(compraDisponivel);
+            assertEquals(StatusCompra.DISPONIVEL, compraDisponivel.getStatusCompra(),
+                    "Status da compra deve estar como DISPONIVEL após confirmação pelo admin");
+
+            List<ILoggingEvent> logsList = listAppender.list;
+            assertEquals(1, logsList.size());
+            String logMessage = logsList.get(0).getFormattedMessage();
+
+            assertTrue(logMessage.contains("Cliente " + clientePremium.getNome() + " notificado"),
+                    "O log de notificação não contém o nome do cliente premium");
+
+            listAppender.stop();
+            compraLogger.detachAppender(listAppender);
+        }
+
+        @Test
+        @DisplayName("Tentativa de disponibilizar compra inexistente lança exceção")
+        void disponibilizarCompraNaoExiste() {
+            String matriculaAdmin = administrador.getMatricula();
+            Long idInvalido = 99999L;
+
+            assertThrows(CompraNaoExisteException.class, () -> {
+                compraService.disponibilizarCompra(idInvalido, matriculaAdmin);
+            });
+        }
+
+        @Test
+        @DisplayName("Tentativa de disponibilizar compra com status inválido lança exceção")
+        void disponibilizarCompraStatusInvalido() throws Exception {
+            CompraResponseDTO novaCompra = compraService.solicitarCompra(
+                    clientePremium.getId(),
+                    clientePremium.getCodigo(),
+                    ativoAcao.getId(),
+                    1
+            );
+
+            String matriculaAdmin = administrador.getMatricula();
+
+            compraService.disponibilizarCompra(novaCompra.getId(), matriculaAdmin);
+            // Segunda tentativa deve lançar StatusCompraInvalidoException
+            assertThrows(StatusCompraInvalidoException.class, () -> {
+                compraService.disponibilizarCompra(novaCompra.getId(), matriculaAdmin);
+            });
+        }
+
+        @Test
+        void confirmarDisponibilidadeCompra_SaldoInsuficiente() {
+            CompraResponseDTO novaCompra = compraService.solicitarCompra(
+                    clientePremium.getId(),
+                    clientePremium.getCodigo(),
+                    ativoAcao.getId(),
+                    1
+            );
+
+            clientePremium.getConta().setSaldo(new BigDecimal(0));
+
+            String matriculaAdmin = administrador.getMatricula();
+
+            assertThrows(SaldoInsuficienteException.class,
+                    () -> compraService.disponibilizarCompra(novaCompra.getId(), matriculaAdmin));
+        }
+
+        @Test
+        void confirmarDisponibilidadeCompraMatriculaInvalida() {
+            CompraResponseDTO novaCompra = compraService.solicitarCompra(
+                    clientePremium.getId(),
+                    clientePremium.getCodigo(),
+                    ativoAcao.getId(),
+                    1
+            );
+
+            assertThrows(MatriculaInvalidaException.class,
+                    () -> compraService.disponibilizarCompra(novaCompra.getId(), "MatriculaErrada:C"));
+        }
+
+
     }
 
     @Nested
@@ -385,7 +502,7 @@ class CompraControllerTests {
             if (clienteNormal.getConta().getCarteira() == null) {
                 clienteNormal.getConta().setCarteira(new Carteira());
             } else {
-                clienteNormal.getConta().getCarteira().getAtivoEmCarteiras().clear();
+                clienteNormal.getConta().getCarteira().getAtivosEmCarteira().clear();
             }
 
             String responseJsonString = driver.perform(get(URI_CLIENTES + "/" + idCliente + "/carteira")

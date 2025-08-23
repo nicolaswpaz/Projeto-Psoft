@@ -7,5 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface CompraRepository extends JpaRepository<Compra, Long> {
-    List<Compra> findAllByClienteIdAndStatusCompra(Long clienteId, StatusCompra status);
+    List<Compra> findAllByContaIdAndStatusCompra(Long contaId, StatusCompra statusCompra);
 }

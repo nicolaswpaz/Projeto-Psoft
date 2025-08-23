@@ -31,7 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @DisplayName("Testes do controlador de Ativos")
-public class AtivoControllerTests {
+class AtivoControllerTests {
 
     final String URI_ATIVOS = "/ativos";
 

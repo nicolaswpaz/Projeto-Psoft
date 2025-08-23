@@ -48,13 +48,14 @@ public class ContaServiceImpl implements ContaService {
 
     @Override
     public Conta criarContaPadrao() {
+        Carteira carteira = new Carteira();
+
         Conta conta = Conta.builder()
                 .saldo(BigDecimal.valueOf(0.00))
-                .ativosDeInteresse(new ArrayList<>())
-                .carteira(new Carteira())
+                .carteira(carteira)
                 .build();
 
-        conta.getCarteira().setConta(conta);
+        carteira.setConta(conta);
 
         return contaRepository.save(conta);
     }
@@ -78,7 +79,7 @@ public class ContaServiceImpl implements ContaService {
             throw new StatusCompraInvalidoException();
         }
 
-        Conta conta = compra.getCliente().getConta();
+        Conta conta = compra.getConta();
         if (conta.getSaldo().compareTo(compra.getValorVenda()) < 0) {
             throw new SaldoInsuficienteException();
         }
@@ -97,7 +98,7 @@ public class ContaServiceImpl implements ContaService {
         ativoEmCarteira.setDesempenho(ativoEmCarteira.getDesempenho());
 
         ativoCarteiraRepository.save(ativoEmCarteira);
-        conta.getCarteira().getAtivoEmCarteiras().add(ativoEmCarteira);
+        conta.getCarteira().getAtivosEmCarteira().add(ativoEmCarteira);
         contaRepository.save(conta);
 
         compra.avancarStatus();
@@ -111,7 +112,7 @@ public class ContaServiceImpl implements ContaService {
         Cliente cliente = clienteRepository.findById(idCliente)
                 .orElseThrow(ClienteNaoExisteException::new);
 
-        List<AtivoEmCarteira> carteira = cliente.getConta().getCarteira().getAtivoEmCarteiras();
+        List<AtivoEmCarteira> carteira = cliente.getConta().getCarteira().getAtivosEmCarteira();
 
         return carteira.stream()
                 .map(ativoEmCarteira -> {

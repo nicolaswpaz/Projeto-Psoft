@@ -28,7 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @DisplayName("Testes do controlador de Administrador")
-public class AdministradorControllerTests {
+class AdministradorControllerTests {
 
     final String URI_ADMINISTRADOR = "/administrador";
 

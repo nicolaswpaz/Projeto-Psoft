@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.ufcg.psoft.commerce.model.Ativo;
 import com.ufcg.psoft.commerce.model.Cliente;
 import com.ufcg.psoft.commerce.model.Compra;
+import com.ufcg.psoft.commerce.model.Conta;
 import com.ufcg.psoft.commerce.model.enums.StatusCompra;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -35,7 +36,7 @@ public class CompraResponseDTO {
     private BigDecimal valorVenda;
 
     @JsonProperty("cliente")
-    private Cliente cliente;
+    private Conta conta;
 
     @JsonProperty("status")
     private StatusCompra statusCompra;
@@ -46,7 +47,7 @@ public class CompraResponseDTO {
         this.ativo = compra.getAtivo();
         this.quantidade = compra.getQuantidade();
         this.valorVenda = compra.getValorVenda();
-        this.cliente = compra.getCliente();
+        this.conta = compra.getConta();
         this.statusCompra = compra.getStatusCompra();
     }
 }
