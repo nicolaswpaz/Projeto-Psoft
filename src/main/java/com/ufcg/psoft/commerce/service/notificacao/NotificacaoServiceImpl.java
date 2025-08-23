@@ -6,7 +6,6 @@ import com.ufcg.psoft.commerce.model.Ativo;
 import com.ufcg.psoft.commerce.model.InteresseAtivo;
 import com.ufcg.psoft.commerce.model.enums.TipoInteresse;
 import com.ufcg.psoft.commerce.repository.InteresseAtivoRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -14,11 +13,14 @@ import java.util.*;
 @Service
 public class NotificacaoServiceImpl implements NotificacaoService{
 
-    @Autowired
-    InteresseAtivoRepository interesseAtivoRepository;
+    private final InteresseAtivoRepository interesseAtivoRepository;
+    private final List<NotificacaoListener> listeners;
 
-    @Autowired(required = false)
-    List<NotificacaoListener> listeners = new ArrayList<>();
+    public NotificacaoServiceImpl(InteresseAtivoRepository interesseAtivoRepository,
+                                  List<NotificacaoListener> listeners) {
+        this.interesseAtivoRepository = interesseAtivoRepository;
+        this.listeners = listeners;
+    }
 
     @Override
     public void notificarDisponibilidade(Ativo ativo) {

@@ -1,50 +1,51 @@
 package com.ufcg.psoft.commerce.service.carteira;
 
 import com.ufcg.psoft.commerce.dto.carteira.AtivoEmCarteiraResponseDTO;
-import com.ufcg.psoft.commerce.exception.itemcarteira.ItemCarteiraNaoExisteException;
+import com.ufcg.psoft.commerce.exception.ativocarteira.AtivoCarteiraNaoExisteException;
 import com.ufcg.psoft.commerce.model.AtivoEmCarteira;
-import com.ufcg.psoft.commerce.repository.ItemCarteiraRepository;
+import com.ufcg.psoft.commerce.repository.AtivoCarteiraRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class AtivoEmCarteiraServiceImpl implements AtivoEmCarteiravService {
 
-    private final ItemCarteiraRepository itemCarteiraRepository;
+    private final AtivoCarteiraRepository ativoCarteiraRepository;
 
-    public AtivoEmCarteiraServiceImpl(ItemCarteiraRepository itemCarteiraRepository) {
-        this.itemCarteiraRepository = itemCarteiraRepository;
+    public AtivoEmCarteiraServiceImpl(AtivoCarteiraRepository ativoCarteiraRepository) {
+        this.ativoCarteiraRepository = ativoCarteiraRepository;
     }
 
     @Override
     public AtivoEmCarteiraResponseDTO buscarPorId(Long id) {
-        AtivoEmCarteira item = itemCarteiraRepository.findById(id)
-                .orElseThrow(ItemCarteiraNaoExisteException::new);
-        return new AtivoEmCarteiraResponseDTO(item);
+        AtivoEmCarteira ativoEmCarteira = ativoCarteiraRepository.findById(id)
+                .orElseThrow(AtivoCarteiraNaoExisteException::new);
+        return new AtivoEmCarteiraResponseDTO(ativoEmCarteira);
     }
 
     @Override
     public List<AtivoEmCarteiraResponseDTO> listarTodos() {
-        return itemCarteiraRepository.findAll()
+        return ativoCarteiraRepository.findAll()
                 .stream()
                 .map(AtivoEmCarteiraResponseDTO::new)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
-    public AtivoEmCarteiraResponseDTO salvar(AtivoEmCarteira item) {
-        AtivoEmCarteira salvo = itemCarteiraRepository.save(item);
+    public AtivoEmCarteiraResponseDTO salvar(AtivoEmCarteira ativoEmCarteira) {
+        AtivoEmCarteira salvo = ativoCarteiraRepository.save(ativoEmCarteira);
         return new AtivoEmCarteiraResponseDTO(salvo);
     }
 
     @Override
     public void remover(Long id) {
-        if (!itemCarteiraRepository.existsById(id)) {
-            throw new ItemCarteiraNaoExisteException();
+        if (!ativoCarteiraRepository.existsById(id)) {
+            throw new AtivoCarteiraNaoExisteException();
         }
-        itemCarteiraRepository.deleteById(id);
+        ativoCarteiraRepository.deleteById(id);
     }
+
+
 }
 

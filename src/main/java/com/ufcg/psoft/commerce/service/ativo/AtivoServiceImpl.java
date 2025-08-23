@@ -2,7 +2,6 @@ package com.ufcg.psoft.commerce.service.ativo;
 
 import com.ufcg.psoft.commerce.dto.ativo.AtivoPostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.ativo.AtivoResponseDTO;
-import com.ufcg.psoft.commerce.dto.carteira.AtivoEmCarteiraResponseDTO;
 import com.ufcg.psoft.commerce.exception.ativo.*;
 import com.ufcg.psoft.commerce.model.Ativo;
 import com.ufcg.psoft.commerce.model.AtivoEmCarteira;
@@ -12,47 +11,44 @@ import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
 import com.ufcg.psoft.commerce.model.enums.TipoInteresse;
 import com.ufcg.psoft.commerce.repository.AtivoRepository;
 import com.ufcg.psoft.commerce.repository.InteresseAtivoRepository;
-import com.ufcg.psoft.commerce.repository.ItemCarteiraRepository;
+import com.ufcg.psoft.commerce.repository.AtivoCarteiraRepository;
 import com.ufcg.psoft.commerce.service.administrador.AdministradorService;
 import com.ufcg.psoft.commerce.service.ativo.tipoativo.Acao;
 import com.ufcg.psoft.commerce.service.ativo.tipoativo.Criptomoeda;
 import com.ufcg.psoft.commerce.service.ativo.tipoativo.TesouroDireto;
 import com.ufcg.psoft.commerce.service.ativo.tipoativo.TipoAtivoStrategy;
-import com.ufcg.psoft.commerce.service.conta.ContaService;
 import com.ufcg.psoft.commerce.service.notificacao.NotificacaoServiceImpl;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 public class AtivoServiceImpl implements AtivoService {
 
-    @Autowired
-    AtivoRepository ativoRepository;
+    private final AtivoRepository ativoRepository;
+    private final InteresseAtivoRepository interesseAtivoRepository;
+    private final AtivoCarteiraRepository ativoCarteiraRepository;
+    private final AdministradorService administradorService;
+    private final NotificacaoServiceImpl notificacaoService;
+    private final ModelMapper modelMapper;
 
-    @Autowired
-    InteresseAtivoRepository interesseAtivoRepository;
-
-    @Autowired
-    ItemCarteiraRepository itemCarteiraRepository;
-
-    @Autowired
-    AdministradorService administradorService;
-
-    @Autowired
-    ContaService contaService;
-
-    @Autowired
-    NotificacaoServiceImpl notificacaoService;
-
-    @Autowired
-    ModelMapper modelMapper;
+    public AtivoServiceImpl(AtivoRepository ativoRepository,
+                            InteresseAtivoRepository interesseAtivoRepository,
+                            AtivoCarteiraRepository ativoCarteiraRepository,
+                            AdministradorService administradorService,
+                            NotificacaoServiceImpl notificacaoService,
+                            ModelMapper modelMapper) {
+        this.ativoRepository = ativoRepository;
+        this.interesseAtivoRepository = interesseAtivoRepository;
+        this.ativoCarteiraRepository = ativoCarteiraRepository;
+        this.administradorService = administradorService;
+        this.notificacaoService = notificacaoService;
+        this.modelMapper = modelMapper;
+    }
 
     private final Map<TipoAtivo, TipoAtivoStrategy> tipoAtivoMap = Map.of(
             TipoAtivo.ACAO, new Acao(),
@@ -113,7 +109,7 @@ public class AtivoServiceImpl implements AtivoService {
         List<Ativo> ativos = ativoRepository.findAll();
         return ativos.stream()
                 .map(AtivoResponseDTO::new)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
@@ -121,7 +117,7 @@ public class AtivoServiceImpl implements AtivoService {
         List<Ativo> ativos = ativoRepository.findByNomeContaining(nome);
         return ativos.stream()
                 .map(AtivoResponseDTO::new)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
@@ -130,7 +126,7 @@ public class AtivoServiceImpl implements AtivoService {
 
         Ativo ativo = ativoRepository.findById(id).orElseThrow(AtivoNaoExisteException::new);
 
-        if(ativo.isDisponivel()) {
+        if(Boolean.TRUE.equals(ativo.isDisponivel())) {
             throw new AtivoDisponivelException();
         }
 
@@ -148,7 +144,7 @@ public class AtivoServiceImpl implements AtivoService {
 
         Ativo ativo = ativoRepository.findById(id).orElseThrow(AtivoNaoExisteException::new);
 
-        if(!ativo.isDisponivel()) {
+        if(!Boolean.TRUE.equals(ativo.isDisponivel())) {
             throw new AtivoIndisponivelException();
         }
 
@@ -185,13 +181,18 @@ public class AtivoServiceImpl implements AtivoService {
         ativo.setCotacao(valor);
         ativoRepository.save(ativo);
 
-        List<AtivoEmCarteira> itensCarteiraAtualizados = itemCarteiraRepository.findByAtivoId(id);
-        List<AtivoEmCarteiraResponseDTO> itensDTO = itensCarteiraAtualizados.stream()
-                .map(AtivoEmCarteiraResponseDTO::new)
-                .collect(Collectors.toList());
-
-        if (variacaoPercentual.compareTo(BigDecimal.valueOf(10.0)) >= 0 && ativo.isDisponivel())
+        if (variacaoPercentual.compareTo(BigDecimal.valueOf(10.0)) >= 0 && Boolean.TRUE.equals(ativo.isDisponivel())){
             notificacaoService.notificarVariacaoCotacao(ativo);
+        }
+
+        List<AtivoEmCarteira> ativosEmCarteiraAtualizados = ativoCarteiraRepository.findByAtivoId(id);
+
+                ativosEmCarteiraAtualizados.forEach(item -> {
+                    item.setCotacaoAtual(ativo.getCotacao());
+                    item.setDesempenho(item.getCotacaoAtual().subtract(item.getValorDeAquisicao()));
+                });
+
+                ativoCarteiraRepository.saveAll(ativosEmCarteiraAtualizados);
 
         return modelMapper.map(ativo, AtivoResponseDTO.class);
     }
@@ -202,7 +203,7 @@ public class AtivoServiceImpl implements AtivoService {
 
         return ativos.stream()
                 .map(AtivoResponseDTO::new)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override

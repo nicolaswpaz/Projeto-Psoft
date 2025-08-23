@@ -18,36 +18,38 @@ import com.ufcg.psoft.commerce.service.administrador.AdministradorService;
 import com.ufcg.psoft.commerce.service.ativo.AtivoService;
 import com.ufcg.psoft.commerce.service.conta.ContaService;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import com.ufcg.psoft.commerce.repository.EnderecoRepository;
 
 @Service
 public class ClienteServiceImpl implements ClienteService {
 
-    @Autowired
-    ClienteRepository clienteRepository;
 
-    @Autowired
-    ModelMapper modelMapper;
+    private final ClienteRepository clienteRepository;
+    private final ModelMapper modelMapper;
+    private final EnderecoRepository enderecoRepository;
+    private final AdministradorService administradorService;
+    private final AtivoService ativoService;
+    private final ContaService contaService;
 
-    @Autowired
-    EnderecoRepository enderecoRepository;
-
-    @Autowired
-    AdministradorService administradorService;
-
-    @Autowired
-    AtivoService ativoService;
-
-    @Autowired
-    ContaService contaService;
+    public ClienteServiceImpl(ClienteRepository clienteRepository,
+                              ModelMapper modelMapper,
+                              EnderecoRepository enderecoRepository,
+                              AdministradorService administradorService,
+                              AtivoService ativoService,
+                              ContaService contaService) {
+        this.clienteRepository = clienteRepository;
+        this.modelMapper = modelMapper;
+        this.enderecoRepository = enderecoRepository;
+        this.administradorService = administradorService;
+        this.ativoService = ativoService;
+        this.contaService = contaService;
+    }
 
     @Override
     public Cliente autenticar(Long id, String codigoAcesso) {
@@ -131,7 +133,7 @@ public class ClienteServiceImpl implements ClienteService {
         List<Cliente> clientes = clienteRepository.findByNomeContainingIgnoreCase(nome);
         return clientes.stream()
                 .map(ClienteResponseDTO::new)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
@@ -141,7 +143,7 @@ public class ClienteServiceImpl implements ClienteService {
         List<Cliente> clientes = clienteRepository.findAll();
         return clientes.stream()
                 .map(ClienteResponseDTO::new)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
@@ -174,7 +176,7 @@ public class ClienteServiceImpl implements ClienteService {
             throw new ClienteNaoPremiumException();
         }
 
-        if(!ativo.isDisponivel()) {
+        if(!Boolean.TRUE.equals(ativo.isDisponivel())) {
             ativoService.registrarInteresse(cliente, ativo, TipoInteresse.DISPONIBILIDADE);
         }else{
             throw new AtivoDisponivelException();
@@ -195,7 +197,7 @@ public class ClienteServiceImpl implements ClienteService {
             throw new OperacaoInvalidaException();
         }
 
-        if (ativo.isDisponivel()){
+        if (!Boolean.TRUE.equals(ativo.isDisponivel())){
             ativoService.registrarInteresse(cliente, ativo, TipoInteresse.VARIACAO_COTACAO);
         } else {
             throw new AtivoIndisponivelException();

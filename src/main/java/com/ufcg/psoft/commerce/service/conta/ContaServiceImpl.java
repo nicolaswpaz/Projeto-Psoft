@@ -14,7 +14,8 @@ import com.ufcg.psoft.commerce.model.enums.StatusCompra;
 import com.ufcg.psoft.commerce.repository.ClienteRepository;
 import com.ufcg.psoft.commerce.repository.CompraRepository;
 import com.ufcg.psoft.commerce.repository.ContaRepository;
-import com.ufcg.psoft.commerce.repository.ItemCarteiraRepository;;
+import com.ufcg.psoft.commerce.repository.AtivoCarteiraRepository;;
+import com.ufcg.psoft.commerce.service.carteira.AtivoEmCarteiraServiceImpl;
 import com.ufcg.psoft.commerce.service.notificacao.NotificacaoServiceImpl;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +41,7 @@ public class ContaServiceImpl implements ContaService {
     ClienteRepository clienteRepository;
 
     @Autowired
-    ItemCarteiraRepository itemCarteiraRepository;
+    AtivoCarteiraRepository ativoCarteiraRepository;
 
     @Autowired
     NotificacaoServiceImpl notificacaoService;
@@ -88,13 +89,15 @@ public class ContaServiceImpl implements ContaService {
         compra.avancarStatus();
         compraRepository.save(compra);
 
-        AtivoEmCarteira item = new AtivoEmCarteira();
-        item.setAtivo(compra.getAtivo());
-        item.setQuantidadeTotal(compra.getQuantidade());
-        item.setValorDeAquisicao(compra.getValorVenda().divide(new BigDecimal(item.getQuantidadeTotal())));;
+        AtivoEmCarteira ativoEmCarteira = new AtivoEmCarteira();
+        ativoEmCarteira.setAtivo(compra.getAtivo());
+        ativoEmCarteira.setQuantidadeTotal(compra.getQuantidade());
+        ativoEmCarteira.setValorDeAquisicao(compra.getValorVenda().divide(new BigDecimal(ativoEmCarteira.getQuantidadeTotal())));;
+        ativoEmCarteira.setCotacaoAtual(ativoEmCarteira.getCotacaoAtual());
+        ativoEmCarteira.setDesempenho(ativoEmCarteira.getDesempenho());
 
-        itemCarteiraRepository.save(item);
-        conta.getCarteira().getAtivoEmCarteiras().add(item);
+        ativoCarteiraRepository.save(ativoEmCarteira);
+        conta.getCarteira().getAtivoEmCarteiras().add(ativoEmCarteira);
         contaRepository.save(conta);
 
         compra.avancarStatus();
@@ -111,12 +114,12 @@ public class ContaServiceImpl implements ContaService {
         List<AtivoEmCarteira> carteira = cliente.getConta().getCarteira().getAtivoEmCarteiras();
 
         return carteira.stream()
-                .map(item -> {
-                    Ativo ativo = item.getAtivo();
+                .map(ativoEmCarteira -> {
+                    Ativo ativo = ativoEmCarteira.getAtivo();
 
-                    Integer quantidadeTotal = item.getQuantidadeTotal();
+                    Integer quantidadeTotal = ativoEmCarteira.getQuantidadeTotal();
 
-                    BigDecimal valorDeAquisicao = item.getValorDeAquisicao();
+                    BigDecimal valorDeAquisicao = ativoEmCarteira.getValorDeAquisicao();
 
                     BigDecimal valorAtual = ativo.getCotacao()
                             .multiply(BigDecimal.valueOf(quantidadeTotal));

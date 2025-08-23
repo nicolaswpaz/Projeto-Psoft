@@ -4,15 +4,12 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.ufcg.psoft.commerce.dto.carteira.AtivoEmCarteiraResponseDTO;
-import com.ufcg.psoft.commerce.dto.cliente.ClienteResponseDTO;
 import com.ufcg.psoft.commerce.dto.compra.CompraResponseDTO;
-import com.ufcg.psoft.commerce.dto.conta.ContaResponseDTO;
 import com.ufcg.psoft.commerce.exception.CustomErrorType;
 import com.ufcg.psoft.commerce.model.*;
 import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
 import com.ufcg.psoft.commerce.model.enums.TipoPlano;
 import com.ufcg.psoft.commerce.repository.*;
-import com.ufcg.psoft.commerce.service.cliente.ClienteService;
 import com.ufcg.psoft.commerce.service.compra.CompraService;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
@@ -66,7 +63,7 @@ class CompraControllerTests {
     EnderecoRepository enderecoRepository;
 
     @Autowired
-    ItemCarteiraRepository itemCarteiraRepository;
+    AtivoCarteiraRepository ativoCarteiraRepository;
 
     @Autowired
     CompraService compraService;
@@ -318,7 +315,7 @@ class CompraControllerTests {
             String matriculaAdmin = administrador.getMatricula();
 
             if (clientePremium.getConta().getCarteira() == null) {
-                clientePremium.getConta().setCarteira(new ArrayList<>());
+                clientePremium.getConta().setCarteira(new Carteira());
             }
 
             CompraResponseDTO novaCompra = compraService.solicitarCompra(idCliente, codigoCliente, idAtivo, 2);
@@ -345,7 +342,7 @@ class CompraControllerTests {
             String matriculaAdmin = administrador.getMatricula();
 
             if (clientePremium.getConta().getCarteira() == null) {
-                clientePremium.getConta().setCarteira(new ArrayList<>());
+                clientePremium.getConta().setCarteira(new Carteira());
             }
 
             CompraResponseDTO novaCompra = compraService.solicitarCompra(idCliente, codigoCliente, idAtivo, 2);
@@ -386,9 +383,9 @@ class CompraControllerTests {
             String codigoCliente = clienteNormal.getCodigo();
 
             if (clienteNormal.getConta().getCarteira() == null) {
-                clienteNormal.getConta().setCarteira(new ArrayList<>());
+                clienteNormal.getConta().setCarteira(new Carteira());
             } else {
-                clienteNormal.getConta().getCarteira().clear();
+                clienteNormal.getConta().getCarteira().getAtivoEmCarteiras().clear();
             }
 
             String responseJsonString = driver.perform(get(URI_CLIENTES + "/" + idCliente + "/carteira")

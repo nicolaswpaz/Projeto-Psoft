@@ -1,6 +1,5 @@
 package com.ufcg.psoft.commerce.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -32,8 +31,12 @@ public class AtivoEmCarteira {
     @JsonProperty("ativo")
     private Ativo ativo;
 
+    private BigDecimal desempenho;
+
+    private BigDecimal cotacaoAtual;
+
     @Transient
-    public BigDecimal getValorAtual() {
+    public BigDecimal getCotacaoAtual() {
         if (ativo == null || ativo.getCotacao() == null) {
             return BigDecimal.ZERO;
         }
@@ -45,6 +48,6 @@ public class AtivoEmCarteira {
         if (valorDeAquisicao == null) {
             return BigDecimal.ZERO;
         }
-        return getValorAtual().subtract(valorDeAquisicao);
+        return getCotacaoAtual().subtract(valorDeAquisicao);
     }
 }

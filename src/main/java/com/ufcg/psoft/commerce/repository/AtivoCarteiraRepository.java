@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface ItemCarteiraRepository extends JpaRepository<AtivoEmCarteira, Long> {
+public interface AtivoCarteiraRepository extends JpaRepository<AtivoEmCarteira, Long> {
 
     List<AtivoEmCarteira> findByAtivoId(Long idAtivo);
 }
