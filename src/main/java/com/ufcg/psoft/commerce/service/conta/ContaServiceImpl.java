@@ -60,15 +60,16 @@ public class ContaServiceImpl implements ContaService {
         return contaRepository.save(conta);
     }
 
-    @Override
-    public void notificarAtivoDisponivelClientesComInteresse(EventoAtivo evento) {
-        notificacaoService.notificarDisponibilidade(evento.getAtivo());
-    }
+//    @Override
+//    public void notificarAtivoDisponivelClientesComInteresse(EventoAtivo evento) {
+//        notificacaoService.notificarDisponibilidadeAtivo(evento.getAtivo());
+//    }
+//
+//    @Override
+//    public void notificarClientesPremiumComInteresse(EventoAtivo evento) {
+//        notificacaoService.notificarVariacaoCotacao(evento.getAtivo());
+//    }
 
-    @Override
-    public void notificarClientesPremiumComInteresse(EventoAtivo evento) {
-        notificacaoService.notificarVariacaoCotacao(evento.getAtivo());
-    }
 
     @Override
     public CompraResponseDTO confirmarCompra(Long idCliente, Long idCompra) {

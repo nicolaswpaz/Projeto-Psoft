@@ -45,4 +45,8 @@ public abstract class Operacao {
 
     @JsonProperty("statusAtual")
     public abstract String getStatusAtual();
+
+    public BigDecimal getValorTotal() {
+        return valorVenda.multiply(BigDecimal.valueOf(quantidade));
+    }
 }

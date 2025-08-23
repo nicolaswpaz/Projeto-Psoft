@@ -13,6 +13,7 @@ import com.ufcg.psoft.commerce.model.enums.StatusCompra;
 import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
 import com.ufcg.psoft.commerce.model.enums.TipoPlano;
 import com.ufcg.psoft.commerce.repository.CompraRepository;
+import com.ufcg.psoft.commerce.repository.InteresseCompraRepository;
 import com.ufcg.psoft.commerce.service.administrador.AdministradorService;
 import com.ufcg.psoft.commerce.service.ativo.AtivoService;
 import com.ufcg.psoft.commerce.service.cliente.ClienteService;
@@ -28,17 +29,19 @@ public class CompraServiceImpl implements CompraService{
 
     private final CompraRepository compraRepository;
     private final ClienteService clienteService;
+    private final InteresseCompraRepository interesseCompraRepository;
     private final AdministradorService administradorService;
     private final AtivoService ativoService;
     private final ModelMapper modelMapper;
 
     public CompraServiceImpl(CompraRepository compraRepository,
-                             ClienteService clienteService,
+                             ClienteService clienteService, InteresseCompraRepository interesseCompraRepository,
                              AdministradorService administradorService,
                              AtivoService ativoService,
                              ModelMapper modelMapper) {
         this.compraRepository = compraRepository;
         this.clienteService = clienteService;
+        this.interesseCompraRepository = interesseCompraRepository;
         this.administradorService = administradorService;
         this.ativoService = ativoService;
         this.modelMapper = modelMapper;
@@ -62,6 +65,7 @@ public class CompraServiceImpl implements CompraService{
                 .conta(conta)
                 .build();
 
+        this.registrarInteresse(cliente, compra);
         compraRepository.save(compra);
         return modelMapper.map(compra, CompraResponseDTO.class);
     }
@@ -113,5 +117,14 @@ public class CompraServiceImpl implements CompraService{
         return compraRepository.findAll().stream()
                 .map(CompraResponseDTO::new)
                 .toList();
+    }
+
+    @Override
+    public void registrarInteresse(Cliente cliente, Compra compra) {
+        InteresseCompra interesse = InteresseCompra.builder()
+                .cliente(cliente)
+                .compra(compra)
+                .build();
+        interesseCompraRepository.save(interesse);
     }
 }
