@@ -140,5 +140,15 @@ public class ContaServiceImpl implements ContaService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public void acrecentaSaldoConta(Long idCliente, BigDecimal valor) {
+        Cliente cliente = clienteRepository.findById(idCliente)
+                .orElseThrow(ClienteNaoExisteException::new);
+
+        Conta conta = cliente.getConta();
+        conta.setSaldo(conta.getSaldo().add(valor));
+        contaRepository.save(conta);
+    }
+
 
 }

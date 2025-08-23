@@ -20,6 +20,8 @@ import com.ufcg.psoft.commerce.service.conta.ContaService;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -241,4 +243,18 @@ public class ClienteServiceImpl implements ClienteService {
 
         return contaService.visualizarCarteira(idCliente);
     }
+
+    @Override
+    public void acrecentaSaldoConta(Long idCliente, String codigoAcesso, BigDecimal valor) {
+        Cliente cliente = clienteRepository.findById(idCliente)
+                .orElseThrow(ClienteNaoExisteException::new);
+
+        if (!cliente.getCodigo().equals(codigoAcesso)) {
+            throw new CodigoDeAcessoInvalidoException();
+        }
+
+        contaService.acrecentaSaldoConta( idCliente, valor);
+    }
+
+
 }

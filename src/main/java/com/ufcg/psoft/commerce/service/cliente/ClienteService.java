@@ -5,6 +5,8 @@ import com.ufcg.psoft.commerce.dto.carteira.AtivoEmCarteiraResponseDTO;
 import com.ufcg.psoft.commerce.dto.cliente.ClientePostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.cliente.ClienteResponseDTO;
 import com.ufcg.psoft.commerce.model.Cliente;
+
+import java.math.BigDecimal;
 import java.util.List;
 
 public interface ClienteService {
@@ -34,4 +36,6 @@ public interface ClienteService {
     void confirmarCompraAtivo(Long idCliente, Long idCompra, String codigoAcesso);
 
     List<AtivoEmCarteiraResponseDTO> visualizarCarteira(Long idCliente, String codigoAcesso);
+
+    void acrecentaSaldoConta(Long idCliente, String codigoAcesso, BigDecimal valor);
 }
