@@ -15,6 +15,7 @@ import java.util.List;
 @Table(name = "conta")
 public class Conta {
 
+
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
@@ -22,11 +23,14 @@ public class Conta {
     @JsonProperty("saldo")
     private BigDecimal saldo;
 
-    @ManyToMany
-    @JsonProperty("ativosDeInteresse")
-    private List<Ativo> ativosDeInteresse;
-
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "carteira_id")
     private Carteira carteira;
+
+    @OneToMany(mappedBy = "conta", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Operacao> operacoes;
+
+    @OneToOne
+    @JoinColumn(name = "cliente_id")
+    private Cliente cliente;
 }

@@ -5,6 +5,7 @@ import com.ufcg.psoft.commerce.dto.compra.CompraResponseDTO;
 import com.ufcg.psoft.commerce.events.EventoAtivo;
 import com.ufcg.psoft.commerce.model.Conta;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public interface ContaService {
@@ -18,4 +19,6 @@ public interface ContaService {
     CompraResponseDTO confirmarCompra(Long idCliente, Long idCompra);
 
     List<AtivoEmCarteiraResponseDTO> visualizarCarteira(Long idCliente);
+
+    public void acrecentaSaldoConta(Long idCliente, BigDecimal valor);
 }

@@ -5,7 +5,10 @@ import com.ufcg.psoft.commerce.exception.cliente.ClienteNaoPremiumException;
 import com.ufcg.psoft.commerce.exception.compra.CompraNaoExisteException;
 import com.ufcg.psoft.commerce.exception.compra.CompraNaoPertenceAoClienteException;
 import com.ufcg.psoft.commerce.exception.compra.StatusCompraInvalidoException;
-import com.ufcg.psoft.commerce.model.*;
+import com.ufcg.psoft.commerce.model.Ativo;
+import com.ufcg.psoft.commerce.model.Cliente;
+import com.ufcg.psoft.commerce.model.Compra;
+import com.ufcg.psoft.commerce.model.Conta;
 import com.ufcg.psoft.commerce.model.enums.StatusCompra;
 import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
 import com.ufcg.psoft.commerce.model.enums.TipoPlano;
@@ -48,6 +51,7 @@ public class CompraServiceImpl implements CompraService{
     public CompraResponseDTO solicitarCompra(Long idCliente, String codigoAcesso, Long idAtivo, int quantidade) {
         Ativo ativo = ativoService.verificarAtivoExistente(idAtivo);
         Cliente cliente = clienteService.autenticar(idCliente, codigoAcesso);
+        Conta conta = cliente.getConta();
 
         if (cliente.getPlano() == TipoPlano.NORMAL && ativo.getTipo() != TipoAtivo.TESOURO_DIRETO) {
             throw new ClienteNaoPremiumException();
@@ -58,7 +62,7 @@ public class CompraServiceImpl implements CompraService{
                 .ativo(ativo)
                 .quantidade(quantidade)
                 .valorVenda(BigDecimal.valueOf(quantidade).multiply(ativo.getCotacao()))
-                .cliente(cliente)
+                .conta(conta)
                 .build();
 
         this.registrarInteresse(cliente, compra);
@@ -99,7 +103,7 @@ public class CompraServiceImpl implements CompraService{
         Compra compra = compraRepository.findById(idCompra)
                 .orElseThrow(CompraNaoExisteException::new);
 
-        if (!compra.getCliente().getId().equals(idCliente)) {
+        if (!compra.getConta().getCliente().getId().equals(idCliente)) {
             throw new CompraNaoPertenceAoClienteException();
         }
 

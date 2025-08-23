@@ -11,6 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -130,4 +131,17 @@ public class ClienteController {
 
         return ResponseEntity.ok(carteira);
     }
+
+    @GetMapping("/{idCliente}/carteira/depositar")
+    public ResponseEntity<Void> acrecentaSaldoConta(
+            @PathVariable Long idCliente,
+            @RequestParam String codigoAcesso,
+            @RequestParam BigDecimal valor) {
+        clienteService.acrecentaSaldoConta(idCliente, codigoAcesso, valor);
+
+        return ResponseEntity
+                .status(HttpStatus.NO_CONTENT)
+                .build();
+    }
+
 }

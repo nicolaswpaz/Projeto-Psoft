@@ -15,7 +15,6 @@ import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
 import com.ufcg.psoft.commerce.model.enums.TipoPlano;
 import com.ufcg.psoft.commerce.repository.*;
 import com.ufcg.psoft.commerce.service.cliente.ClienteService;
-import com.ufcg.psoft.commerce.service.conta.ContaService;
 import com.ufcg.psoft.commerce.listener.NotificacaoAtivoDisponivel;
 import com.ufcg.psoft.commerce.listener.NotificacaoAtivoVariouCotacao;
 import jakarta.persistence.EntityManager;
@@ -45,7 +44,7 @@ import org.slf4j.LoggerFactory;
 @AutoConfigureMockMvc
 @Transactional
 @DisplayName("Testes do controlador de Clientes")
-public class    ClienteControllerTests {
+class    ClienteControllerTests {
 
     final String URI_CLIENTES = "/clientes";
     final String URI_ATIVOS = "/ativos";
@@ -60,6 +59,7 @@ public class    ClienteControllerTests {
     Ativo ativo3;
     Ativo ativoIndisponivel;
     Ativo ativoDisponivel;
+
     @Autowired
     ClienteRepository clienteRepository;
 
@@ -92,13 +92,13 @@ public class    ClienteControllerTests {
     ContaRepository contaRepository;
     Conta contaCliente;
     Conta contaClientePremium;
-    @Autowired
-    ContaService contaService;
+
 
     @Autowired
     EntityManager entityManager;
     ListAppender<ILoggingEvent> listAppender;
     ListAppender<ILoggingEvent> listAppenderAtivoDisponivel;
+
     @BeforeEach
     @Transactional
     void setup() {
@@ -546,7 +546,6 @@ public class    ClienteControllerTests {
 
             ClienteResponseDTO resultado = objectMapper.readValue(responseJsonString, ClienteResponseDTO.class);
 
-            Cliente clienteAtualizado = clienteRepository.findById(cliente.getId()).orElseThrow();
 
             assertAll(
                     () -> assertEquals(cliente.getId().longValue(), resultado.getId().longValue()),
@@ -794,7 +793,7 @@ public class    ClienteControllerTests {
 
         @Test
         @DisplayName("Quando criamos um novo cliente com endereço sem dados")
-        void quandoCriarClienteEndereçoVazio() throws Exception {
+        void quandoCriarClienteEnderecoVazio() throws Exception {
 
             enderecoDTO = EnderecoResponseDTO.builder()
                     .numero("")

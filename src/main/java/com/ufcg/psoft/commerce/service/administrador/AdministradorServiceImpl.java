@@ -107,11 +107,12 @@ public class AdministradorServiceImpl implements AdministradorService {
 
     @Override
     public void confirmarDisponibilidadeCompra(Long idCompra, String matricula) {
+        autenticar(matricula);
+
         Compra compra = compraRepository.findById(idCompra)
                 .orElseThrow(CompraNaoExisteException::new);
 
-        Cliente cliente = compra.getCliente();
-        Conta conta = cliente.getConta();
+        Conta conta = compra.getConta();
 
         BigDecimal valorCompra = compra.getAtivo().getCotacao()
                 .multiply(BigDecimal.valueOf(compra.getQuantidade()));

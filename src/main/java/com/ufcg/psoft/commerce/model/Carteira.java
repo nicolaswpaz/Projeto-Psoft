@@ -24,11 +24,11 @@ public class Carteira {
     @JsonProperty("conta")
     private Conta conta;
 
-    @OneToMany
+    @OneToMany(mappedBy = "carteira", cascade = CascadeType.ALL)
     @JsonProperty("ativos")
-    private List<AtivoEmCarteira> ativoEmCarteiras;
+    private List<AtivoEmCarteira> ativosEmCarteira;
 
     public Carteira() {
-        this.ativoEmCarteiras = new ArrayList<>();
+        this.ativosEmCarteira = new ArrayList<>();
     }
 }
