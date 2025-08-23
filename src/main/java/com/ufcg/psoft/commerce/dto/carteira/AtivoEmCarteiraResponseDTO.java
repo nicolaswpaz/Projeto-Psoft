@@ -27,13 +27,13 @@ public class AtivoEmCarteiraResponseDTO {
     private BigDecimal desempenho;
 
     public AtivoEmCarteiraResponseDTO(AtivoEmCarteira item) {
-        Ativo temp_ativo = item.getAtivo();
-        this.ativoId = temp_ativo.getId();
-        this.nomeAtivo = temp_ativo.getNome();
-        this.tipo = temp_ativo.getTipo();
+        Ativo tempAtivo = item.getAtivo();
+        this.ativoId = tempAtivo.getId();
+        this.nomeAtivo = tempAtivo.getNome();
+        this.tipo = tempAtivo.getTipo();
         this.quantidadeTotal = item.getQuantidadeTotal();
         this.valorDeAquisicao = item.getValorDeAquisicao();
-        this.valorAtual = temp_ativo.getCotacao();
+        this.valorAtual = tempAtivo.getCotacao();
         this.desempenho = item.getDesempenho();
     }
 }

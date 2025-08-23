@@ -15,8 +15,6 @@ import com.ufcg.psoft.commerce.repository.ClienteRepository;
 import com.ufcg.psoft.commerce.repository.CompraRepository;
 import com.ufcg.psoft.commerce.repository.ContaRepository;
 import com.ufcg.psoft.commerce.repository.ItemCarteiraRepository;;
-import com.ufcg.psoft.commerce.listener.NotificacaoAtivoDisponivel;
-import com.ufcg.psoft.commerce.listener.NotificacaoAtivoVariouCotacao;
 import com.ufcg.psoft.commerce.service.notificacao.NotificacaoServiceImpl;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,8 +50,10 @@ public class ContaServiceImpl implements ContaService {
         Conta conta = Conta.builder()
                 .saldo(BigDecimal.valueOf(0.00))
                 .ativosDeInteresse(new ArrayList<>())
-                .carteira(new ArrayList<>())
+                .carteira(new Carteira())
                 .build();
+
+        conta.getCarteira().setConta(conta);
 
         return contaRepository.save(conta);
     }
@@ -91,13 +91,10 @@ public class ContaServiceImpl implements ContaService {
         AtivoEmCarteira item = new AtivoEmCarteira();
         item.setAtivo(compra.getAtivo());
         item.setQuantidadeTotal(compra.getQuantidade());
-        item.setValorDeAquisicao(compra.getValorVenda().divide(new BigDecimal(item.getQuantidadeTotal()))); //valor unitario
-        item.setValorAtual(item.getValorAtual());
-        item.setDesempenho(item.getDesempenho());
-        item.setConta(conta);
+        item.setValorDeAquisicao(compra.getValorVenda().divide(new BigDecimal(item.getQuantidadeTotal())));;
 
         itemCarteiraRepository.save(item);
-        conta.getCarteira().add(item);
+        conta.getCarteira().getAtivoEmCarteiras().add(item);
         contaRepository.save(conta);
 
         compra.avancarStatus();
@@ -111,7 +108,7 @@ public class ContaServiceImpl implements ContaService {
         Cliente cliente = clienteRepository.findById(idCliente)
                 .orElseThrow(ClienteNaoExisteException::new);
 
-        List<AtivoEmCarteira> carteira = cliente.getConta().getCarteira();
+        List<AtivoEmCarteira> carteira = cliente.getConta().getCarteira().getAtivoEmCarteiras();
 
         return carteira.stream()
                 .map(item -> {

@@ -4,7 +4,6 @@ import com.ufcg.psoft.commerce.dto.ativo.AtivoPostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.ativo.AtivoResponseDTO;
 import com.ufcg.psoft.commerce.service.ativo.AtivoService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;

@@ -3,7 +3,6 @@ package com.ufcg.psoft.commerce.service.conta;
 import com.ufcg.psoft.commerce.dto.carteira.AtivoEmCarteiraResponseDTO;
 import com.ufcg.psoft.commerce.dto.compra.CompraResponseDTO;
 import com.ufcg.psoft.commerce.events.EventoAtivo;
-import com.ufcg.psoft.commerce.model.Ativo;
 import com.ufcg.psoft.commerce.model.Conta;
 
 import java.util.List;

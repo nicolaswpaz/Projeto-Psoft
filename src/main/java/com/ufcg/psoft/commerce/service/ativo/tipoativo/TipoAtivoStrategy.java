@@ -1,4 +1,4 @@
-package com.ufcg.psoft.commerce.service.ativo.tipoAtivo;
+package com.ufcg.psoft.commerce.service.ativo.tipoativo;
 
 public abstract class TipoAtivoStrategy {
 

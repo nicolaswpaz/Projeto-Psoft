@@ -7,8 +7,6 @@ import java.util.List;
 
 public interface AtivoEmCarteiravService {
 
-    AtivoEmCarteiraResponseDTO itemCarteiraUpdate(AtivoEmCarteira item);
-
     AtivoEmCarteiraResponseDTO buscarPorId(Long id);
 
     List<AtivoEmCarteiraResponseDTO> listarTodos();

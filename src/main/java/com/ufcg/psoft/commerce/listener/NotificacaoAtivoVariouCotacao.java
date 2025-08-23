@@ -12,12 +12,14 @@ public class NotificacaoAtivoVariouCotacao extends NotificacaoAdapter {
 
     @Override
     public void notificarAtivoVariouCotacao(EventoAtivo evento) {
-        logger.info("\nCaro cliente {}, o ativo que você marcou interesse, teve uma taxa de variação de cotação acima de 10%!" +
-                        "\nDados do Ativo:" +
-                        "\nNome do ativo: {}" +
-                        "\nO tipo do ativo: {}" +
-                        "\nCotação do ativo: {}" +
-                        "\nDescrição do ativo: {}",
+        logger.info("""
+                        Caro cliente {}, o ativo que você marcou interesse, teve uma taxa de variação de cotação acima de 10%!
+                        Dados do Ativo:
+                        Nome do ativo: {}
+                        O tipo do ativo: {}
+                        Cotação do ativo: {}
+                        Descrição do ativo: {}
+                        """,
                 evento.getCliente().getNome(),
                 evento.getAtivo().getNome(),
                 evento.getAtivo().getTipo(),

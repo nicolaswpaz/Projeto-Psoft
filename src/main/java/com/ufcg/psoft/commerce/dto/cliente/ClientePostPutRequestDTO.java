@@ -1,6 +1,5 @@
 package com.ufcg.psoft.commerce.dto.cliente;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.ufcg.psoft.commerce.dto.endereco.EnderecoResponseDTO;
 import com.ufcg.psoft.commerce.model.enums.TipoPlano;

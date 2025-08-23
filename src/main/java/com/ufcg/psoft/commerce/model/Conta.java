@@ -27,11 +27,7 @@ public class Conta {
     @JsonProperty("ativosDeInteresse")
     private List<Ativo> ativosDeInteresse;
 
-    @OneToMany
-    @JsonProperty("cateira")
-    private List<AtivoEmCarteira> carteira;
-
-    @ManyToMany
-    @JsonProperty("operacoes")
-    private List<Operacao> operacoes;
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "carteira_id")
+    private Carteira carteira;
 }

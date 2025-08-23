@@ -19,18 +19,6 @@ public class AtivoEmCarteiraServiceImpl implements AtivoEmCarteiravService {
     }
 
     @Override
-    public AtivoEmCarteiraResponseDTO itemCarteiraUpdate(AtivoEmCarteira item) {
-        AtivoEmCarteira existente = itemCarteiraRepository.findById(item.getId())
-                .orElseThrow(ItemCarteiraNaoExisteException::new);
-
-        existente.setQuantidadeTotal(item.getQuantidadeTotal());
-        existente.setDesempenho(item.getDesempenho());
-
-        AtivoEmCarteira atualizado = itemCarteiraRepository.save(existente);
-        return new AtivoEmCarteiraResponseDTO(atualizado);
-    }
-
-    @Override
     public AtivoEmCarteiraResponseDTO buscarPorId(Long id) {
         AtivoEmCarteira item = itemCarteiraRepository.findById(id)
                 .orElseThrow(ItemCarteiraNaoExisteException::new);

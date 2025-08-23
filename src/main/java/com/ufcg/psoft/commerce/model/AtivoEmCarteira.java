@@ -15,8 +15,7 @@ import java.math.BigDecimal;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-@Inheritance(strategy = InheritanceType.JOINED)
-@Table(name = "item_carteira")
+@Table(name = "ativo_carteira")
 public class AtivoEmCarteira {
     @Id
     @JsonProperty("id")
@@ -32,16 +31,6 @@ public class AtivoEmCarteira {
     @ManyToOne
     @JsonProperty("ativo")
     private Ativo ativo;
-
-    @ManyToOne
-    @JoinColumn(name = "conta_id")
-    private Conta conta;
-
-    @JsonIgnore
-    private BigDecimal valorAtual;
-
-    @JsonIgnore
-    private BigDecimal desempenho;
 
     @Transient
     public BigDecimal getValorAtual() {

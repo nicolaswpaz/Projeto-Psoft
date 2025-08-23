@@ -12,12 +12,14 @@ public class NotificacaoAtivoDisponivel extends NotificacaoAdapter {
 
     @Override
     public void notificarAtivoDisponivel(EventoAtivo evento) {
-        logger.info("\nCaro cliente {}, o ativo indisponível que você marcou interesse está disponível!" +
-                        "\nDados do Ativo:" +
-                        "\nNome do ativo: {}" +
-                        "\nO tipo do ativo: {}" +
-                        "\nCotação do ativo: {}" +
-                        "\nDescrição do ativo: {}",
+        logger.info("""
+                        Caro cliente {}, o ativo indisponível que você marcou interesse está disponível!" +
+                        Dados do Ativo:
+                        Nome do ativo: {}
+                        O tipo do ativo: {}
+                        Cotação do ativo: {}
+                        Descrição do ativo: {}
+                        """,
                 evento.getCliente().getNome(),
                 evento.getAtivo().getNome(),
                 evento.getAtivo().getTipo(),
