@@ -133,7 +133,7 @@ public class AtivoServiceImpl implements AtivoService {
         ativo.setDisponivel(true);
 
         ativoRepository.save(ativo);
-        notificacaoService.notificarDisponibilidade(ativo);
+        notificacaoService.notificarDisponibilidadeAtivo(ativo);
 
         return modelMapper.map(ativo, AtivoResponseDTO.class);
     }

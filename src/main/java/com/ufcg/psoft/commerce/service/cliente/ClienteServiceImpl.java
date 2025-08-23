@@ -197,7 +197,7 @@ public class ClienteServiceImpl implements ClienteService {
             throw new OperacaoInvalidaException();
         }
 
-        if (!Boolean.TRUE.equals(ativo.isDisponivel())){
+        if (Boolean.TRUE.equals(ativo.isDisponivel())){
             ativoService.registrarInteresse(cliente, ativo, TipoInteresse.VARIACAO_COTACAO);
         } else {
             throw new AtivoIndisponivelException();
