@@ -3,11 +3,7 @@ package com.ufcg.psoft.commerce.controller;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
-import com.ufcg.psoft.commerce.listener.NotificacaoAtivoDisponivel;
-import com.ufcg.psoft.commerce.listener.NotificacaoAtivoVariouCotacao;
 import com.ufcg.psoft.commerce.listener.NotificacaoCompraDisponivel;
-import com.ufcg.psoft.commerce.model.enums.TipoInteresse;
-import org.apache.logging.log4j.LogManager;
 import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -35,7 +31,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -343,7 +338,7 @@ class CompraControllerTests {
             assertNotNull(compra);
             assertEquals(novaCompra.getId(), compra.getId());
             assertEquals(StatusCompra.DISPONIVEL, compra.getStatusCompra());
-            assertEquals(idCliente, compra.getConta().getCliente().getId());
+            assertEquals(idCliente, compra.getCliente().getId());
             assertEquals(idAtivo, compra.getAtivo().getId());
         }
 
