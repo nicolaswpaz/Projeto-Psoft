@@ -6,6 +6,7 @@ import com.ufcg.psoft.commerce.exception.cliente.ClienteNaoExisteException;
 import com.ufcg.psoft.commerce.exception.compra.CompraNaoExisteException;
 import com.ufcg.psoft.commerce.exception.compra.StatusCompraInvalidoException;
 import com.ufcg.psoft.commerce.exception.conta.SaldoInsuficienteException;
+import com.ufcg.psoft.commerce.exception.conta.ValorDeSaldoInvalidoException;
 import com.ufcg.psoft.commerce.model.Compra;
 import com.ufcg.psoft.commerce.model.Conta;
 import com.ufcg.psoft.commerce.model.*;
@@ -18,6 +19,7 @@ import com.ufcg.psoft.commerce.service.notificacao.NotificacaoServiceImpl;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -49,6 +51,7 @@ public class ContaServiceImpl implements ContaService {
 
         Conta conta = Conta.builder()
                 .saldo(BigDecimal.valueOf(0.00))
+                .operacoes(new ArrayList<Operacao>())
                 .carteira(carteira)
                 .build();
 
@@ -87,6 +90,7 @@ public class ContaServiceImpl implements ContaService {
 
         ativoCarteiraRepository.save(ativoEmCarteira);
         conta.getCarteira().getAtivosEmCarteira().add(ativoEmCarteira);
+        conta.getOperacoes().add(compra);
         contaRepository.save(conta);
 
         compra.avancarStatus();
@@ -133,8 +137,14 @@ public class ContaServiceImpl implements ContaService {
         Cliente cliente = clienteRepository.findById(idCliente)
                 .orElseThrow(ClienteNaoExisteException::new);
 
+        if (valor.compareTo(BigDecimal.ZERO) < 0) {
+            throw new ValorDeSaldoInvalidoException();
+        }
+
         Conta conta = cliente.getConta();
-        conta.setSaldo(conta.getSaldo().add(valor));
+        BigDecimal novoSaldo = conta.getSaldo().add(valor);
+        conta.setSaldo(novoSaldo);
+
         contaRepository.save(conta);
     }
 

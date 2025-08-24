@@ -1,6 +1,7 @@
 package com.ufcg.psoft.commerce.service.compra;
 
 import com.ufcg.psoft.commerce.dto.compra.CompraResponseDTO;
+import com.ufcg.psoft.commerce.exception.ativo.AtivoIndisponivelException;
 import com.ufcg.psoft.commerce.exception.cliente.ClienteNaoExisteException;
 import com.ufcg.psoft.commerce.exception.cliente.ClienteNaoPremiumException;
 import com.ufcg.psoft.commerce.exception.compra.CompraNaoExisteException;
@@ -89,6 +90,10 @@ public class CompraServiceImpl implements CompraService{
             throw new StatusCompraInvalidoException();
         }
 
+        if(Boolean.FALSE.equals(compra.getAtivo().isDisponivel())){
+            throw new AtivoIndisponivelException();
+        }
+
         administradorService.confirmarDisponibilidadeCompra(idCompra, matriculaAdmin);
         notificacaoService.notificarDisponibilidadeCompra(compra);
         return modelMapper.map(compra, CompraResponseDTO.class);
@@ -105,6 +110,10 @@ public class CompraServiceImpl implements CompraService{
 
         if(!compra.getCliente().getId().equals(idCliente)){
             throw new CompraNaoPertenceAoClienteException();
+        }
+
+        if(Boolean.FALSE.equals(compra.getAtivo().isDisponivel())){
+            throw new AtivoIndisponivelException();
         }
 
         clienteService.confirmarCompraAtivo(idCliente, idCompra, codigoAcesso);

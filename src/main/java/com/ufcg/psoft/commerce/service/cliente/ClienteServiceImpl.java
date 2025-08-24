@@ -253,7 +253,7 @@ public class ClienteServiceImpl implements ClienteService {
             throw new CodigoDeAcessoInvalidoException();
         }
 
-        contaService.acrecentaSaldoConta( idCliente, valor);
+        contaService.acrecentaSaldoConta(idCliente, valor);
     }
 
 

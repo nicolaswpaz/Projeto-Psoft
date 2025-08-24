@@ -132,7 +132,7 @@ public class ClienteController {
         return ResponseEntity.ok(carteira);
     }
 
-    @GetMapping("/{idCliente}/carteira/depositar")
+    @GetMapping("/{idCliente}/conta/depositar")
     public ResponseEntity<Void> acrecentaSaldoConta(
             @PathVariable Long idCliente,
             @RequestParam String codigoAcesso,

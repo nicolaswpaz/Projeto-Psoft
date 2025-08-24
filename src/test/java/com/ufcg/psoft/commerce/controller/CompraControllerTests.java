@@ -24,7 +24,6 @@ import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
 import com.ufcg.psoft.commerce.model.enums.TipoPlano;
 import com.ufcg.psoft.commerce.repository.*;
 import com.ufcg.psoft.commerce.service.compra.CompraService;
-import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +34,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -58,9 +58,6 @@ class CompraControllerTests {
     ObjectMapper objectMapper;
 
     @Autowired
-    EntityManager entityManager;
-
-    @Autowired
     ClienteRepository clienteRepository;
 
     @Autowired
@@ -74,9 +71,6 @@ class CompraControllerTests {
 
     @Autowired
     EnderecoRepository enderecoRepository;
-
-    @Autowired
-    AtivoCarteiraRepository ativoCarteiraRepository;
 
     @Autowired
     CompraService compraService;
@@ -117,11 +111,11 @@ class CompraControllerTests {
         );
 
         contaClienteNormal = contaRepository.save(
-                Conta.builder().saldo(BigDecimal.valueOf(10000.0)).carteira(new Carteira()).build()
+                Conta.builder().saldo(BigDecimal.valueOf(10000.0)).carteira(new Carteira()).operacoes(new ArrayList<Operacao>()).build()
         );
 
         contaClientePremium = contaRepository.save(
-                Conta.builder().saldo(BigDecimal.valueOf(500.0)).carteira(new Carteira()).build()
+                Conta.builder().saldo(BigDecimal.valueOf(500.0)).carteira(new Carteira()).operacoes(new ArrayList<Operacao>()).build()
         );
 
         enderecoClienteNormal = enderecoRepository.save(Endereco.builder()
