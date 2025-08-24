@@ -75,7 +75,6 @@ public class ClienteServiceImpl implements ClienteService {
 
         Conta novaConta = contaService.criarContaPadrao();
         cliente.setConta(novaConta);
-        novaConta.setCliente(cliente);
 
         cliente = clienteRepository.save(cliente);
         return modelMapper.map(cliente, ClienteResponseDTO.class);

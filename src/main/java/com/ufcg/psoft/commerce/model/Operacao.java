@@ -39,7 +39,6 @@ public abstract class Operacao {
 
     @ManyToOne
     @JoinColumn(name = "conta_id")
-    @JsonProperty("conta")
     private Conta conta;
 
     public abstract void avancarStatus();

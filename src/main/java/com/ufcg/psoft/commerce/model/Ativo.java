@@ -6,7 +6,6 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 @Entity
 @Data
@@ -35,9 +34,6 @@ public class Ativo {
 
     @JsonProperty("disponivel")
     private Boolean disponivel;
-
-    @OneToMany(mappedBy = "ativo", cascade = CascadeType.ALL)
-    private List<InteresseAtivo> interesses;
 
     @PrePersist
     public void setDefaultValues() {

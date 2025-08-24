@@ -35,7 +35,7 @@ public class CompraResponseDTO {
     @JsonProperty("valorVenda")
     private BigDecimal valorVenda;
 
-    @JsonProperty("cliente")
+    @JsonProperty("conta")
     private Conta conta;
 
     @JsonProperty("status")
