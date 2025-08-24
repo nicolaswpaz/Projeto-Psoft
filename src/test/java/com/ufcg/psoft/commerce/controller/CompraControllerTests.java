@@ -8,7 +8,6 @@ import com.ufcg.psoft.commerce.listener.NotificacaoAtivoVariouCotacao;
 import com.ufcg.psoft.commerce.listener.NotificacaoCompraDisponivel;
 import com.ufcg.psoft.commerce.model.enums.TipoInteresse;
 import org.apache.logging.log4j.LogManager;
-import com.ufcg.psoft.commerce.listener.NotificacaoCompraDisponivel;
 import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -153,6 +152,7 @@ class CompraControllerTests {
                 .build()
         );
 
+        contaClienteNormal.setCliente(clienteNormal);
         contaRepository.save(contaClienteNormal);
 
         clientePremium = clienteRepository.save(Cliente.builder()
@@ -165,6 +165,7 @@ class CompraControllerTests {
                 .build()
         );
 
+        contaClientePremium.setCliente(clientePremium);
         contaRepository.save(contaClientePremium);
 
         ativoTesouro = ativoRepository.save(Ativo.builder()
@@ -256,7 +257,7 @@ class CompraControllerTests {
 
             CompraResponseDTO compra = objectMapper.readValue(responseJsonString, CompraResponseDTO.class);
 
-            assertEquals(clienteNormal.getId(), compra.getCliente().getId());
+            assertEquals(clienteNormal.getId(), compra.getConta().getCliente().getId());
             assertEquals(ativoTesouro.getId(), compra.getAtivo().getId());
             assertEquals(2, compra.getQuantidade());
         }
@@ -290,7 +291,7 @@ class CompraControllerTests {
 
             CompraResponseDTO compra = objectMapper.readValue(responseJsonString, CompraResponseDTO.class);
 
-            assertEquals(clientePremium.getId(), compra.getCliente().getId());
+            assertEquals(clientePremium.getId(), compra.getConta().getCliente().getId());
             assertEquals(ativoAcao.getId(), compra.getAtivo().getId());
         }
 
@@ -307,7 +308,7 @@ class CompraControllerTests {
 
             CompraResponseDTO compra = objectMapper.readValue(responseJsonString, CompraResponseDTO.class);
 
-            assertEquals(clientePremium.getId(), compra.getCliente().getId());
+            assertEquals(clientePremium.getId(), compra.getConta().getCliente().getId());
             assertEquals(ativoAcao.getId(), compra.getAtivo().getId());
             assertEquals(9999, compra.getQuantidade());
         }
@@ -345,20 +346,7 @@ class CompraControllerTests {
             assertNotNull(compra);
             assertEquals(novaCompra.getId(), compra.getId());
             assertEquals(StatusCompra.DISPONIVEL, compra.getStatusCompra());
-            assertEquals(idCliente, compra.getCliente().getId());
-            assertEquals(idAtivo, compra.getAtivo().getId());
-        }
-
-        @Test
-        @DisplayName("O cliente deve ser notificado após ter sua compra disponibilizada")
-        void notificaDisponibilidadeDeCompra() throws Exception {
-            Long idCliente = clientePremium.getId();
-            String codigoCliente = clientePremium.getCodigo();
-            Long idAtivo = ativoAcao.getId();
-            assertNotNull(compra);
-            assertEquals(novaCompra.getId(), compra.getId());
-            assertEquals(StatusCompra.DISPONIVEL, compra.getStatusCompra());
-            assertEquals(idCliente, compra.getCliente().getId());
+            assertEquals(idCliente, compra.getConta().getCliente().getId());
             assertEquals(idAtivo, compra.getAtivo().getId());
         }
 

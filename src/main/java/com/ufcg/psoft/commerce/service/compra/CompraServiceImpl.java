@@ -1,7 +1,6 @@
 package com.ufcg.psoft.commerce.service.compra;
 
 import com.ufcg.psoft.commerce.dto.compra.CompraResponseDTO;
-import com.ufcg.psoft.commerce.exception.cliente.ClienteNaoExisteException;
 import com.ufcg.psoft.commerce.exception.cliente.ClienteNaoPremiumException;
 import com.ufcg.psoft.commerce.exception.compra.CompraNaoExisteException;
 import com.ufcg.psoft.commerce.exception.compra.CompraNaoPertenceAoClienteException;
@@ -10,7 +9,6 @@ import com.ufcg.psoft.commerce.model.*;
 import com.ufcg.psoft.commerce.model.enums.StatusCompra;
 import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
 import com.ufcg.psoft.commerce.model.enums.TipoPlano;
-import com.ufcg.psoft.commerce.repository.ClienteRepository;
 import com.ufcg.psoft.commerce.repository.CompraRepository;
 import com.ufcg.psoft.commerce.repository.InteresseCompraRepository;
 import com.ufcg.psoft.commerce.service.administrador.AdministradorService;
@@ -19,7 +17,6 @@ import com.ufcg.psoft.commerce.service.cliente.ClienteService;
 import com.ufcg.psoft.commerce.service.notificacao.NotificacaoService;
 import com.ufcg.psoft.commerce.service.notificacao.NotificacaoServiceImpl;
 import org.modelmapper.ModelMapper;
-import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -35,13 +32,12 @@ public class CompraServiceImpl implements CompraService{
     private final AdministradorService administradorService;
     private final NotificacaoService notificacaoService;
     private final AtivoService ativoService;
-    private final ClienteRepository clienteRepository;
     private final ModelMapper modelMapper;
 
     public CompraServiceImpl(CompraRepository compraRepository,
                              ClienteService clienteService, InteresseCompraRepository interesseCompraRepository,
                              AdministradorService administradorService, NotificacaoServiceImpl notificacaoService,
-                             AtivoService ativoService, ClienteRepository clienteRepository,
+                             AtivoService ativoService,
                              ModelMapper modelMapper) {
         this.compraRepository = compraRepository;
         this.clienteService = clienteService;
@@ -49,7 +45,6 @@ public class CompraServiceImpl implements CompraService{
         this.administradorService = administradorService;
         this.notificacaoService = notificacaoService;
         this.ativoService = ativoService;
-        this.clienteRepository = clienteRepository;
         this.modelMapper = modelMapper;
     }
 
@@ -110,10 +105,7 @@ public class CompraServiceImpl implements CompraService{
         Compra compra = compraRepository.findById(idCompra)
                 .orElseThrow(CompraNaoExisteException::new);
 
-        Cliente cliente = clienteRepository.findById(idCliente)
-                .orElseThrow(ClienteNaoExisteException::new);
-
-        if (!compra.getConta().getId().equals(cliente.getConta().getId())) {
+        if (!compra.getConta().getCliente().getId().equals(idCliente)) {
             throw new CompraNaoPertenceAoClienteException();
         }
 
