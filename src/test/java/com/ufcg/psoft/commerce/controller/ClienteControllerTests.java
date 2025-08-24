@@ -1296,21 +1296,23 @@ class    ClienteControllerTests {
     @DisplayName("Conjunto de casos de verificação dos fluxos de Mensagem e Notificação do Cliente")
     class ClienteNotificacaoMensagem {
 
-        /*@Test
+        @Test
         @DisplayName("Quando cliente Premium registra interesse em ativo disponível com sucesso")
         void quandoClienteRegistraInteresseAtivoDisponivel() throws Exception{
 
-            driver.perform(put(URI_CLIENTES + "/" + clientePremium.getId() + "/interesseAtivoDisponivel" + "/" + ativoDisponivel.getId())
+            driver.perform(put(URI_CLIENTES + "/" + clientePremium.getId() + "/interesseAtivoDisponivel/" + ativoDisponivel.getId())
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("codigo", clientePremium.getCodigo()))
                     .andExpect(status().isNoContent());
 
-            Conta contaAtualizada = contaRepository.findById(clientePremium.getConta().getId()).orElseThrow();
             entityManager.flush();
-            entityManager.refresh(contaAtualizada);
+            entityManager.refresh(ativoDisponivel);
 
-            assertTrue(contaAtualizada.getAtivosDeInteresse().stream().anyMatch(a -> a.getId().equals(ativoDisponivel.getId())));
-        }*/
+            boolean interesseRegistrado = ativoDisponivel.getInteresses().stream()
+                    .anyMatch(interesse -> interesse.getCliente().getId().equals(clientePremium.getId()));
+
+            assertTrue(interesseRegistrado);
+        }
 
         @Test
         @DisplayName("quando Notificamos o cliente Premium quando cotação de ativo de interesse variar mais de 10%")

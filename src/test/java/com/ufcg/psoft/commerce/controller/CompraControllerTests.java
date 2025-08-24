@@ -3,6 +3,11 @@ package com.ufcg.psoft.commerce.controller;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
+import com.ufcg.psoft.commerce.listener.NotificacaoAtivoDisponivel;
+import com.ufcg.psoft.commerce.listener.NotificacaoAtivoVariouCotacao;
+import com.ufcg.psoft.commerce.listener.NotificacaoCompraDisponivel;
+import com.ufcg.psoft.commerce.model.enums.TipoInteresse;
+import org.apache.logging.log4j.LogManager;
 import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,6 +35,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -85,10 +91,16 @@ class CompraControllerTests {
     Ativo ativoAcao;
     Endereco enderecoClienteNormal;
     Endereco enderecoClientePremium;
+    ListAppender<ILoggingEvent> listAppender;
 
     @BeforeEach
     @Transactional
     void setup() {
+
+        Logger logger = (Logger) LoggerFactory.getLogger(NotificacaoCompraDisponivel.class);
+        listAppender = new ListAppender<>();
+        listAppender.start();
+        logger.addAppender(listAppender);
 
         objectMapper.registerModule(new JavaTimeModule());
 
@@ -308,38 +320,68 @@ class CompraControllerTests {
         @Test
         @DisplayName("Administrador disponibiliza compra com sucesso e cliente é notificado")
         void disponibilizarCompraSucesso() throws Exception {
-            Logger compraLogger = (Logger) LoggerFactory.getLogger(CompraService.class);
-            ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
-            listAppender.start();
-            compraLogger.addAppender(listAppender);
-
-            CompraResponseDTO novaCompra = compraService.solicitarCompra(
-                    clientePremium.getId(),
-                    clientePremium.getCodigo(),
-                    ativoAcao.getId(),
-                    2
-            );
-
+            Long idCliente = clientePremium.getId();
+            String codigoCliente = clientePremium.getCodigo();
+            Long idAtivo = ativoAcao.getId();
             String matriculaAdmin = administrador.getMatricula();
 
-            CompraResponseDTO compraDisponivel = compraService.disponibilizarCompra(
-                    novaCompra.getId(),
-                    matriculaAdmin
-            );
+            if (clientePremium.getConta().getCarteira() == null) {
+                clientePremium.getConta().setCarteira(new Carteira());
+            }
 
-            assertNotNull(compraDisponivel);
-            assertEquals(StatusCompra.DISPONIVEL, compraDisponivel.getStatusCompra(),
-                    "Status da compra deve estar como DISPONIVEL após confirmação pelo admin");
+            CompraResponseDTO novaCompra = compraService.solicitarCompra(idCliente, codigoCliente, idAtivo, 2);
+
+            String responseJsonString = driver.perform(put(URI_COMPRAS + "/admin/" + novaCompra.getId() + "/disponibilizar")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .param("matriculaAdmin", matriculaAdmin))
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+
+            CompraResponseDTO compra = objectMapper.readValue(responseJsonString, CompraResponseDTO.class);
+
+            assertNotNull(compra);
+            assertEquals(novaCompra.getId(), compra.getId());
+            assertEquals(StatusCompra.DISPONIVEL, compra.getStatusCompra());
+            assertEquals(idCliente, compra.getConta().getCliente().getId());
+            assertEquals(idAtivo, compra.getAtivo().getId());
+        }
+
+        @Test
+        @DisplayName("O cliente deve ser notificado após ter sua compra disponibilizada")
+        void notificaDisponibilidadeDeCompra() throws Exception {
+            Long idCliente = clientePremium.getId();
+            String codigoCliente = clientePremium.getCodigo();
+            Long idAtivo = ativoAcao.getId();
+            String matriculaAdmin = administrador.getMatricula();
+
+            if (clientePremium.getConta().getCarteira() == null) {
+                clientePremium.getConta().setCarteira(new Carteira());
+            }
+
+            CompraResponseDTO novaCompra = compraService.solicitarCompra(idCliente, codigoCliente, idAtivo, 2);
+
+            driver.perform(put(URI_COMPRAS + "/admin/" + novaCompra.getId() + "/disponibilizar")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .param("matriculaAdmin", matriculaAdmin))
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
 
             List<ILoggingEvent> logsList = listAppender.list;
             assertEquals(1, logsList.size());
             String logMessage = logsList.get(0).getFormattedMessage();
 
-            assertTrue(logMessage.contains("Cliente " + clientePremium.getNome() + " notificado"),
-                    "O log de notificação não contém o nome do cliente premium");
-
-            listAppender.stop();
-            compraLogger.detachAppender(listAppender);
+            assertTrue(logMessage.contains("Caro cliente " + clientePremium.getNome() + ", a compra que você solicitou, está disponível!"));
+            assertTrue(logMessage.contains("Nome do ativo comprado: " + ativoAcao.getNome()));
+            assertTrue(logMessage.contains("O tipo do ativo comprado: " + ativoAcao.getTipo().toString()));
+            assertTrue(logMessage.contains("Valor do ativo no momento da compra: " + novaCompra.getValorVenda()));
+            assertTrue(logMessage.contains("Valor total da compra: " + novaCompra.getValorVenda()));
+            assertTrue(logMessage.contains("Quantidade de ativos comprados " + novaCompra.getQuantidade()));
         }
 
         @Test
@@ -401,8 +443,6 @@ class CompraControllerTests {
             assertThrows(MatriculaInvalidaException.class,
                     () -> compraService.disponibilizarCompra(novaCompra.getId(), "MatriculaErrada:C"));
         }
-
-
     }
 
     @Nested
