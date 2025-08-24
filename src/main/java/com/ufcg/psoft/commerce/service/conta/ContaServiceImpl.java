@@ -2,7 +2,6 @@ package com.ufcg.psoft.commerce.service.conta;
 
 import com.ufcg.psoft.commerce.dto.carteira.AtivoEmCarteiraResponseDTO;
 import com.ufcg.psoft.commerce.dto.compra.CompraResponseDTO;
-import com.ufcg.psoft.commerce.events.EventoAtivo;
 import com.ufcg.psoft.commerce.exception.cliente.ClienteNaoExisteException;
 import com.ufcg.psoft.commerce.exception.compra.CompraNaoExisteException;
 import com.ufcg.psoft.commerce.exception.compra.StatusCompraInvalidoException;
@@ -15,14 +14,13 @@ import com.ufcg.psoft.commerce.repository.ClienteRepository;
 import com.ufcg.psoft.commerce.repository.CompraRepository;
 import com.ufcg.psoft.commerce.repository.ContaRepository;
 import com.ufcg.psoft.commerce.repository.AtivoCarteiraRepository;;
-import com.ufcg.psoft.commerce.service.carteira.AtivoEmCarteiraServiceImpl;
 import com.ufcg.psoft.commerce.service.notificacao.NotificacaoServiceImpl;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ContaServiceImpl implements ContaService {
@@ -96,9 +94,10 @@ public class ContaServiceImpl implements ContaService {
         AtivoEmCarteira ativoEmCarteira = new AtivoEmCarteira();
         ativoEmCarteira.setAtivo(compra.getAtivo());
         ativoEmCarteira.setQuantidadeTotal(compra.getQuantidade());
-        ativoEmCarteira.setValorDeAquisicao(compra.getValorVenda());;
+        ativoEmCarteira.setValorDeAquisicao(compra.getValorVenda().divide(new BigDecimal(ativoEmCarteira.getQuantidadeTotal())));;
         ativoEmCarteira.setCotacaoAtual(ativoEmCarteira.getCotacaoAtual());
         ativoEmCarteira.setDesempenho(ativoEmCarteira.getDesempenho());
+        ativoEmCarteira.setCarteira(conta.getCarteira());
 
         ativoCarteiraRepository.save(ativoEmCarteira);
         conta.getCarteira().getAtivosEmCarteira().add(ativoEmCarteira);
