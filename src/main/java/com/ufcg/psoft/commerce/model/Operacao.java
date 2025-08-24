@@ -37,9 +37,8 @@ public abstract class Operacao {
     private BigDecimal valorVenda;
 
     @ManyToOne
-    @JoinColumn(name = "conta_id")
-    @JsonProperty("conta")
-    private Conta conta;
+    @JoinColumn(name = "cliente_id")
+    private Cliente cliente;
 
     public abstract void avancarStatus();
 

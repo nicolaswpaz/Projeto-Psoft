@@ -63,7 +63,7 @@ public class CompraServiceImpl implements CompraService{
                 .ativo(ativo)
                 .quantidade(quantidade)
                 .valorVenda(BigDecimal.valueOf(quantidade).multiply(ativo.getCotacao()))
-                .conta(conta)
+                .cliente(cliente)
                 .build();
 
         compraRepository.save(compra);
@@ -105,7 +105,7 @@ public class CompraServiceImpl implements CompraService{
         Compra compra = compraRepository.findById(idCompra)
                 .orElseThrow(CompraNaoExisteException::new);
 
-        if (!compra.getConta().getCliente().getId().equals(idCliente)) {
+        if (!compra.getCliente().getId().equals(idCliente)) {
             throw new CompraNaoPertenceAoClienteException();
         }
 

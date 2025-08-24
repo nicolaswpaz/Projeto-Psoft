@@ -1,7 +1,5 @@
 package com.ufcg.psoft.commerce.model;
 
-import com.ufcg.psoft.commerce.model.enums.StatusCompra;
-import com.ufcg.psoft.commerce.model.enums.TipoInteresse;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

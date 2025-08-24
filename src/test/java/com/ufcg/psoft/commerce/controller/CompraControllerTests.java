@@ -151,7 +151,6 @@ class CompraControllerTests {
                 .build()
         );
 
-        contaClienteNormal.setCliente(clienteNormal);
         contaRepository.save(contaClienteNormal);
 
         clientePremium = clienteRepository.save(Cliente.builder()
@@ -164,7 +163,6 @@ class CompraControllerTests {
                 .build()
         );
 
-        contaClientePremium.setCliente(clientePremium);
         contaRepository.save(contaClientePremium);
 
         ativoTesouro = ativoRepository.save(Ativo.builder()
@@ -256,7 +254,7 @@ class CompraControllerTests {
 
             CompraResponseDTO compra = objectMapper.readValue(responseJsonString, CompraResponseDTO.class);
 
-            assertEquals(clienteNormal.getId(), compra.getConta().getCliente().getId());
+            assertEquals(clienteNormal.getId(), compra.getCliente().getId());
             assertEquals(ativoTesouro.getId(), compra.getAtivo().getId());
             assertEquals(2, compra.getQuantidade());
         }
@@ -290,7 +288,7 @@ class CompraControllerTests {
 
             CompraResponseDTO compra = objectMapper.readValue(responseJsonString, CompraResponseDTO.class);
 
-            assertEquals(clientePremium.getId(), compra.getConta().getCliente().getId());
+            assertEquals(clientePremium.getId(), compra.getCliente().getId());
             assertEquals(ativoAcao.getId(), compra.getAtivo().getId());
         }
 
@@ -307,7 +305,7 @@ class CompraControllerTests {
 
             CompraResponseDTO compra = objectMapper.readValue(responseJsonString, CompraResponseDTO.class);
 
-            assertEquals(clientePremium.getId(), compra.getConta().getCliente().getId());
+            assertEquals(clientePremium.getId(), compra.getCliente().getId());
             assertEquals(ativoAcao.getId(), compra.getAtivo().getId());
             assertEquals(9999, compra.getQuantidade());
         }

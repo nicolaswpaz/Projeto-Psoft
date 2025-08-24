@@ -35,7 +35,7 @@ public class Compra extends Operacao{
             this.setStatusCompra(StatusCompra.SOLICITADO);
         }
     }
-    
+
     @PostLoad
     public void initStatusState() {
         if (statusCompra != null) {

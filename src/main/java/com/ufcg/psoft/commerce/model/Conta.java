@@ -26,11 +26,4 @@ public class Conta {
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "carteira_id")
     private Carteira carteira;
-
-    @OneToMany(mappedBy = "conta", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Operacao> operacoes;
-
-    @OneToOne
-    @JoinColumn(name = "cliente_id")
-    private Cliente cliente;
 }
