@@ -25,7 +25,6 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 public class AtivoServiceImpl implements AtivoService {
@@ -110,7 +109,7 @@ public class AtivoServiceImpl implements AtivoService {
         List<Ativo> ativos = ativoRepository.findAll();
         return ativos.stream()
                 .map(AtivoResponseDTO::new)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override

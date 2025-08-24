@@ -35,10 +35,8 @@ public class AtivoEmCarteira {
     @JoinColumn(name = "carteira_id")
     private Carteira carteira;
 
-    @JsonProperty("desempenho")
     private BigDecimal desempenho;
 
-    @JsonProperty("cotacaoAtual")
     private BigDecimal cotacaoAtual;
 
     @Transient

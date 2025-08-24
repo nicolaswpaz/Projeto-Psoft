@@ -3,6 +3,7 @@ package com.ufcg.psoft.commerce.service.compra;
 import com.ufcg.psoft.commerce.dto.compra.CompraResponseDTO;
 import com.ufcg.psoft.commerce.model.Cliente;
 import com.ufcg.psoft.commerce.model.Compra;
+import com.ufcg.psoft.commerce.model.enums.TipoInteresse;
 
 import java.util.List;
 
