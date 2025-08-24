@@ -117,7 +117,7 @@ public class AtivoServiceImpl implements AtivoService {
         List<Ativo> ativos = ativoRepository.findByNomeContaining(nome);
         return ativos.stream()
                 .map(AtivoResponseDTO::new)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     @Override

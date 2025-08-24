@@ -112,7 +112,7 @@ public class AdministradorServiceImpl implements AdministradorService {
         Compra compra = compraRepository.findById(idCompra)
                 .orElseThrow(CompraNaoExisteException::new);
 
-        Conta conta = compra.getConta();
+        Conta conta = compra.getCliente().getConta();
 
         BigDecimal valorCompra = compra.getAtivo().getCotacao()
                 .multiply(BigDecimal.valueOf(compra.getQuantidade()));

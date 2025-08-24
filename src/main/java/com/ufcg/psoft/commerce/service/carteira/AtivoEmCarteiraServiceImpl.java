@@ -7,6 +7,7 @@ import com.ufcg.psoft.commerce.repository.AtivoCarteiraRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class AtivoEmCarteiraServiceImpl implements AtivoEmCarteiravService {
@@ -29,7 +30,7 @@ public class AtivoEmCarteiraServiceImpl implements AtivoEmCarteiravService {
         return ativoCarteiraRepository.findAll()
                 .stream()
                 .map(AtivoEmCarteiraResponseDTO::new)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     @Override

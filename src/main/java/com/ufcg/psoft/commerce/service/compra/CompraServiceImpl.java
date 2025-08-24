@@ -1,6 +1,7 @@
 package com.ufcg.psoft.commerce.service.compra;
 
 import com.ufcg.psoft.commerce.dto.compra.CompraResponseDTO;
+import com.ufcg.psoft.commerce.exception.cliente.ClienteNaoExisteException;
 import com.ufcg.psoft.commerce.exception.cliente.ClienteNaoPremiumException;
 import com.ufcg.psoft.commerce.exception.compra.CompraNaoExisteException;
 import com.ufcg.psoft.commerce.exception.compra.CompraNaoPertenceAoClienteException;
@@ -9,6 +10,7 @@ import com.ufcg.psoft.commerce.model.*;
 import com.ufcg.psoft.commerce.model.enums.StatusCompra;
 import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
 import com.ufcg.psoft.commerce.model.enums.TipoPlano;
+import com.ufcg.psoft.commerce.repository.ClienteRepository;
 import com.ufcg.psoft.commerce.repository.CompraRepository;
 import com.ufcg.psoft.commerce.repository.InteresseCompraRepository;
 import com.ufcg.psoft.commerce.service.administrador.AdministradorService;
@@ -32,12 +34,13 @@ public class CompraServiceImpl implements CompraService{
     private final AdministradorService administradorService;
     private final NotificacaoService notificacaoService;
     private final AtivoService ativoService;
+    private final ClienteRepository clienteRepository;
     private final ModelMapper modelMapper;
 
     public CompraServiceImpl(CompraRepository compraRepository,
                              ClienteService clienteService, InteresseCompraRepository interesseCompraRepository,
                              AdministradorService administradorService, NotificacaoServiceImpl notificacaoService,
-                             AtivoService ativoService,
+                             AtivoService ativoService, ClienteRepository clienteRepository,
                              ModelMapper modelMapper) {
         this.compraRepository = compraRepository;
         this.clienteService = clienteService;
@@ -45,6 +48,7 @@ public class CompraServiceImpl implements CompraService{
         this.administradorService = administradorService;
         this.notificacaoService = notificacaoService;
         this.ativoService = ativoService;
+        this.clienteRepository = clienteRepository;
         this.modelMapper = modelMapper;
     }
 
@@ -52,7 +56,6 @@ public class CompraServiceImpl implements CompraService{
     public CompraResponseDTO solicitarCompra(Long idCliente, String codigoAcesso, Long idAtivo, int quantidade) {
         Ativo ativo = ativoService.verificarAtivoExistente(idAtivo);
         Cliente cliente = clienteService.autenticar(idCliente, codigoAcesso);
-        Conta conta = cliente.getConta();
 
         if (cliente.getPlano() == TipoPlano.NORMAL && ativo.getTipo() != TipoAtivo.TESOURO_DIRETO) {
             throw new ClienteNaoPremiumException();
@@ -63,7 +66,7 @@ public class CompraServiceImpl implements CompraService{
                 .ativo(ativo)
                 .quantidade(quantidade)
                 .valorVenda(BigDecimal.valueOf(quantidade).multiply(ativo.getCotacao()))
-                .conta(conta)
+                .cliente(cliente)
                 .build();
 
         compraRepository.save(compra);
@@ -105,7 +108,10 @@ public class CompraServiceImpl implements CompraService{
         Compra compra = compraRepository.findById(idCompra)
                 .orElseThrow(CompraNaoExisteException::new);
 
-        if (!compra.getConta().getCliente().getId().equals(idCliente)) {
+        Cliente cliente = clienteRepository.findById(idCliente)
+                .orElseThrow(ClienteNaoExisteException::new);
+
+        if (!compra.getCliente().getId().equals(cliente.getId())) {
             throw new CompraNaoPertenceAoClienteException();
         }
 

@@ -23,7 +23,6 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class ContaServiceImpl implements ContaService {
@@ -46,6 +45,20 @@ public class ContaServiceImpl implements ContaService {
     @Autowired
     NotificacaoServiceImpl notificacaoService;
 
+    public ContaServiceImpl(ContaRepository contaRepository,
+                            CompraRepository compraRepository,
+                            ModelMapper modelMapper,
+                            ClienteRepository clienteRepository,
+                            AtivoCarteiraRepository ativoCarteiraRepository,
+                            NotificacaoServiceImpl notificacaoService) {
+        this.contaRepository = contaRepository;
+        this.compraRepository = compraRepository;
+        this.modelMapper = modelMapper;
+        this.clienteRepository = clienteRepository;
+        this.ativoCarteiraRepository = ativoCarteiraRepository;
+        this.notificacaoService = notificacaoService;
+    }
+
     @Override
     public Conta criarContaPadrao() {
         Carteira carteira = new Carteira();
@@ -60,17 +73,6 @@ public class ContaServiceImpl implements ContaService {
         return contaRepository.save(conta);
     }
 
-//    @Override
-//    public void notificarAtivoDisponivelClientesComInteresse(EventoAtivo evento) {
-//        notificacaoService.notificarDisponibilidadeAtivo(evento.getAtivo());
-//    }
-//
-//    @Override
-//    public void notificarClientesPremiumComInteresse(EventoAtivo evento) {
-//        notificacaoService.notificarVariacaoCotacao(evento.getAtivo());
-//    }
-
-
     @Override
     public CompraResponseDTO confirmarCompra(Long idCliente, Long idCompra) {
         Compra compra = compraRepository.findById(idCompra)
@@ -80,7 +82,7 @@ public class ContaServiceImpl implements ContaService {
             throw new StatusCompraInvalidoException();
         }
 
-        Conta conta = compra.getConta();
+        Conta conta = compra.getCliente().getConta();
         if (conta.getSaldo().compareTo(compra.getValorVenda()) < 0) {
             throw new SaldoInsuficienteException();
         }
@@ -94,7 +96,7 @@ public class ContaServiceImpl implements ContaService {
         AtivoEmCarteira ativoEmCarteira = new AtivoEmCarteira();
         ativoEmCarteira.setAtivo(compra.getAtivo());
         ativoEmCarteira.setQuantidadeTotal(compra.getQuantidade());
-        ativoEmCarteira.setValorDeAquisicao(compra.getValorVenda().divide(new BigDecimal(ativoEmCarteira.getQuantidadeTotal())));;
+        ativoEmCarteira.setValorDeAquisicao(compra.getValorVenda());;
         ativoEmCarteira.setCotacaoAtual(ativoEmCarteira.getCotacaoAtual());
         ativoEmCarteira.setDesempenho(ativoEmCarteira.getDesempenho());
 

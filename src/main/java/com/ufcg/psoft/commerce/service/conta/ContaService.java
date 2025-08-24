@@ -12,13 +12,9 @@ public interface ContaService {
 
     Conta criarContaPadrao();
 
-    //void notificarAtivoDisponivelClientesComInteresse(EventoAtivo evento);
-
-    //void notificarClientesPremiumComInteresse(EventoAtivo evento);
-
     CompraResponseDTO confirmarCompra(Long idCliente, Long idCompra);
 
     List<AtivoEmCarteiraResponseDTO> visualizarCarteira(Long idCliente);
 
-    public void acrecentaSaldoConta(Long idCliente, BigDecimal valor);
+    void acrecentaSaldoConta(Long idCliente, BigDecimal valor);
 }
