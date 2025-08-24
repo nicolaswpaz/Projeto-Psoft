@@ -392,54 +392,65 @@ class CompraControllerTests {
 
         @Test
         @DisplayName("Tentativa de disponibilizar compra com status inválido lança exceção")
-        void disponibilizarCompraStatusInvalido() throws Exception {
+        void disponibilizarCompraStatusInvalido() {
+            Long clientePremiumId = clientePremium.getId();
+            String clientePremiumCodigo = clientePremium.getCodigo();
+            Long ativoId = ativoAcao.getId();
+
             CompraResponseDTO novaCompra = compraService.solicitarCompra(
-                    clientePremium.getId(),
-                    clientePremium.getCodigo(),
-                    ativoAcao.getId(),
-                    1
+                    clientePremiumId, clientePremiumCodigo, ativoId, 1
             );
 
             String matriculaAdmin = administrador.getMatricula();
+            Long compraId = novaCompra.getId();
 
-            compraService.disponibilizarCompra(novaCompra.getId(), matriculaAdmin);
-            // Segunda tentativa deve lançar StatusCompraInvalidoException
-            assertThrows(StatusCompraInvalidoException.class, () -> {
-                compraService.disponibilizarCompra(novaCompra.getId(), matriculaAdmin);
-            });
+            compraService.disponibilizarCompra(compraId, matriculaAdmin);
+
+            assertThrows(StatusCompraInvalidoException.class, () ->
+                    compraService.disponibilizarCompra(compraId, matriculaAdmin)
+            );
         }
 
         @Test
+        @DisplayName("Confirmar disponibilidade de compra com saldo insuficiente deve lançar exceção")
         void confirmarDisponibilidadeCompra_SaldoInsuficiente() {
+            Long clientePremiumId = clientePremium.getId();
+            String clientePremiumCodigo = clientePremium.getCodigo();
+            Long ativoId = ativoAcao.getId();
+
             CompraResponseDTO novaCompra = compraService.solicitarCompra(
-                    clientePremium.getId(),
-                    clientePremium.getCodigo(),
-                    ativoAcao.getId(),
-                    1
+                    clientePremiumId, clientePremiumCodigo, ativoId, 1
             );
 
             clientePremium.getConta().setSaldo(new BigDecimal(0));
 
             String matriculaAdmin = administrador.getMatricula();
+            Long compraId = novaCompra.getId();
 
             assertThrows(SaldoInsuficienteException.class,
-                    () -> compraService.disponibilizarCompra(novaCompra.getId(), matriculaAdmin));
+                    () -> compraService.disponibilizarCompra(compraId, matriculaAdmin)
+            );
         }
+
 
         @Test
+        @DisplayName("Confirmar disponibilidade de compra com matrícula inválida deve lançar exceção")
         void confirmarDisponibilidadeCompraMatriculaInvalida() {
+            Long clientePremiumId = clientePremium.getId();
+            String clientePremiumCodigo = clientePremium.getCodigo();
+            Long ativoId = ativoAcao.getId();
+
             CompraResponseDTO novaCompra = compraService.solicitarCompra(
-                    clientePremium.getId(),
-                    clientePremium.getCodigo(),
-                    ativoAcao.getId(),
-                    1
+                    clientePremiumId, clientePremiumCodigo, ativoId, 1
             );
 
-            assertThrows(MatriculaInvalidaException.class,
-                    () -> compraService.disponibilizarCompra(novaCompra.getId(), "MatriculaErrada:C"));
-        }
-    }
+            Long compraId = novaCompra.getId();
 
+            assertThrows(MatriculaInvalidaException.class,
+                    () -> compraService.disponibilizarCompra(compraId, "MatriculaErrada:C")
+            );
+        }
+}
     @Nested
     @DisplayName("Fluxo da carteira do cliente")
     class FluxoCarteiraCliente {
@@ -692,10 +703,11 @@ class CompraControllerTests {
             Long idAtivo = ativoAcao.getId();
 
             CompraResponseDTO novaCompra = compraService.solicitarCompra(idCliente, codigoCliente, idAtivo, 1);
+            Long idCompra = novaCompra.getId();
 
-            assertThrows(StatusCompraInvalidoException.class, () -> {
-                compraService.confirmarCompra(idCliente, codigoCliente, novaCompra.getId());
-            });
+            assertThrows(StatusCompraInvalidoException.class, () ->
+                    compraService.confirmarCompra(idCliente, codigoCliente, idCompra)
+            );
         }
 
         @Test
@@ -718,31 +730,50 @@ class CompraControllerTests {
         @DisplayName("Disponibilizar compra com status diferente de SOLICITADO deve lançar exceção")
         void disponibilizarCompraStatusInvalido() {
             CompraResponseDTO compra = compraService.solicitarCompra(
-                    clienteNormal.getId(), clienteNormal.getCodigo(), ativoTesouro.getId(), 1);
+                    clienteNormal.getId(),
+                    clienteNormal.getCodigo(),
+                    ativoTesouro.getId(),
+                    1
+            );
             compraService.disponibilizarCompra(compra.getId(), administrador.getMatricula());
 
-            assertThrows(StatusCompraInvalidoException.class, () -> {
-                compraService.disponibilizarCompra(compra.getId(), administrador.getMatricula());
-            });
+            Long compraId = compra.getId();
+            String adminMatricula = administrador.getMatricula();
+
+            assertThrows(StatusCompraInvalidoException.class, () ->
+                    compraService.disponibilizarCompra(compraId, adminMatricula)
+            );
         }
 
         @Test
         @DisplayName("Consultar compra de outro cliente deve lançar exceção")
         void consultarCompraOutroCliente() {
-            CompraResponseDTO compra = compraService.solicitarCompra(
-                    clienteNormal.getId(), clienteNormal.getCodigo(), ativoTesouro.getId(), 1);
+            Long clienteNormalId = clienteNormal.getId();
+            String clienteNormalCodigo = clienteNormal.getCodigo();
+            Long ativoId = ativoTesouro.getId();
 
-            assertThrows(CompraNaoPertenceAoClienteException.class, () -> {
-                compraService.consultar(clientePremium.getId(), clientePremium.getCodigo(), compra.getId());
-            });
+            CompraResponseDTO compra = compraService.solicitarCompra(
+                    clienteNormalId, clienteNormalCodigo, ativoId, 1
+            );
+
+            Long clientePremiumId = clientePremium.getId();
+            String clientePremiumCodigo = clientePremium.getCodigo();
+            Long compraId = compra.getId();
+
+            assertThrows(CompraNaoPertenceAoClienteException.class, () ->
+                    compraService.consultar(clientePremiumId, clientePremiumCodigo, compraId)
+            );
         }
 
         @Test
         @DisplayName("Consultar compra inexistente deve lançar exceção")
         void consultarCompraInexistente() {
-            assertThrows(CompraNaoExisteException.class, () -> {
-                compraService.consultar(clienteNormal.getId(), clienteNormal.getCodigo(), 999L);
-            });
+            Long clienteId = clienteNormal.getId();
+            String clienteCodigo = clienteNormal.getCodigo();
+
+            assertThrows(CompraNaoExisteException.class, () ->
+                    compraService.consultar(clienteId, clienteCodigo, 999L)
+            );
         }
 
         @Test
@@ -756,40 +787,64 @@ class CompraControllerTests {
         @Test
         @DisplayName("Solicitar compra com cliente normal para ativo não tesouro deve lançar exceção")
         void solicitarCompraNormalAtivoNaoTesouro() {
-            assertThrows(ClienteNaoPremiumException.class, () -> {
-                compraService.solicitarCompra(clienteNormal.getId(), clienteNormal.getCodigo(), ativoAcao.getId(), 1);
-            });
+            Long clienteId = clienteNormal.getId();
+            String clienteCodigo = clienteNormal.getCodigo();
+            Long ativoId = ativoAcao.getId();
+
+            assertThrows(ClienteNaoPremiumException.class, () ->
+                    compraService.solicitarCompra(clienteId, clienteCodigo, ativoId, 1)
+            );
         }
 
         @Test
         @DisplayName("Solicitar compra com cliente inexistente deve lançar exceção")
         void solicitarCompraClienteInexistente() {
-            assertThrows(RuntimeException.class, () -> {
-                compraService.solicitarCompra(999L, "codigo_invalido", ativoTesouro.getId(), 1);
-            });
+            Long ativoId = ativoTesouro.getId();
+
+            assertThrows(RuntimeException.class, () ->
+                    compraService.solicitarCompra(999L, "codigo_invalido", ativoId, 1)
+            );
         }
 
         @Test
         @DisplayName("Confirmar compra já em carteira deve lançar exceção")
         void confirmarCompraJaEmCarteira() {
-            CompraResponseDTO compra = compraService.solicitarCompra(clienteNormal.getId(), clienteNormal.getCodigo(), ativoTesouro.getId(), 1);
+            CompraResponseDTO compra = compraService.solicitarCompra(
+                    clienteNormal.getId(),
+                    clienteNormal.getCodigo(),
+                    ativoTesouro.getId(),
+                    1
+            );
             compraService.disponibilizarCompra(compra.getId(), administrador.getMatricula());
             compraService.confirmarCompra(clienteNormal.getId(), clienteNormal.getCodigo(), compra.getId());
 
-            assertThrows(StatusCompraInvalidoException.class, () -> {
-                compraService.confirmarCompra(clienteNormal.getId(), clienteNormal.getCodigo(), compra.getId());
-            });
+            Long clienteId = clienteNormal.getId();
+            String clienteCodigo = clienteNormal.getCodigo();
+            Long compraId = compra.getId();
+
+            assertThrows(StatusCompraInvalidoException.class, () ->
+                    compraService.confirmarCompra(clienteId, clienteCodigo, compraId)
+            );
         }
 
         @Test
         @DisplayName("Confirmar compra de outro cliente deve lançar exceção")
         void confirmarCompraOutroCliente() {
-            CompraResponseDTO compra = compraService.solicitarCompra(clienteNormal.getId(), clienteNormal.getCodigo(), ativoTesouro.getId(), 1);
+            CompraResponseDTO compra = compraService.solicitarCompra(
+                    clienteNormal.getId(),
+                    clienteNormal.getCodigo(),
+                    ativoTesouro.getId(),
+                    1
+            );
             compraService.disponibilizarCompra(compra.getId(), administrador.getMatricula());
 
-            assertThrows(CompraNaoPertenceAoClienteException.class, () -> {
-                compraService.confirmarCompra(clientePremium.getId(), clientePremium.getCodigo(), compra.getId());
-            });
+            Long clientePremiumId = clientePremium.getId();
+            String clientePremiumCodigo = clientePremium.getCodigo();
+            Long compraId = compra.getId();
+
+            assertThrows(CompraNaoPertenceAoClienteException.class, () ->
+                    compraService.confirmarCompra(clientePremiumId, clientePremiumCodigo, compraId)
+            );
         }
 
         @Test
@@ -807,9 +862,13 @@ class CompraControllerTests {
         @Test
         @DisplayName("Solicitar compra com quantidade zero deve lançar exceção")
         void solicitarCompraQuantidadeZero() {
-            assertThrows(QuantidadeInvalidaException.class, () -> {
-                compraService.solicitarCompra(clienteNormal.getId(), clienteNormal.getCodigo(), ativoTesouro.getId(), 0);
-            });
+            Long clienteId = clienteNormal.getId();
+            String clienteCodigo = clienteNormal.getCodigo();
+            Long ativoId = ativoTesouro.getId();
+
+            assertThrows(QuantidadeInvalidaException.class, () ->
+                    compraService.solicitarCompra(clienteId, clienteCodigo, ativoId, 0)
+            );
         }
 
         @Test

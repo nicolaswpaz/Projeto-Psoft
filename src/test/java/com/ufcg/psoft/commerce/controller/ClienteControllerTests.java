@@ -565,6 +565,7 @@ class    ClienteControllerTests {
 
             clienteRepository.deleteAll();
             contaRepository.deleteAll();
+
             administrador = administradorRepository.save(Administrador.builder()
                     .matricula("admin123")
                     .nome("Admin Teste")
@@ -585,48 +586,42 @@ class    ClienteControllerTests {
                     .enderecoDTO(new EnderecoPostPutRequestDTO())
                     .build();
 
-
-            Endereco endereco01 = enderecoRepository.save(Endereco.builder()
-                    .rua("Av. da Pits A")
-                    .numero("100")
-                    .bairro("Centro")
-                    .cep("58400-000")
-                    .complemento("")
-                    .build());
-
-            Endereco endereco02 = enderecoRepository.save(Endereco.builder()
-                    .rua("Distrito dos Testadores")
-                    .numero("200")
-                    .bairro("Zona Rural")
-                    .cep("58400-123")
-                    .complemento("Fazenda")
-                    .build());
-
-            Endereco endereco03 = enderecoRepository.save(Endereco.builder()
-                    .rua("Rua dos Devs")
-                    .numero("300")
-                    .bairro("Tecnopolis")
-                    .cep("58400-456")
-                    .complemento("Sala 42")
-                    .build());
-
-            Cliente cliente01 = clienteRepository.save(Cliente.builder()
+            // 🔹 Salva clientes com endereços diretamente (sem variáveis intermediárias)
+            clienteRepository.save(Cliente.builder()
                     .nome("Cliente Dois Almeida")
-                    .endereco(endereco01)
+                    .endereco(enderecoRepository.save(Endereco.builder()
+                            .rua("Av. da Pits A")
+                            .numero("100")
+                            .bairro("Centro")
+                            .cep("58400-000")
+                            .complemento("")
+                            .build()))
                     .codigo("246810")
                     .cpf("11122233344")
                     .build());
 
-            Cliente cliente02 = clienteRepository.save(Cliente.builder()
+            clienteRepository.save(Cliente.builder()
                     .nome("Cliente Tres Lima")
-                    .endereco(endereco02)
+                    .endereco(enderecoRepository.save(Endereco.builder()
+                            .rua("Distrito dos Testadores")
+                            .numero("200")
+                            .bairro("Zona Rural")
+                            .cep("58400-123")
+                            .complemento("Fazenda")
+                            .build()))
                     .codigo("135790")
                     .cpf("22233344455")
                     .build());
 
-            Cliente cliente03 = clienteRepository.save(Cliente.builder()
+            clienteRepository.save(Cliente.builder()
                     .nome("Cliente Quatro Silva")
-                    .endereco(endereco03)
+                    .endereco(enderecoRepository.save(Endereco.builder()
+                            .rua("Rua dos Devs")
+                            .numero("300")
+                            .bairro("Tecnopolis")
+                            .cep("58400-456")
+                            .complemento("Sala 42")
+                            .build()))
                     .codigo("987654")
                     .cpf("33344455566")
                     .build());
@@ -641,7 +636,7 @@ class    ClienteControllerTests {
             List<ClienteResponseDTO> resultado = objectMapper.readValue(responseJsonString, new TypeReference<>() {});
 
             System.out.println("Resultado recebido da API:");
-            resultado.forEach(cliente -> System.out.println(cliente));
+            resultado.forEach(System.out::println);
 
             assertAll(
                     () -> assertEquals(3, resultado.size(), "Deveriam retornar 3 clientes"),
