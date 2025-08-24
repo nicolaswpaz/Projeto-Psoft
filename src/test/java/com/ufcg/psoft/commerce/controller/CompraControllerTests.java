@@ -3,6 +3,9 @@ package com.ufcg.psoft.commerce.controller;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
+import com.ufcg.psoft.commerce.exception.cliente.ClienteNaoPremiumException;
+import com.ufcg.psoft.commerce.exception.compra.CompraNaoPertenceAoClienteException;
+import com.ufcg.psoft.commerce.exception.compra.QuantidadeInvalidaException;
 import com.ufcg.psoft.commerce.listener.NotificacaoCompraDisponivel;
 import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -45,8 +48,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @DisplayName("Testes do controlador de Compras")
 class CompraControllerTests {
 
-    final String URI_COMPRAS = "/compras";
-    final String URI_CLIENTES = "/clientes";
+    final String uriCompras = "/compras";
+    final String uriClientes = "/clientes";
 
     @Autowired
     MockMvc driver;
@@ -114,11 +117,11 @@ class CompraControllerTests {
         );
 
         contaClienteNormal = contaRepository.save(
-                Conta.builder().saldo(BigDecimal.valueOf(10000.0)).build()
+                Conta.builder().saldo(BigDecimal.valueOf(10000.0)).carteira(new Carteira()).build()
         );
 
         contaClientePremium = contaRepository.save(
-                Conta.builder().saldo(BigDecimal.valueOf(500.0)).build()
+                Conta.builder().saldo(BigDecimal.valueOf(500.0)).carteira(new Carteira()).build()
         );
 
         enderecoClienteNormal = enderecoRepository.save(Endereco.builder()
@@ -193,7 +196,7 @@ class CompraControllerTests {
         @Test
         @DisplayName("Solicitar compra com cliente inexistente deve falhar")
         void solicitarCompraClienteInexistente() throws Exception {
-            String responseJsonString = driver.perform(post(URI_COMPRAS + "/99999/" + ativoTesouro.getId())
+            String responseJsonString = driver.perform(post(uriCompras + "/99999/" + ativoTesouro.getId())
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("codigoAcesso", "qualquer")
                             .param("quantidade", "1"))
@@ -209,7 +212,7 @@ class CompraControllerTests {
         @Test
         @DisplayName("Solicitar compra com ativo inexistente deve falhar")
         void solicitarCompraAtivoInexistente() throws Exception {
-            String responseJsonString = driver.perform(post(URI_COMPRAS + "/" + clienteNormal.getId() + "/99999")
+            String responseJsonString = driver.perform(post(uriCompras + "/" + clienteNormal.getId() + "/99999")
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("codigoAcesso", clienteNormal.getCodigo())
                             .param("quantidade", "1"))
@@ -225,7 +228,7 @@ class CompraControllerTests {
         @Test
         @DisplayName("Solicitar compra com código de acesso incorreto deve falhar")
         void solicitarCompraCodigoInvalido() throws Exception {
-            String responseJsonString = driver.perform(post(URI_COMPRAS + "/" + clienteNormal.getId() + "/" + ativoTesouro.getId())
+            String responseJsonString = driver.perform(post(uriCompras + "/" + clienteNormal.getId() + "/" + ativoTesouro.getId())
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("codigoAcesso", "errado123")
                             .param("quantidade", "1"))
@@ -242,7 +245,7 @@ class CompraControllerTests {
         @Test
         @DisplayName("Solicitar compra de ativo TESOURO com cliente normal deve criar compra")
         void solicitarCompraClienteNormal() throws Exception {
-            String responseJsonString = driver.perform(post(URI_COMPRAS + "/" + clienteNormal.getId() + "/" + ativoTesouro.getId())
+            String responseJsonString = driver.perform(post(uriCompras + "/" + clienteNormal.getId() + "/" + ativoTesouro.getId())
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("codigoAcesso", clienteNormal.getCodigo())
                             .param("quantidade", "2"))
@@ -260,7 +263,7 @@ class CompraControllerTests {
         @Test
         @DisplayName("Solicitar compra de AÇÃO com cliente normal deve falhar")
         void solicitarCompraClienteNormalAtivoAcao() throws Exception {
-            String responseJsonString = driver.perform(post(URI_COMPRAS + "/" + clienteNormal.getId() + "/" + ativoAcao.getId())
+            String responseJsonString = driver.perform(post(uriCompras + "/" + clienteNormal.getId() + "/" + ativoAcao.getId())
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("codigoAcesso", clienteNormal.getCodigo())
                             .param("quantidade", "5"))
@@ -276,7 +279,7 @@ class CompraControllerTests {
         @Test
         @DisplayName("Solicitar compra de um ativo AÇÃO com cliente premium deve funcionar")
         void solicitarCompraClientePremium() throws Exception {
-            String responseJsonString = driver.perform(post(URI_COMPRAS + "/" + clientePremium.getId() + "/" + ativoAcao.getId())
+            String responseJsonString = driver.perform(post(uriCompras + "/" + clientePremium.getId() + "/" + ativoAcao.getId())
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("codigoAcesso", clientePremium.getCodigo())
                             .param("quantidade", "3"))
@@ -293,7 +296,7 @@ class CompraControllerTests {
         @Test
         @DisplayName("O CLIENTE pode solicitar uma compra de valor maior que seu saldo")
         void solicitarCompraSaldoInsuficiente() throws Exception {
-            String responseJsonString = driver.perform(post(URI_COMPRAS + "/" + clientePremium.getId() + "/" + ativoAcao.getId())
+            String responseJsonString = driver.perform(post(uriCompras + "/" + clientePremium.getId() + "/" + ativoAcao.getId())
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("codigoAcesso", clientePremium.getCodigo())
                             .param("quantidade", "9999"))
@@ -327,7 +330,7 @@ class CompraControllerTests {
 
             CompraResponseDTO novaCompra = compraService.solicitarCompra(idCliente, codigoCliente, idAtivo, 2);
 
-            String responseJsonString = driver.perform(put(URI_COMPRAS + "/admin/" + novaCompra.getId() + "/disponibilizar")
+            String responseJsonString = driver.perform(put(uriCompras + "/admin/" + novaCompra.getId() + "/disponibilizar")
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("matriculaAdmin", matriculaAdmin))
                     .andExpect(status().isOk())
@@ -355,7 +358,7 @@ class CompraControllerTests {
 
             CompraResponseDTO novaCompra = compraService.solicitarCompra(idCliente, codigoCliente, idAtivo, 2);
 
-            driver.perform(put(URI_COMPRAS + "/admin/" + novaCompra.getId() + "/disponibilizar")
+            driver.perform(put(uriCompras + "/admin/" + novaCompra.getId() + "/disponibilizar")
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("matriculaAdmin", matriculaAdmin))
                     .andExpect(status().isOk())
@@ -471,7 +474,7 @@ class CompraControllerTests {
             compraService.disponibilizarCompra(novaCompra.getId(), matriculaAdmin);
             compraService.confirmarCompra(idCliente, codigoCliente, novaCompra.getId());
 
-            String responseJsonString = driver.perform(get(URI_CLIENTES + "/" + idCliente + "/carteira")
+            String responseJsonString = driver.perform(get(uriClientes + "/" + idCliente + "/carteira")
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("codigoAcesso", "000000"))
                     .andExpect(status().isBadRequest())
@@ -498,7 +501,7 @@ class CompraControllerTests {
             compraService.disponibilizarCompra(novaCompra.getId(), matriculaAdmin);
             compraService.confirmarCompra(idCliente, codigoCliente, novaCompra.getId());
 
-            String responseJsonString = driver.perform(get(URI_CLIENTES + "/" + idCliente + "/carteira")
+            String responseJsonString = driver.perform(get(uriClientes + "/" + idCliente + "/carteira")
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("codigoAcesso", codigoCliente))
                     .andExpect(status().isOk())
@@ -537,7 +540,7 @@ class CompraControllerTests {
                 clienteNormal.getConta().getCarteira().getAtivosEmCarteira().clear();
             }
 
-            String responseJsonString = driver.perform(get(URI_CLIENTES + "/" + idCliente + "/carteira")
+            String responseJsonString = driver.perform(get(uriClientes + "/" + idCliente + "/carteira")
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("codigoAcesso", codigoCliente))
                     .andExpect(status().isOk())
@@ -553,6 +556,273 @@ class CompraControllerTests {
 
             assertNotNull(carteira, "Carteira não pode ser nula");
             assertTrue(carteira.isEmpty(), "Carteira deve estar vazia");
+        }
+    }
+
+    @Nested
+    @DisplayName("Fluxo dos estados da compra")
+    class FluxoEstadosDaCompra {
+
+        @Test
+        @DisplayName("Solicitar compra deve funcionar")
+        void solicitarCompraClienteNormalDeveFuncionar() throws Exception {
+            String responseJsonString = driver.perform(post(uriCompras + "/" + clienteNormal.getId() + "/" + ativoTesouro.getId())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .param("codigoAcesso", clienteNormal.getCodigo())
+                            .param("quantidade", "3"))
+                    .andExpect(status().isCreated())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+
+            CompraResponseDTO compra = objectMapper.readValue(responseJsonString, CompraResponseDTO.class);
+
+
+            assertEquals(clienteNormal.getId(), compra.getCliente().getId());
+            assertEquals(ativoTesouro.getId(), compra.getAtivo().getId());
+            assertEquals(StatusCompra.SOLICITADO, compra.getStatusCompra());
+        }
+
+        @Test
+        @DisplayName("Disponibilizar compra cliente normal deve funcionar")
+        void disponibilizarCompraClienteNormalDeveFuncionar() throws Exception {
+            CompraResponseDTO compra = compraService.solicitarCompra(
+                    clienteNormal.getId(), clienteNormal.getCodigo(), ativoTesouro.getId(), 1);
+
+            String responseJsonString = driver.perform(put(uriCompras + "/admin/" + compra.getId() + "/disponibilizar")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .param("matriculaAdmin", administrador.getMatricula()))
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+
+            CompraResponseDTO compraDisponibilizada = objectMapper.readValue(responseJsonString, CompraResponseDTO.class);
+
+
+            assertEquals(StatusCompra.DISPONIVEL, compraDisponibilizada.getStatusCompra());
+        }
+
+        @Test
+        @DisplayName("Confirmar compra deve mudar para CONFIRMADO")
+        void confirmarCompraClienteNormalDeveFuncionar() throws Exception {
+            CompraResponseDTO compra = compraService.solicitarCompra(clienteNormal.getId(), clienteNormal.getCodigo(), ativoTesouro.getId(), 1);
+            compraService.disponibilizarCompra(compra.getId(), administrador.getMatricula());
+
+
+            String responseJsonString = driver.perform(put(uriCompras + "/" + clienteNormal.getId() + "/" + compra.getId() + "/confirmar")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .param("codigoAcesso", clienteNormal.getCodigo()))
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+
+            CompraResponseDTO compraConfirmada = objectMapper.readValue(responseJsonString, CompraResponseDTO.class);
+
+
+            assertEquals(StatusCompra.EM_CARTEIRA, compraConfirmada.getStatusCompra());
+        }
+
+        @Test
+        @DisplayName("Solicitar compra deve funcionar")
+        void solicitarCompraClientePremiumDeveFuncionar() throws Exception {
+            String responseJsonString = driver.perform(post(uriCompras + "/" + clientePremium.getId() + "/" + ativoAcao.getId())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .param("codigoAcesso", clientePremium.getCodigo())
+                            .param("quantidade", "2"))
+                    .andExpect(status().isCreated())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+
+            CompraResponseDTO compra = objectMapper.readValue(responseJsonString, CompraResponseDTO.class);
+
+            assertEquals(clientePremium.getId(), compra.getCliente().getId());
+            assertEquals(ativoAcao.getId(), compra.getAtivo().getId());
+            assertEquals(StatusCompra.SOLICITADO, compra.getStatusCompra());
+        }
+
+        @Test
+        @DisplayName("Disponibilizar compra cliente premium deve funcionar")
+        void disponibilizarCompraClientePremiumDeveFuncionar() throws Exception {
+
+            CompraResponseDTO compra = compraService.solicitarCompra(
+                    clientePremium.getId(), clientePremium.getCodigo(), ativoAcao.getId(), 1);
+
+            String responseJsonString = driver.perform(put(uriCompras + "/admin/" + compra.getId() + "/disponibilizar")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .param("matriculaAdmin", administrador.getMatricula()))
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+
+            CompraResponseDTO compraDisponibilizada = objectMapper.readValue(responseJsonString, CompraResponseDTO.class);
+
+
+            assertEquals(StatusCompra.DISPONIVEL, compraDisponibilizada.getStatusCompra());
+        }
+
+        @Test
+        @DisplayName("Confirmar compra deve mudar para CONFIRMADO")
+        void confirmarCompraClientePremiumDeveFuncionar() throws Exception {
+            CompraResponseDTO compra = compraService.solicitarCompra(clientePremium.getId(), clientePremium.getCodigo(), ativoAcao.getId(), 2);
+            compraService.disponibilizarCompra(compra.getId(), administrador.getMatricula());
+
+
+            String responseJsonString = driver.perform(put(uriCompras + "/" + clientePremium.getId() + "/" + compra.getId() + "/confirmar")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .param("codigoAcesso", clientePremium.getCodigo()))
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+
+            CompraResponseDTO compraConfirmada = objectMapper.readValue(responseJsonString, CompraResponseDTO.class);
+
+            assertEquals(StatusCompra.EM_CARTEIRA, compraConfirmada.getStatusCompra());
+        }
+
+        @Test
+        @DisplayName("Confirmar compra com status inválido deve lançar exceção")
+        void confirmarCompraStatusInvalido() {
+            Long idCliente = clientePremium.getId();
+            String codigoCliente = clientePremium.getCodigo();
+            Long idAtivo = ativoAcao.getId();
+
+            CompraResponseDTO novaCompra = compraService.solicitarCompra(idCliente, codigoCliente, idAtivo, 1);
+
+            assertThrows(StatusCompraInvalidoException.class, () -> {
+                compraService.confirmarCompra(idCliente, codigoCliente, novaCompra.getId());
+            });
+        }
+
+        @Test
+        @DisplayName("Listar compras com matrícula admin deve funcionar")
+        void listarComprasAdminDeveFuncionar() throws Exception {
+            compraService.solicitarCompra(clienteNormal.getId(), clienteNormal.getCodigo(), ativoTesouro.getId(), 1);
+            compraService.solicitarCompra(clientePremium.getId(), clientePremium.getCodigo(), ativoAcao.getId(), 1);
+
+            String responseJson = driver.perform(get(uriCompras + "/admin/" + administrador.getMatricula())
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            assertTrue(responseJson.contains("\"id\""));
+            assertTrue(responseJson.contains("\"ativo\""));
+        }
+
+        @Test
+        @DisplayName("Disponibilizar compra com status diferente de SOLICITADO deve lançar exceção")
+        void disponibilizarCompraStatusInvalido() {
+            CompraResponseDTO compra = compraService.solicitarCompra(
+                    clienteNormal.getId(), clienteNormal.getCodigo(), ativoTesouro.getId(), 1);
+            compraService.disponibilizarCompra(compra.getId(), administrador.getMatricula());
+
+            assertThrows(StatusCompraInvalidoException.class, () -> {
+                compraService.disponibilizarCompra(compra.getId(), administrador.getMatricula());
+            });
+        }
+
+        @Test
+        @DisplayName("Consultar compra de outro cliente deve lançar exceção")
+        void consultarCompraOutroCliente() {
+            CompraResponseDTO compra = compraService.solicitarCompra(
+                    clienteNormal.getId(), clienteNormal.getCodigo(), ativoTesouro.getId(), 1);
+
+            assertThrows(CompraNaoPertenceAoClienteException.class, () -> {
+                compraService.consultar(clientePremium.getId(), clientePremium.getCodigo(), compra.getId());
+            });
+        }
+
+        @Test
+        @DisplayName("Consultar compra inexistente deve lançar exceção")
+        void consultarCompraInexistente() {
+            assertThrows(CompraNaoExisteException.class, () -> {
+                compraService.consultar(clienteNormal.getId(), clienteNormal.getCodigo(), 999L);
+            });
+        }
+
+        @Test
+        @DisplayName("Listar compras com matrícula inválida deve lançar exceção")
+        void listarComprasMatriculaInvalida() {
+            assertThrows(RuntimeException.class, () -> {
+                compraService.listar("matricula_invalida");
+            });
+        }
+
+        @Test
+        @DisplayName("Solicitar compra com cliente normal para ativo não tesouro deve lançar exceção")
+        void solicitarCompraNormalAtivoNaoTesouro() {
+            assertThrows(ClienteNaoPremiumException.class, () -> {
+                compraService.solicitarCompra(clienteNormal.getId(), clienteNormal.getCodigo(), ativoAcao.getId(), 1);
+            });
+        }
+
+        @Test
+        @DisplayName("Solicitar compra com cliente inexistente deve lançar exceção")
+        void solicitarCompraClienteInexistente() {
+            assertThrows(RuntimeException.class, () -> {
+                compraService.solicitarCompra(999L, "codigo_invalido", ativoTesouro.getId(), 1);
+            });
+        }
+
+        @Test
+        @DisplayName("Confirmar compra já em carteira deve lançar exceção")
+        void confirmarCompraJaEmCarteira() {
+            CompraResponseDTO compra = compraService.solicitarCompra(clienteNormal.getId(), clienteNormal.getCodigo(), ativoTesouro.getId(), 1);
+            compraService.disponibilizarCompra(compra.getId(), administrador.getMatricula());
+            compraService.confirmarCompra(clienteNormal.getId(), clienteNormal.getCodigo(), compra.getId());
+
+            assertThrows(StatusCompraInvalidoException.class, () -> {
+                compraService.confirmarCompra(clienteNormal.getId(), clienteNormal.getCodigo(), compra.getId());
+            });
+        }
+
+        @Test
+        @DisplayName("Confirmar compra de outro cliente deve lançar exceção")
+        void confirmarCompraOutroCliente() {
+            CompraResponseDTO compra = compraService.solicitarCompra(clienteNormal.getId(), clienteNormal.getCodigo(), ativoTesouro.getId(), 1);
+            compraService.disponibilizarCompra(compra.getId(), administrador.getMatricula());
+
+            assertThrows(CompraNaoPertenceAoClienteException.class, () -> {
+                compraService.confirmarCompra(clientePremium.getId(), clientePremium.getCodigo(), compra.getId());
+            });
+        }
+
+        @Test
+        @DisplayName("Disponibilizar compra com matrícula de admin inválida via controller deve retornar 400")
+        void disponibilizarCompraMatriculaInvalidaController() throws Exception {
+            CompraResponseDTO compra = compraService.solicitarCompra(clienteNormal.getId(), clienteNormal.getCodigo(), ativoTesouro.getId(), 1);
+
+            driver.perform(put(uriCompras + "/admin/" + compra.getId() + "/disponibilizar")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .param("matriculaAdmin", "matricula_invalida"))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("Solicitar compra com quantidade zero deve lançar exceção")
+        void solicitarCompraQuantidadeZero() {
+            assertThrows(QuantidadeInvalidaException.class, () -> {
+                compraService.solicitarCompra(clienteNormal.getId(), clienteNormal.getCodigo(), ativoTesouro.getId(), 0);
+            });
+        }
+
+        @Test
+        @DisplayName("Confirmar compra com código de acesso inválido via controller deve retornar 400")
+        void confirmarCompraCodigoAcessoInvalidoController() throws Exception {
+            CompraResponseDTO compra = compraService.solicitarCompra(clienteNormal.getId(), clienteNormal.getCodigo(), ativoTesouro.getId(), 1);
+            compraService.disponibilizarCompra(compra.getId(), administrador.getMatricula());
+
+            driver.perform(put(uriCompras + "/" + clienteNormal.getId() + "/" + compra.getId() + "/confirmar")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .param("codigoAcesso", "codigo_invalido"))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print());
         }
     }
 }

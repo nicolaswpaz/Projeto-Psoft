@@ -16,7 +16,6 @@ import com.ufcg.psoft.commerce.repository.ContaRepository;
 import com.ufcg.psoft.commerce.repository.AtivoCarteiraRepository;;
 import com.ufcg.psoft.commerce.service.notificacao.NotificacaoServiceImpl;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.List;
@@ -25,23 +24,11 @@ import java.util.stream.Collectors;
 @Service
 public class ContaServiceImpl implements ContaService {
 
-    @Autowired
-    ContaRepository contaRepository;
-
-    @Autowired
-    CompraRepository compraRepository;
-
-    @Autowired
-    ModelMapper modelMapper;
-
-    @Autowired
-    ClienteRepository clienteRepository;
-
-    @Autowired
-    AtivoCarteiraRepository ativoCarteiraRepository;
-
-    @Autowired
-    NotificacaoServiceImpl notificacaoService;
+    private final ContaRepository contaRepository;
+    private final CompraRepository compraRepository;
+    private final ModelMapper modelMapper;
+    private final ClienteRepository clienteRepository;
+    private final AtivoCarteiraRepository ativoCarteiraRepository;
 
     public ContaServiceImpl(ContaRepository contaRepository,
                             CompraRepository compraRepository,
@@ -54,7 +41,6 @@ public class ContaServiceImpl implements ContaService {
         this.modelMapper = modelMapper;
         this.clienteRepository = clienteRepository;
         this.ativoCarteiraRepository = ativoCarteiraRepository;
-        this.notificacaoService = notificacaoService;
     }
 
     @Override

@@ -5,6 +5,7 @@ import com.ufcg.psoft.commerce.exception.cliente.ClienteNaoExisteException;
 import com.ufcg.psoft.commerce.exception.cliente.ClienteNaoPremiumException;
 import com.ufcg.psoft.commerce.exception.compra.CompraNaoExisteException;
 import com.ufcg.psoft.commerce.exception.compra.CompraNaoPertenceAoClienteException;
+import com.ufcg.psoft.commerce.exception.compra.QuantidadeInvalidaException;
 import com.ufcg.psoft.commerce.exception.compra.StatusCompraInvalidoException;
 import com.ufcg.psoft.commerce.model.*;
 import com.ufcg.psoft.commerce.model.enums.StatusCompra;
@@ -24,6 +25,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class CompraServiceImpl implements CompraService{
@@ -59,6 +61,10 @@ public class CompraServiceImpl implements CompraService{
 
         if (cliente.getPlano() == TipoPlano.NORMAL && ativo.getTipo() != TipoAtivo.TESOURO_DIRETO) {
             throw new ClienteNaoPremiumException();
+        }
+
+        if(quantidade < 1){
+            throw new QuantidadeInvalidaException();
         }
 
         Compra compra = Compra.builder()
@@ -97,6 +103,10 @@ public class CompraServiceImpl implements CompraService{
             throw new StatusCompraInvalidoException();
         }
 
+        if(!compra.getCliente().getId().equals(idCliente)){
+            throw new CompraNaoPertenceAoClienteException();
+        }
+
         clienteService.confirmarCompraAtivo(idCliente, idCompra, codigoAcesso);
         return modelMapper.map(compra, CompraResponseDTO.class);
     }
@@ -124,7 +134,7 @@ public class CompraServiceImpl implements CompraService{
 
         return compraRepository.findAll().stream()
                 .map(CompraResponseDTO::new)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     @Override

@@ -46,8 +46,8 @@ import org.slf4j.LoggerFactory;
 @DisplayName("Testes do controlador de Clientes")
 class    ClienteControllerTests {
 
-    final String URI_CLIENTES = "/clientes";
-    final String URI_ATIVOS = "/ativos";
+    final String uriClientes = "/clientes";
+    final String uriAtivos = "/ativos";
 
     @Autowired
     MockMvc driver;
@@ -239,7 +239,7 @@ class    ClienteControllerTests {
         @DisplayName("Quando recuperamos um cliente com dados válidos")
         void quandoRecuperamosNomeDoClienteValido() throws Exception {
 
-            String responseJsonString = driver.perform(get(URI_CLIENTES + "/" + cliente.getId())
+            String responseJsonString = driver.perform(get(uriClientes + "/" + cliente.getId())
                             .param("codigo", cliente.getCodigo()))
                     .andExpect(status().isOk())
                     .andDo(print())
@@ -256,7 +256,7 @@ class    ClienteControllerTests {
 
             clientePostPutRequestDTO.setNome("Cliente Um Alterado");
 
-            String responseJsonString = driver.perform(put(URI_CLIENTES + "/" + cliente.getId())
+            String responseJsonString = driver.perform(put(uriClientes + "/" + cliente.getId())
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("codigo", cliente.getCodigo())
                             .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
@@ -275,7 +275,7 @@ class    ClienteControllerTests {
 
             clientePostPutRequestDTO.setNome(null);
 
-            String responseJsonString = driver.perform(put(URI_CLIENTES + "/" + cliente.getId())
+            String responseJsonString = driver.perform(put(uriClientes + "/" + cliente.getId())
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("codigo", cliente.getCodigo())
                             .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
@@ -296,7 +296,7 @@ class    ClienteControllerTests {
         void quandoAlteramosNomeDoClienteVazio() throws Exception {
             clientePostPutRequestDTO.setNome("");
 
-            String responseJsonString = driver.perform(put(URI_CLIENTES + "/" + cliente.getId())
+            String responseJsonString = driver.perform(put(uriClientes + "/" + cliente.getId())
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("codigo", cliente.getCodigo())
                             .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
@@ -336,7 +336,7 @@ class    ClienteControllerTests {
 
             clientePostPutRequestDTO.setEnderecoDTO(novoEndereco);
 
-            String responseJsonString = driver.perform(put(URI_CLIENTES + "/" + cliente.getId())
+            String responseJsonString = driver.perform(put(uriClientes + "/" + cliente.getId())
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("codigo", cliente.getCodigo())
                             .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
@@ -363,7 +363,7 @@ class    ClienteControllerTests {
             clientePostPutRequestDTO.setEnderecoDTO(null);
 
 
-            String responseJsonString = driver.perform(put(URI_CLIENTES + "/" + cliente.getId())
+            String responseJsonString = driver.perform(put(uriClientes + "/" + cliente.getId())
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("codigo", cliente.getCodigo())
                             .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
@@ -393,7 +393,7 @@ class    ClienteControllerTests {
 
             clientePostPutRequestDTO.setEnderecoDTO(enderecoVazio);
 
-            String responseJsonString = driver.perform(put(URI_CLIENTES + "/" + cliente.getId())
+            String responseJsonString = driver.perform(put(uriClientes + "/" + cliente.getId())
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("codigo", cliente.getCodigo())
                             .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
@@ -423,7 +423,7 @@ class    ClienteControllerTests {
             clientePostPutRequestDTO.setCodigo(null);
 
 
-            String responseJsonString = driver.perform(put(URI_CLIENTES + "/" + cliente.getId())
+            String responseJsonString = driver.perform(put(uriClientes + "/" + cliente.getId())
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("codigo", cliente.getCodigo())
                             .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
@@ -447,7 +447,7 @@ class    ClienteControllerTests {
             clientePostPutRequestDTO.setCodigo("");
 
 
-            String responseJsonString = driver.perform(put(URI_CLIENTES + "/" + cliente.getId())
+            String responseJsonString = driver.perform(put(uriClientes + "/" + cliente.getId())
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("codigo", cliente.getCodigo())
                             .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
@@ -470,7 +470,7 @@ class    ClienteControllerTests {
 
             clientePostPutRequestDTO.setCodigo("1234567");
 
-            String responseJsonString = driver.perform(put(URI_CLIENTES + "/" + cliente.getId())
+            String responseJsonString = driver.perform(put(uriClientes + "/" + cliente.getId())
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("codigo", cliente.getCodigo())
                             .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
@@ -492,7 +492,7 @@ class    ClienteControllerTests {
 
             clientePostPutRequestDTO.setCodigo("12345");
 
-            String responseJsonString = driver.perform(put(URI_CLIENTES + "/" + cliente.getId())
+            String responseJsonString = driver.perform(put(uriClientes + "/" + cliente.getId())
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("codigo", cliente.getCodigo())
                             .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
@@ -514,7 +514,7 @@ class    ClienteControllerTests {
 
             clientePostPutRequestDTO.setCodigo("a*c4e@");
 
-            String responseJsonString = driver.perform(put(URI_CLIENTES + "/" + cliente.getId())
+            String responseJsonString = driver.perform(put(uriClientes + "/" + cliente.getId())
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("codigo", cliente.getCodigo())
                             .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
@@ -536,7 +536,7 @@ class    ClienteControllerTests {
 
             clientePostPutRequestDTO.setCodigo("987654");
 
-            String responseJsonString = driver.perform(put(URI_CLIENTES + "/" + cliente.getId())
+            String responseJsonString = driver.perform(put(uriClientes + "/" + cliente.getId())
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("codigo", cliente.getCodigo())
                             .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
@@ -586,7 +586,7 @@ class    ClienteControllerTests {
                     .build();
 
 
-            Endereco endereco1 = enderecoRepository.save(Endereco.builder()
+            Endereco endereco01 = enderecoRepository.save(Endereco.builder()
                     .rua("Av. da Pits A")
                     .numero("100")
                     .bairro("Centro")
@@ -594,7 +594,7 @@ class    ClienteControllerTests {
                     .complemento("")
                     .build());
 
-            Endereco endereco2 = enderecoRepository.save(Endereco.builder()
+            Endereco endereco02 = enderecoRepository.save(Endereco.builder()
                     .rua("Distrito dos Testadores")
                     .numero("200")
                     .bairro("Zona Rural")
@@ -602,7 +602,7 @@ class    ClienteControllerTests {
                     .complemento("Fazenda")
                     .build());
 
-            Endereco endereco3 = enderecoRepository.save(Endereco.builder()
+            Endereco endereco03 = enderecoRepository.save(Endereco.builder()
                     .rua("Rua dos Devs")
                     .numero("300")
                     .bairro("Tecnopolis")
@@ -610,28 +610,28 @@ class    ClienteControllerTests {
                     .complemento("Sala 42")
                     .build());
 
-            Cliente cliente1 = clienteRepository.save(Cliente.builder()
+            Cliente cliente01 = clienteRepository.save(Cliente.builder()
                     .nome("Cliente Dois Almeida")
-                    .endereco(endereco1)
+                    .endereco(endereco01)
                     .codigo("246810")
                     .cpf("11122233344")
                     .build());
 
-            Cliente cliente2 = clienteRepository.save(Cliente.builder()
+            Cliente cliente02 = clienteRepository.save(Cliente.builder()
                     .nome("Cliente Tres Lima")
-                    .endereco(endereco2)
+                    .endereco(endereco02)
                     .codigo("135790")
                     .cpf("22233344455")
                     .build());
 
-            Cliente cliente3 = clienteRepository.save(Cliente.builder()
+            Cliente cliente03 = clienteRepository.save(Cliente.builder()
                     .nome("Cliente Quatro Silva")
-                    .endereco(endereco3)
+                    .endereco(endereco03)
                     .codigo("987654")
                     .cpf("33344455566")
                     .build());
 
-            String responseJsonString = driver.perform(get(URI_CLIENTES)
+            String responseJsonString = driver.perform(get(uriClientes)
                             .param("matriculaAdmin", "admin123")
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
@@ -658,7 +658,7 @@ class    ClienteControllerTests {
         @DisplayName("Quando buscamos um cliente salvo pelo id")
         void quandoBuscamosPorUmClienteSalvo() throws Exception {
 
-            String responseJsonString = driver.perform(get(URI_CLIENTES + "/" + cliente.getId())
+            String responseJsonString = driver.perform(get(uriClientes + "/" + cliente.getId())
                             .param("codigo", cliente.getCodigo())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
@@ -680,7 +680,7 @@ class    ClienteControllerTests {
             Long idInexistente = 99999999L;
             String codigoQualquer = "123456";
 
-            String responseJsonString = driver.perform(get(URI_CLIENTES + "/" + idInexistente)
+            String responseJsonString = driver.perform(get(uriClientes + "/" + idInexistente)
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("codigo", codigoQualquer))
                     .andExpect(status().isBadRequest())
@@ -698,7 +698,7 @@ class    ClienteControllerTests {
         @DisplayName("Quando criamos um novo cliente com dados válidos")
         void quandoCriarClienteValido() throws Exception {
 
-            String responseJsonString = driver.perform(post(URI_CLIENTES)
+            String responseJsonString = driver.perform(post(uriClientes)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
                     .andExpect(status().isCreated())
@@ -725,7 +725,7 @@ class    ClienteControllerTests {
                     .build();
 
 
-            String responseJsonString = driver.perform(post(URI_CLIENTES)
+            String responseJsonString = driver.perform(post(uriClientes)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
                     .andExpect(status().isBadRequest())
@@ -750,7 +750,7 @@ class    ClienteControllerTests {
                     .cpf("12345678910")
                     .build();
 
-            String responseJsonString = driver.perform(post(URI_CLIENTES)
+            String responseJsonString = driver.perform(post(uriClientes)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
                     .andExpect(status().isBadRequest())
@@ -776,7 +776,7 @@ class    ClienteControllerTests {
                     .cpf("12345678910")
                     .build();
 
-            String responseJsonString = driver.perform(post(URI_CLIENTES)
+            String responseJsonString = driver.perform(post(uriClientes)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
                     .andExpect(status().isBadRequest())
@@ -809,7 +809,7 @@ class    ClienteControllerTests {
                     .cpf("12345678910")
                     .build();
 
-            String responseJsonString = driver.perform(post(URI_CLIENTES)
+            String responseJsonString = driver.perform(post(uriClientes)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
                     .andExpect(status().isBadRequest())
@@ -839,7 +839,7 @@ class    ClienteControllerTests {
                     .plano(TipoPlano.PREMIUM)
                     .build();
 
-            String responseJsonString = driver.perform(post(URI_CLIENTES)
+            String responseJsonString = driver.perform(post(uriClientes)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
                     .andExpect(status().isCreated())
@@ -866,7 +866,7 @@ class    ClienteControllerTests {
                     .plano(null)
                     .build();
 
-            String responseJsonString = driver.perform(post(URI_CLIENTES)
+            String responseJsonString = driver.perform(post(uriClientes)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
                     .andExpect(status().isCreated())
@@ -894,7 +894,7 @@ class    ClienteControllerTests {
                     .build();
 
 
-            String responseJsonString = driver.perform(post(URI_CLIENTES)
+            String responseJsonString = driver.perform(post(uriClientes)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
                     .andExpect(status().isBadRequest())
@@ -921,7 +921,7 @@ class    ClienteControllerTests {
                     .build();
 
 
-            String responseJsonString = driver.perform(post(URI_CLIENTES)
+            String responseJsonString = driver.perform(post(uriClientes)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
                     .andExpect(status().isBadRequest())
@@ -947,7 +947,7 @@ class    ClienteControllerTests {
                     .build();
 
 
-            String responseJsonString = driver.perform(post(URI_CLIENTES)
+            String responseJsonString = driver.perform(post(uriClientes)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
                     .andExpect(status().isBadRequest())
@@ -972,7 +972,7 @@ class    ClienteControllerTests {
                     .cpf("12345678910")
                     .build();
 
-            String responseJsonString = driver.perform(post(URI_CLIENTES)
+            String responseJsonString = driver.perform(post(uriClientes)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
                     .andExpect(status().isBadRequest())
@@ -997,7 +997,7 @@ class    ClienteControllerTests {
                     .cpf("12345678910")
                     .build();
 
-            String responseJsonString = driver.perform(post(URI_CLIENTES)
+            String responseJsonString = driver.perform(post(uriClientes)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
                     .andExpect(status().isBadRequest())
@@ -1022,7 +1022,7 @@ class    ClienteControllerTests {
                     .cpf(null)
                     .build();
 
-            String responseJsonString = driver.perform(post(URI_CLIENTES)
+            String responseJsonString = driver.perform(post(uriClientes)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
                     .andExpect(status().isBadRequest())
@@ -1047,7 +1047,7 @@ class    ClienteControllerTests {
                     .cpf("")
                     .build();
 
-            String responseJsonString = driver.perform(post(URI_CLIENTES)
+            String responseJsonString = driver.perform(post(uriClientes)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
                     .andExpect(status().isBadRequest())
@@ -1072,7 +1072,7 @@ class    ClienteControllerTests {
                     .cpf("123")
                     .build();
 
-            String responseJsonString = driver.perform(post(URI_CLIENTES)
+            String responseJsonString = driver.perform(post(uriClientes)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
                     .andExpect(status().isBadRequest())
@@ -1092,7 +1092,7 @@ class    ClienteControllerTests {
 
             Long clienteId = cliente.getId();
 
-            String responseJsonString = driver.perform(put(URI_CLIENTES + "/" + cliente.getId())
+            String responseJsonString = driver.perform(put(uriClientes + "/" + cliente.getId())
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("codigo", cliente.getCodigo())
                             .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
@@ -1112,7 +1112,7 @@ class    ClienteControllerTests {
         @DisplayName("Quando alteramos o cliente inexistente")
         void quandoAlteramosClienteInexistente() throws Exception {
 
-            String responseJsonString = driver.perform(put(URI_CLIENTES + "/" + 99999L)
+            String responseJsonString = driver.perform(put(uriClientes + "/" + 99999L)
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("codigo", cliente.getCodigo())
                             .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
@@ -1134,7 +1134,7 @@ class    ClienteControllerTests {
             Long clienteId = cliente.getId();
 
 
-            String responseJsonString = driver.perform(put(URI_CLIENTES + "/" + clienteId)
+            String responseJsonString = driver.perform(put(uriClientes + "/" + clienteId)
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("codigo", "invalido")
                             .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
@@ -1154,7 +1154,7 @@ class    ClienteControllerTests {
         @DisplayName("Quando excluímos um cliente inexistente")
         void quandoExcluimosClienteInexistente() throws Exception {
 
-            String responseJsonString = driver.perform(delete(URI_CLIENTES + "/" + 999999)
+            String responseJsonString = driver.perform(delete(uriClientes + "/" + 999999)
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("codigo", cliente.getCodigo()))
                     .andExpect(status().isBadRequest())
@@ -1172,7 +1172,7 @@ class    ClienteControllerTests {
         @DisplayName("Quando excluímos um cliente salvo passando código de acesso inválido")
         void quandoExcluimosClienteCodigoAcessoInvalido() throws Exception {
 
-            String responseJsonString = driver.perform(delete(URI_CLIENTES + "/" + cliente.getId())
+            String responseJsonString = driver.perform(delete(uriClientes + "/" + cliente.getId())
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("codigo", "invalido"))
                     .andExpect(status().isBadRequest())
@@ -1191,7 +1191,7 @@ class    ClienteControllerTests {
     @DisplayName("Quando listamos ativos disponiveis passando o id de um cliente válido com plano Normal")
     void quandoListamosAtivosClientePlanoNormal() throws Exception {
 
-        String responseJsonString = driver.perform(get(URI_CLIENTES + "/" + cliente.getId() + "/ativosDisponiveis")
+        String responseJsonString = driver.perform(get(uriClientes + "/" + cliente.getId() + "/ativosDisponiveis")
                         .param("codigo", cliente.getCodigo())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -1215,7 +1215,7 @@ class    ClienteControllerTests {
         clienteRepository.save(cliente);
 
 
-        String responseJsonString = driver.perform(get(URI_CLIENTES + "/" + cliente.getId() + "/ativosDisponiveis")
+        String responseJsonString = driver.perform(get(uriClientes + "/" + cliente.getId() + "/ativosDisponiveis")
                         .param("codigo", cliente.getCodigo())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -1235,7 +1235,7 @@ class    ClienteControllerTests {
     @DisplayName("Quando tentamos listar ativos passando um cliente inexistente")
     void quandoListamosAtivosClienteInexistente() throws Exception {
 
-        String responseJsonString = driver.perform(get(URI_CLIENTES + "/" + 999999999 + "/ativosDisponiveis")
+        String responseJsonString = driver.perform(get(uriClientes + "/" + 999999999 + "/ativosDisponiveis")
                         .param("codigo", "123456789")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
@@ -1262,7 +1262,7 @@ class    ClienteControllerTests {
         clienteRepository.save(cliente);
 
 
-        String responseJsonString = driver.perform(get(URI_CLIENTES + "/" + cliente.getId() + "/ativosDisponiveis")
+        String responseJsonString = driver.perform(get(uriClientes + "/" + cliente.getId() + "/ativosDisponiveis")
                         .param("codigo", cliente.getCodigo())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -1278,7 +1278,7 @@ class    ClienteControllerTests {
     @DisplayName("Quando tentamos listar ativos de um cliente passando um código de acesso incorreto")
     void quandoTentamosListarAtivosCodigoClienteInvalido() throws Exception {
 
-        String responseJsonString = driver.perform(get(URI_CLIENTES + "/" + cliente.getId() + "/ativosDisponiveis")
+        String responseJsonString = driver.perform(get(uriClientes + "/" + cliente.getId() + "/ativosDisponiveis")
                         .param("codigo", "000000000")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
@@ -1300,7 +1300,7 @@ class    ClienteControllerTests {
         @DisplayName("Quando cliente Premium registra interesse em ativo disponível com sucesso")
         void quandoClienteRegistraInteresseAtivoDisponivel() throws Exception{
 
-            driver.perform(put(URI_CLIENTES + "/" + clientePremium.getId() + "/interesseAtivoDisponivel/" + ativoDisponivel.getId())
+            driver.perform(put(uriClientes + "/" + clientePremium.getId() + "/interesseAtivoDisponivel/" + ativoDisponivel.getId())
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("codigo", clientePremium.getCodigo()))
                     .andExpect(status().isNoContent());
@@ -1322,7 +1322,7 @@ class    ClienteControllerTests {
 
             BigDecimal novaCotacao = new BigDecimal("110.00");
 
-            driver.perform(put(URI_ATIVOS + "/" + ativoDisponivel.getId() + "/cotacao")
+            driver.perform(put(uriAtivos + "/" + ativoDisponivel.getId() + "/cotacao")
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("matriculaAdmin", administrador.getMatricula())
                             .param("novoValor", novaCotacao.toString()))
@@ -1345,7 +1345,7 @@ class    ClienteControllerTests {
 
             BigDecimal novaCotacao = new BigDecimal("110.00");
 
-            driver.perform(put(URI_ATIVOS + "/" + ativoDisponivel.getId() + "/cotacao")
+            driver.perform(put(uriAtivos + "/" + ativoDisponivel.getId() + "/cotacao")
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("matriculaAdmin", administrador.getMatricula())
                             .param("novoValor", novaCotacao.toString()))
@@ -1359,7 +1359,7 @@ class    ClienteControllerTests {
         @DisplayName("Cliente Normal não pode registrar interesse em ativo disponível (deve lançar exceção)")
         void quandoClienteNormalTentaRegistrarInteresseEmAtivoDisponiveleNaoConsegue() throws Exception{
 
-            driver.perform(put(URI_CLIENTES + "/" + cliente.getId() + "/interesseAtivoDisponivel" + "/" + ativoDisponivel.getId())
+            driver.perform(put(uriClientes + "/" + cliente.getId() + "/interesseAtivoDisponivel" + "/" + ativoDisponivel.getId())
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("codigo", cliente.getCodigo()))
                     .andExpect(status().isBadRequest());
@@ -1369,7 +1369,7 @@ class    ClienteControllerTests {
         @DisplayName("Cliente Premium não pode registrar interesse em ativo indisponível pelo metodo de ativo disponível(deve lançar exceção)")
         void quandoClientePremiumTentaRegistrarInteresseemUmAtivoIndisponivelPeloMetododeAtivoDisponivel() throws Exception{
 
-            driver.perform(put(URI_CLIENTES + "/" + clientePremium.getId() + "/interesseAtivoDisponivel" + "/" + ativoIndisponivel.getId())
+            driver.perform(put(uriClientes + "/" + clientePremium.getId() + "/interesseAtivoDisponivel" + "/" + ativoIndisponivel.getId())
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("codigo", clientePremium.getCodigo()))
                     .andExpect(status().isBadRequest());
@@ -1379,7 +1379,7 @@ class    ClienteControllerTests {
         @DisplayName("Cliente (NORMAL) com interesse em ativo indisponivel que não seja tesouro direto")
         void quandoClienteNormalTentaMarcarInteresseEmAtivoIndisponivelQueNaoSejaTesouroDireto() throws Exception{
 
-            driver.perform(put(URI_CLIENTES + "/" + cliente.getId() + "/interesseAtivoIndisponivel" + "/" + ativoIndisponivel.getId())
+            driver.perform(put(uriClientes + "/" + cliente.getId() + "/interesseAtivoIndisponivel" + "/" + ativoIndisponivel.getId())
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("codigo", cliente.getCodigo()))
                     .andExpect(status().isBadRequest());
@@ -1391,7 +1391,7 @@ class    ClienteControllerTests {
 
             clienteService.marcarInteresseAtivoIndisponivel(clientePremium.getId(), clientePremium.getCodigo(), ativoIndisponivel.getId());
 
-            driver.perform(put(URI_ATIVOS + "/" + ativoIndisponivel.getId() + "/disponibilizar")
+            driver.perform(put(uriAtivos + "/" + ativoIndisponivel.getId() + "/disponibilizar")
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("matriculaAdmin", administrador.getMatricula()))
                     .andExpect(status().isOk());
@@ -1412,7 +1412,7 @@ class    ClienteControllerTests {
         @DisplayName("Nenhuma notificação deve ser enviada se ninguém tiver interesse no ativo")
         void nenhumaNotificacaoDeveChegarQuandoNinguemTiverInteresseNoAtivo() throws Exception{
 
-            driver.perform(put(URI_ATIVOS + "/" + ativoIndisponivel.getId() + "/disponibilizar")
+            driver.perform(put(uriAtivos + "/" + ativoIndisponivel.getId() + "/disponibilizar")
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("matriculaAdmin", administrador.getMatricula()))
                     .andExpect(status().isOk());
@@ -1424,7 +1424,7 @@ class    ClienteControllerTests {
         @DisplayName("Deve falhar ao tentar registrar interesse em ativo que já está disponível")
         void quandoTentamosRegistrarInteresseEmAtivoDisponivelPeloMetodoDeAtivoIndisponivel() throws Exception{
 
-            driver.perform(put(URI_CLIENTES + "/" + clientePremium.getId() + "/interesseAtivoIndisponivel" + "/" + ativoDisponivel.getId())
+            driver.perform(put(uriClientes + "/" + clientePremium.getId() + "/interesseAtivoIndisponivel" + "/" + ativoDisponivel.getId())
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("codigo", clientePremium.getCodigo()))
                     .andExpect(status().isBadRequest());
@@ -1438,7 +1438,7 @@ class    ClienteControllerTests {
         @Test
         @DisplayName("quando cliente busca por um ativo com seus dados válidos")
         void QuandoClienteBuscaAtivoDadosValidos() throws Exception {
-            String responseJsonString = driver.perform(get(URI_CLIENTES + "/" + cliente.getId() + "/detalharAtivo/" + ativo1.getId())
+            String responseJsonString = driver.perform(get(uriClientes + "/" + cliente.getId() + "/detalharAtivo/" + ativo1.getId())
                             .param("codigo", cliente.getCodigo()))
                     .andExpect(status().isOk())
                     .andDo(print())
@@ -1453,7 +1453,7 @@ class    ClienteControllerTests {
         @Test
         @DisplayName("quando cliente busca por um ativo inexistente")
         void QuandoClienteBuscaAtivoInexistente() throws Exception {
-            String responseJsonString = driver.perform(get(URI_CLIENTES + "/" + cliente.getId() + "/detalharAtivo/" + 999999999)
+            String responseJsonString = driver.perform(get(uriClientes + "/" + cliente.getId() + "/detalharAtivo/" + 999999999)
                             .param("codigo", cliente.getCodigo()))
                     .andExpect(status().isBadRequest())
                     .andDo(print())
@@ -1467,7 +1467,7 @@ class    ClienteControllerTests {
         @Test
         @DisplayName("quando cliente busca por um ativo com seu código de acesso inválido")
         void QuandoClienteBuscaAtivoCodigoAcessoInvalido() throws Exception {
-            String responseJsonString = driver.perform(get(URI_CLIENTES + "/" + cliente.getId() + "/detalharAtivo/" + ativo1.getId())
+            String responseJsonString = driver.perform(get(uriClientes + "/" + cliente.getId() + "/detalharAtivo/" + ativo1.getId())
                             .param("codigo", "999999999"))
                     .andExpect(status().isBadRequest())
                     .andDo(print())
@@ -1481,7 +1481,7 @@ class    ClienteControllerTests {
         @Test
         @DisplayName("quando cliente não premium tenta buscar um ativo que não está disponivel para seu plano")
         void QuandoClienteNormalBuscaAtivoIndisponvelParaSeuPlano() throws Exception {
-            String responseJsonString = driver.perform(get(URI_CLIENTES + "/" + cliente.getId() + "/detalharAtivo/" + ativo2.getId())
+            String responseJsonString = driver.perform(get(uriClientes + "/" + cliente.getId() + "/detalharAtivo/" + ativo2.getId())
                             .param("codigo", cliente.getCodigo()))
                     .andExpect(status().isBadRequest())
                     .andDo(print())
@@ -1498,7 +1498,7 @@ class    ClienteControllerTests {
             cliente.setPlano(TipoPlano.PREMIUM);
             clienteRepository.save(cliente);
 
-            String responseJsonString = driver.perform(get(URI_CLIENTES + "/" + cliente.getId() + "/detalharAtivo/" + ativo2.getId())
+            String responseJsonString = driver.perform(get(uriClientes + "/" + cliente.getId() + "/detalharAtivo/" + ativo2.getId())
                             .param("codigo", cliente.getCodigo()))
                     .andExpect(status().isOk())
                     .andDo(print())
