@@ -35,6 +35,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -357,10 +358,6 @@ class CompraControllerTests {
             Long idAtivo = ativoAcao.getId();
             String matriculaAdmin = administrador.getMatricula();
 
-            if (clientePremium.getConta().getCarteira() == null) {
-                clientePremium.getConta().setCarteira(new Carteira());
-            }
-
             CompraResponseDTO novaCompra = compraService.solicitarCompra(idCliente, codigoCliente, idAtivo, 2);
 
             driver.perform(put(URI_COMPRAS + "/admin/" + novaCompra.getId() + "/disponibilizar")
@@ -379,8 +376,8 @@ class CompraControllerTests {
             assertTrue(logMessage.contains("Caro cliente " + clientePremium.getNome() + ", a compra que você solicitou, está disponível!"));
             assertTrue(logMessage.contains("Nome do ativo comprado: " + ativoAcao.getNome()));
             assertTrue(logMessage.contains("O tipo do ativo comprado: " + ativoAcao.getTipo().toString()));
-            assertTrue(logMessage.contains("Valor do ativo no momento da compra: " + novaCompra.getValorVenda()));
             assertTrue(logMessage.contains("Valor total da compra: " + novaCompra.getValorVenda()));
+            assertTrue(logMessage.contains("Valor do ativo no momento da compra: " + novaCompra.getValorVenda().divide(BigDecimal.valueOf(novaCompra.getQuantidade()), RoundingMode.HALF_UP)));
             assertTrue(logMessage.contains("Quantidade de ativos comprados " + novaCompra.getQuantidade()));
         }
 

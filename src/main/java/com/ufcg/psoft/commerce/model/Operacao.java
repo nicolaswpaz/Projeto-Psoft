@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 
 @Entity
@@ -46,7 +47,7 @@ public abstract class Operacao {
     @JsonProperty("statusAtual")
     public abstract String getStatusAtual();
 
-    public BigDecimal getValorTotal() {
-        return valorVenda.multiply(BigDecimal.valueOf(quantidade));
+    public BigDecimal getValorAtivo() {
+        return valorVenda.divide(BigDecimal.valueOf(quantidade), RoundingMode.HALF_UP);
     }
 }

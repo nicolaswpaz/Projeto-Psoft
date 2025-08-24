@@ -19,12 +19,12 @@ public class NotificacaoCompraDisponivel extends NotificacaoAdapter {
         Cliente cliente = evento.getCliente();
 
         logger.info("""
-                        Caro cliente {}, a compra que você solicitou, está disponível!" +
+                        Caro cliente {}, a compra que você solicitou, está disponível!"
                         Dados da compra:
                         Nome do ativo comprado: {}
                         O tipo do ativo comprado: {}
-                        Valor do ativo no momento da compra: {}
                         Valor total da compra: {}
+                        Valor do ativo no momento da compra: {}
                         Quantidade de ativos comprados {}
                         Data de solicitação: {}
                         """,
@@ -33,7 +33,7 @@ public class NotificacaoCompraDisponivel extends NotificacaoAdapter {
                 compra.getAtivo().getNome(),
                 compra.getAtivo().getTipo(),
                 compra.getValorVenda(),
-                compra.getValorTotal(),
+                compra.getValorAtivo(),
                 compra.getQuantidade(),
                 compra.getDataSolicitacao()
         );
