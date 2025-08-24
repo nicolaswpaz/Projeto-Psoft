@@ -75,7 +75,7 @@ public class ContaServiceImpl implements ContaService {
             throw new StatusCompraInvalidoException();
         }
 
-        Conta conta = compra.getCliente().getConta();
+        Conta conta = compra.getConta();
         if (conta.getSaldo().compareTo(compra.getValorVenda()) < 0) {
             throw new SaldoInsuficienteException();
         }
@@ -133,7 +133,7 @@ public class ContaServiceImpl implements ContaService {
                             .desempenho(desempenho)
                             .build();
                 })
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override

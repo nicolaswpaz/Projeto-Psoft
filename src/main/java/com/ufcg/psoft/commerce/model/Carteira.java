@@ -20,7 +20,7 @@ public class Carteira {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
-    @OneToMany(mappedBy = "carteira", cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonProperty("ativos")
     private List<AtivoEmCarteira> ativosEmCarteira;
 

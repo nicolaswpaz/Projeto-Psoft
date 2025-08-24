@@ -33,8 +33,6 @@ public class Cliente extends Usuario {
     @JsonIgnore
     private Conta conta;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Operacao> operacoes;
 
     @PrePersist
     public void prePersist(){

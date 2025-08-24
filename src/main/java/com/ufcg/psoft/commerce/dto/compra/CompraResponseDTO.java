@@ -35,8 +35,8 @@ public class CompraResponseDTO {
     @JsonProperty("valorVenda")
     private BigDecimal valorVenda;
 
-    @JsonProperty("cliente")
-    private Cliente cliente;
+    @JsonProperty("conta")
+    private Conta conta;
 
     @JsonProperty("status")
     private StatusCompra statusCompra;
@@ -47,7 +47,7 @@ public class CompraResponseDTO {
         this.ativo = compra.getAtivo();
         this.quantidade = compra.getQuantidade();
         this.valorVenda = compra.getValorVenda();
-        this.cliente = compra.getCliente();
+        this.conta = compra.getConta();
         this.statusCompra = compra.getStatusCompra();
     }
 }

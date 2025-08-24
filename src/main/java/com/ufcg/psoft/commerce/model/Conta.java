@@ -26,4 +26,7 @@ public class Conta {
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "carteira_id")
     private Carteira carteira;
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Operacao> operacoes;
 }

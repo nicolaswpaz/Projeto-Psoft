@@ -37,8 +37,8 @@ public abstract class Operacao {
     private BigDecimal valorVenda;
 
     @ManyToOne
-    @JoinColumn(name = "cliente_id")
-    private Cliente cliente;
+    @JoinColumn(name = "conta_id")
+    private Conta conta;
 
     public abstract void avancarStatus();
 
