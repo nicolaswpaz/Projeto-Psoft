@@ -5,10 +5,7 @@ import com.ufcg.psoft.commerce.exception.cliente.ClienteNaoPremiumException;
 import com.ufcg.psoft.commerce.exception.compra.CompraNaoExisteException;
 import com.ufcg.psoft.commerce.exception.compra.CompraNaoPertenceAoClienteException;
 import com.ufcg.psoft.commerce.exception.compra.StatusCompraInvalidoException;
-import com.ufcg.psoft.commerce.model.Ativo;
-import com.ufcg.psoft.commerce.model.Cliente;
-import com.ufcg.psoft.commerce.model.Compra;
-import com.ufcg.psoft.commerce.model.Conta;
+import com.ufcg.psoft.commerce.model.*;
 import com.ufcg.psoft.commerce.model.enums.StatusCompra;
 import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
 import com.ufcg.psoft.commerce.model.enums.TipoPlano;
@@ -17,6 +14,8 @@ import com.ufcg.psoft.commerce.repository.InteresseCompraRepository;
 import com.ufcg.psoft.commerce.service.administrador.AdministradorService;
 import com.ufcg.psoft.commerce.service.ativo.AtivoService;
 import com.ufcg.psoft.commerce.service.cliente.ClienteService;
+import com.ufcg.psoft.commerce.service.notificacao.NotificacaoService;
+import com.ufcg.psoft.commerce.service.notificacao.NotificacaoServiceImpl;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
@@ -31,18 +30,20 @@ public class CompraServiceImpl implements CompraService{
     private final ClienteService clienteService;
     private final InteresseCompraRepository interesseCompraRepository;
     private final AdministradorService administradorService;
+    private final NotificacaoService notificacaoService;
     private final AtivoService ativoService;
     private final ModelMapper modelMapper;
 
     public CompraServiceImpl(CompraRepository compraRepository,
                              ClienteService clienteService, InteresseCompraRepository interesseCompraRepository,
-                             AdministradorService administradorService,
+                             AdministradorService administradorService, NotificacaoServiceImpl notificacaoService,
                              AtivoService ativoService,
                              ModelMapper modelMapper) {
         this.compraRepository = compraRepository;
         this.clienteService = clienteService;
         this.interesseCompraRepository = interesseCompraRepository;
         this.administradorService = administradorService;
+        this.notificacaoService = notificacaoService;
         this.ativoService = ativoService;
         this.modelMapper = modelMapper;
     }
@@ -65,8 +66,8 @@ public class CompraServiceImpl implements CompraService{
                 .conta(conta)
                 .build();
 
-        this.registrarInteresse(cliente, compra);
         compraRepository.save(compra);
+        this.registrarInteresse(cliente, compra);
         return modelMapper.map(compra, CompraResponseDTO.class);
     }
 
@@ -80,6 +81,7 @@ public class CompraServiceImpl implements CompraService{
         }
 
         administradorService.confirmarDisponibilidadeCompra(idCompra, matriculaAdmin);
+        notificacaoService.notificarDisponibilidadeCompra(compra);
         return modelMapper.map(compra, CompraResponseDTO.class);
     }
 
@@ -125,6 +127,7 @@ public class CompraServiceImpl implements CompraService{
                 .cliente(cliente)
                 .compra(compra)
                 .build();
+
         interesseCompraRepository.save(interesse);
     }
 }

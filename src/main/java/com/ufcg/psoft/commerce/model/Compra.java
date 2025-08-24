@@ -9,6 +9,8 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+import java.util.List;
+
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Data
@@ -23,6 +25,9 @@ public class Compra extends Operacao{
 
     @Transient
     private StatusCompraState statusState;
+
+    @OneToMany(mappedBy = "compra", cascade = CascadeType.ALL)
+    private List<InteresseCompra> interesses;
 
     @PrePersist
     public void setDefaultValues() {
