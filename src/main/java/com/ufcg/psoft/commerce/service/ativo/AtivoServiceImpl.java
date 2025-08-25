@@ -1,18 +1,25 @@
 package com.ufcg.psoft.commerce.service.ativo;
 
-import com.ufcg.psoft.commerce.dto.Ativo.AtivoPostPutRequestDTO;
-import com.ufcg.psoft.commerce.dto.Ativo.AtivoResponseDTO;
-import com.ufcg.psoft.commerce.exception.Ativo.AtivoNaoExisteException;
-import com.ufcg.psoft.commerce.exception.Ativo.CotacaoNaoPodeAtualizarException;
-import com.ufcg.psoft.commerce.exception.Ativo.VariacaoCotacaoMenorQuerUmPorCentroException;
+import com.ufcg.psoft.commerce.dto.ativo.AtivoPostPutRequestDTO;
+import com.ufcg.psoft.commerce.dto.ativo.AtivoResponseDTO;
+import com.ufcg.psoft.commerce.exception.ativo.*;
 import com.ufcg.psoft.commerce.model.Ativo;
+import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
 import com.ufcg.psoft.commerce.repository.AtivoRepository;
 import com.ufcg.psoft.commerce.service.administrador.AdministradorService;
+import com.ufcg.psoft.commerce.service.ativo.tipoAtivo.Acao;
+import com.ufcg.psoft.commerce.service.ativo.tipoAtivo.Criptomoeda;
+import com.ufcg.psoft.commerce.service.ativo.tipoAtivo.TesouroDireto;
+import com.ufcg.psoft.commerce.service.ativo.tipoAtivo.TipoAtivoStrategy;
+import com.ufcg.psoft.commerce.service.conta.ContaService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,7 +32,16 @@ public class AtivoServiceImpl implements AtivoService {
     AdministradorService administradorService;
 
     @Autowired
+    ContaService contaService;
+
+    @Autowired
     ModelMapper modelMapper;
+
+    private final Map<TipoAtivo, TipoAtivoStrategy> tipoAtivoMap = Map.of(
+            TipoAtivo.ACAO, new Acao(),
+            TipoAtivo.TESOURO_DIRETO, new TesouroDireto(),
+            TipoAtivo.CRIPTOMOEDA, new Criptomoeda()
+    );
 
     @Override
     public AtivoResponseDTO criar(String matriculaAdmin, AtivoPostPutRequestDTO ativoPostPutRequestDTO) {
@@ -36,11 +52,21 @@ public class AtivoServiceImpl implements AtivoService {
         return modelMapper.map(ativo, AtivoResponseDTO.class);
     }
 
+
     @Override
     public AtivoResponseDTO alterar(String matriculaAdmin, Long id, AtivoPostPutRequestDTO ativoPostPutRequestDTO) {
         administradorService.autenticar(matriculaAdmin);
 
         Ativo ativo = ativoRepository.findById(id).orElseThrow(AtivoNaoExisteException::new);
+
+        if (ativoPostPutRequestDTO.getTipo() != null
+                && ativoPostPutRequestDTO.getTipo() != ativo.getTipo()) {
+            throw new AtivoNaoPodeMudarTipoException();
+        }
+
+        if (ativoPostPutRequestDTO.getTipo() == null) {
+            ativoPostPutRequestDTO.setTipo(ativo.getTipo());
+        }
 
         modelMapper.map(ativoPostPutRequestDTO, ativo);
         ativoRepository.save(ativo);
@@ -58,9 +84,11 @@ public class AtivoServiceImpl implements AtivoService {
     }
 
     @Override
-    public AtivoResponseDTO recuperar(Long id) {
-        Ativo ativo = ativoRepository.findById(id).orElseThrow(AtivoNaoExisteException::new);
-        return new AtivoResponseDTO(ativo);
+    public AtivoResponseDTO recuperarDetalhado(Long id) {
+        Ativo ativo = ativoRepository.findById(id)
+                .orElseThrow(AtivoNaoExisteException::new);
+
+        return modelMapper.map(ativo, AtivoResponseDTO.class);
     }
 
     @Override
@@ -80,23 +108,33 @@ public class AtivoServiceImpl implements AtivoService {
     }
 
     @Override
-    public AtivoResponseDTO tornarDisponivel(String matriculaAdmin, Long ativoId) {
+    public AtivoResponseDTO tornarDisponivel(String matriculaAdmin, Long id) {
         administradorService.autenticar(matriculaAdmin);
 
-        Ativo ativo = ativoRepository.findById(ativoId).orElseThrow(AtivoNaoExisteException::new);
+        Ativo ativo = ativoRepository.findById(id).orElseThrow(AtivoNaoExisteException::new);
+
+        if(ativo.isDisponivel()) {
+            throw new AtivoDisponivelException();
+        }
 
         ativo.setDisponivel(true);
 
         ativoRepository.save(ativo);
 
+        contaService.notificarAtivoDisponivelClientesComInteresse(ativo);
+
         return modelMapper.map(ativo, AtivoResponseDTO.class);
     }
 
     @Override
-    public AtivoResponseDTO tornarIndisponivel(String matriculaAdmin, Long ativoId) {
+    public AtivoResponseDTO tornarIndisponivel(String matriculaAdmin, Long id) {
         administradorService.autenticar(matriculaAdmin);
 
-        Ativo ativo = ativoRepository.findById(ativoId).orElseThrow(AtivoNaoExisteException::new);
+        Ativo ativo = ativoRepository.findById(id).orElseThrow(AtivoNaoExisteException::new);
+
+        if(!ativo.isDisponivel()) {
+            throw new AtivoIndisponivelException();
+        }
 
         ativo.setDisponivel(false);
 
@@ -106,24 +144,35 @@ public class AtivoServiceImpl implements AtivoService {
     }
 
     @Override
-    public AtivoResponseDTO atualizarCotacao(String matriculaAdmin, Long idAtivo, double valor) {
+    public AtivoResponseDTO atualizarCotacao(String matriculaAdmin, Long id, BigDecimal valor) {
         administradorService.autenticar(matriculaAdmin);
 
-        Ativo ativo = ativoRepository.findById(idAtivo).orElseThrow(AtivoNaoExisteException::new);
+        Ativo ativo = ativoRepository.findById(id).orElseThrow(AtivoNaoExisteException::new);
 
-        if (!ativo.getTipo().podeTerCotacaoAtualizada()) {
+        TipoAtivoStrategy tipoAtivoStrategy = tipoAtivoMap.get(ativo.getTipo());
+
+        if (!(tipoAtivoStrategy.podeTerCotacaoAtualizada())) {
             throw new CotacaoNaoPodeAtualizarException();
         }
 
-        double valorAtual = Double.parseDouble(ativo.getCotacao());
-        double variacaoPercentual = Math.abs((valor - valorAtual) / valorAtual) * 100;
+        BigDecimal valorAtual = ativo.getCotacao();
 
-        if (variacaoPercentual < 1.0) {
+        BigDecimal diferenca = valor.subtract(valorAtual);
+        BigDecimal variacaoPercentual = diferenca
+                .divide(valorAtual, MathContext.DECIMAL64)
+                .abs()
+                .multiply(BigDecimal.valueOf(100));
+
+        if (variacaoPercentual.compareTo(BigDecimal.valueOf(1.0)) < 0) {
             throw new VariacaoCotacaoMenorQuerUmPorCentroException();
         }
 
-        ativo.setCotacao(String.valueOf(valor));
+        ativo.setCotacao(valor);
         ativoRepository.save(ativo);
+
+        if (variacaoPercentual.compareTo(BigDecimal.valueOf(10.0)) >= 0 && ativo.isDisponivel()) {
+            contaService.notificarClientesPremiumComInteresse(ativo);
+        }
 
         return modelMapper.map(ativo, AtivoResponseDTO.class);
     }

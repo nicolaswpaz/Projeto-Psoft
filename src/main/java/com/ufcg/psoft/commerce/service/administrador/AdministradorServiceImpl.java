@@ -1,14 +1,19 @@
 package com.ufcg.psoft.commerce.service.administrador;
 
 
-import com.ufcg.psoft.commerce.dto.Administrador.AdministradorResponseDTO;
-import com.ufcg.psoft.commerce.dto.Administrador.AdministradorPostPutRequestDTO;
-import com.ufcg.psoft.commerce.exception.Administrador.AdminJaExisteException;
-import com.ufcg.psoft.commerce.exception.Administrador.AdminNaoExisteException;
-import com.ufcg.psoft.commerce.exception.Administrador.MatriculaInvalidaException;
+import com.ufcg.psoft.commerce.dto.administrador.AdministradorResponseDTO;
+import com.ufcg.psoft.commerce.dto.administrador.AdministradorPostPutRequestDTO;
+import com.ufcg.psoft.commerce.exception.administrador.AdminJaExisteException;
+import com.ufcg.psoft.commerce.exception.administrador.AdminNaoExisteException;
+import com.ufcg.psoft.commerce.exception.administrador.MatriculaInvalidaException;
 import com.ufcg.psoft.commerce.model.Administrador;
 import com.ufcg.psoft.commerce.model.Endereco;
 import com.ufcg.psoft.commerce.repository.AdministradorRepository;
+import com.ufcg.psoft.commerce.repository.EnderecoRepository;
+
+import java.util.List;
+
+
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,6 +27,9 @@ public class AdministradorServiceImpl implements AdministradorService {
     @Autowired
     ModelMapper modelMapper;
 
+    @Autowired
+    EnderecoRepository enderecoRepository;
+
     @Override
     public Administrador autenticar(String matricula) {
         Administrador administrador = getAdmin();
@@ -33,15 +41,26 @@ public class AdministradorServiceImpl implements AdministradorService {
     }
 
     @Override
-    public AdministradorResponseDTO criar(AdministradorPostPutRequestDTO dto) {
-        if (getAdmin() != null) {
-            throw new AdminJaExisteException();
+    public AdministradorResponseDTO criar(AdministradorPostPutRequestDTO administradorPostPutRequestDTO) {
+
+        List<Administrador> adminObj = administradorRepository.findAll();
+
+        if(adminObj.isEmpty()){
+        
+            Administrador admin = modelMapper.map(administradorPostPutRequestDTO, Administrador.class);
+
+            if (administradorPostPutRequestDTO.getEnderecoDTO() != null) {
+                Endereco endereco = modelMapper.map(administradorPostPutRequestDTO.getEnderecoDTO(), Endereco.class);
+                endereco = enderecoRepository.save(endereco);
+                admin.setEndereco(endereco);
         }
 
-        Administrador admin = modelMapper.map(dto, Administrador.class);
         Administrador adminSalvo = administradorRepository.save(admin);
-
+        
         return modelMapper.map(adminSalvo, AdministradorResponseDTO.class);
+        }
+
+        throw new AdminJaExisteException();
     }
 
     @Override
@@ -68,10 +87,15 @@ public class AdministradorServiceImpl implements AdministradorService {
         administradorRepository.delete(admin);
     }
 
-    @Override
-    public Administrador getAdmin() {
+    private Administrador getAdmin() {
         return administradorRepository.findTopBy()
                 .orElseThrow(() -> new AdminNaoExisteException());
     }
 
+    @Override
+    public AdministradorResponseDTO buscarAdmin() {
+        Administrador admin = administradorRepository.findTopBy()
+                .orElseThrow(AdminNaoExisteException::new);
+        return modelMapper.map(admin, AdministradorResponseDTO.class);
+    }
 }

@@ -1,6 +1,7 @@
 package com.ufcg.psoft.commerce.controller;
 
-import com.ufcg.psoft.commerce.dto.Administrador.AdministradorPostPutRequestDTO;
+import com.ufcg.psoft.commerce.dto.administrador.AdministradorPostPutRequestDTO;
+import com.ufcg.psoft.commerce.dto.administrador.AdministradorResponseDTO;
 import com.ufcg.psoft.commerce.service.administrador.AdministradorService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +16,7 @@ public class AdministradorController {
     AdministradorService administradorService;
 
     @PostMapping
-    public ResponseEntity<?> criarAdministrador(
+    public ResponseEntity<AdministradorResponseDTO> criarAdministrador(
             @RequestBody AdministradorPostPutRequestDTO administradorPostPutRequestDTO) {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -23,7 +24,7 @@ public class AdministradorController {
     }
 
     @PutMapping("/{matricula}")
-    public ResponseEntity<?> atualizarAdministrador(
+    public ResponseEntity<AdministradorResponseDTO> atualizarAdministrador(
             @PathVariable String matricula,
             @RequestBody @Valid AdministradorPostPutRequestDTO administradorPostPutRequestDTO
     ) {
@@ -33,18 +34,18 @@ public class AdministradorController {
     }
 
     @DeleteMapping("/{matricula}")
-    public ResponseEntity<?> removerAdministrador(
+    public ResponseEntity<Void> removerAdministrador(
             @PathVariable String matricula) {
         administradorService.removerAdmin(matricula);
         return ResponseEntity
                 .status(HttpStatus.NO_CONTENT)
-                .body("");
+                .build();
     }
 
-    @GetMapping("/{matricula}")
-    public ResponseEntity<?> buscarAdministrador(@PathVariable String matricula) {
+    @GetMapping
+    public ResponseEntity<AdministradorResponseDTO> buscarAdministrador() {
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(administradorService.getAdmin());
+                .body(administradorService.buscarAdmin());
     }
 }

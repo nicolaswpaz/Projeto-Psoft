@@ -1,6 +1,8 @@
 package com.ufcg.psoft.commerce.controller;
 
-import com.ufcg.psoft.commerce.dto.Cliente.ClientePostPutRequestDTO;
+import  com.ufcg.psoft.commerce.dto.ativo.AtivoResponseDTO;
+import com.ufcg.psoft.commerce.dto.cliente.ClientePostPutRequestDTO;
+import com.ufcg.psoft.commerce.dto.cliente.ClienteResponseDTO;
 import com.ufcg.psoft.commerce.service.cliente.ClienteService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping(
@@ -20,16 +24,17 @@ public class ClienteController {
     ClienteService clienteService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> recuperarCliente(
+    public ResponseEntity<ClienteResponseDTO> recuperarCliente(
             @PathVariable Long id,
             @RequestParam String codigo) {
+
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(clienteService.recuperar(id, codigo));
     }
 
     @GetMapping("")
-    public ResponseEntity<?> listarClientes(
+    public ResponseEntity<List<ClienteResponseDTO>> listarClientes(
             @RequestParam String matriculaAdmin) {
 
         return ResponseEntity
@@ -38,7 +43,7 @@ public class ClienteController {
     }
 
     @PostMapping()
-    public ResponseEntity<?> criarCliente(
+    public ResponseEntity<ClienteResponseDTO> criarCliente(
             @RequestBody @Valid ClientePostPutRequestDTO clientePostPutRequestDto) {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -46,30 +51,69 @@ public class ClienteController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> atualizarCliente(
+    public ResponseEntity<ClienteResponseDTO> atualizarCliente(
             @PathVariable Long id,
             @RequestParam String codigo,
             @RequestBody @Valid ClientePostPutRequestDTO clientePostPutRequestDto) {
+
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(clienteService.alterar(id, codigo, clientePostPutRequestDto));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> excluirCliente(
+    public ResponseEntity<Void> excluirCliente(
             @PathVariable Long id,
             @RequestParam String codigo) {
+
         clienteService.remover(id, codigo);
         return ResponseEntity
                 .status(HttpStatus.NO_CONTENT)
-                .body("");
+                .build();
     }
 
-    @GetMapping("/{id}/ativos-disponiveis")
-    public ResponseEntity<?> listarAtivosDisponiveisPorPlano(@PathVariable Long id, @RequestParam String codigo) {
+    @GetMapping("/{id}/ativosDisponiveis")
+    public ResponseEntity<List<AtivoResponseDTO>> listarAtivosDisponiveisPorPlano(
+            @PathVariable Long id,
+            @RequestParam String codigo) {
 
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(clienteService.listarAtivosDisponiveisPorPlano(id, codigo));
+    }
+
+    @PutMapping("/{id}/interesseAtivoIndisponivel")
+    public ResponseEntity<Void> marcarInteresseEmAtivoIndisponivel(
+            @PathVariable Long id,
+            @RequestParam String codigo,
+            @RequestParam Long idAtivo) {
+
+        clienteService.marcarInteresseAtivoIndisponivel(id, codigo, idAtivo);
+        return ResponseEntity
+                .status(HttpStatus.NO_CONTENT)
+                .build();
+    }
+
+    @PutMapping("/{id}/interesseAtivoDisponivel")
+    public ResponseEntity<Void> marcarInteresseEmAtivoDisponivel(
+            @PathVariable Long id,
+            @RequestParam String codigo,
+            @RequestParam Long idAtivo) {
+
+        clienteService.marcarInteresseAtivoDisponivel(id, codigo, idAtivo);
+        return ResponseEntity
+                .status(HttpStatus.NO_CONTENT)
+                .build();
+    }
+
+    @GetMapping("/{id}/detalharAtivo/{idAtivo}")
+    public ResponseEntity<AtivoResponseDTO> detalharAtivoParaCompra(
+            @PathVariable Long id,
+            @PathVariable Long idAtivo,
+            @RequestParam String codigo
+    ) {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(clienteService.visualizarDetalhesAtivo(id, codigo, idAtivo));
     }
 }
