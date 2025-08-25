@@ -1,5 +1,6 @@
 package com.ufcg.psoft.commerce.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.ufcg.psoft.commerce.model.enums.StatusCompra;
 import com.ufcg.psoft.commerce.service.compra.status.*;
 import jakarta.persistence.*;
@@ -9,6 +10,8 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
@@ -26,6 +29,9 @@ public class Compra extends Operacao{
     @Transient
     private StatusCompraState statusState;
 
+    @JsonProperty("valorVenda")
+    private BigDecimal valorVenda;
+
     @OneToMany(mappedBy = "compra", cascade = CascadeType.ALL)
     private List<InteresseCompra> interesses;
 
@@ -34,6 +40,10 @@ public class Compra extends Operacao{
         if (statusCompra == null) {
             this.setStatusCompra(StatusCompra.SOLICITADO);
         }
+    }
+
+    public BigDecimal getValorAtivo() {
+        return valorVenda.divide(BigDecimal.valueOf(this.getQuantidade()), RoundingMode.HALF_UP);
     }
     
     @PostLoad

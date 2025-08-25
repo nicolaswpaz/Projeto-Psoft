@@ -34,9 +34,6 @@ public abstract class Operacao {
     @JsonProperty("quantidade")
     private int quantidade;
 
-    @JsonProperty("valorVenda")
-    private BigDecimal valorVenda;
-
     @ManyToOne
     @JoinColumn(name = "cliente_id")
     private Cliente cliente;
@@ -45,8 +42,4 @@ public abstract class Operacao {
 
     @JsonProperty("statusAtual")
     public abstract String getStatusAtual();
-
-    public BigDecimal getValorAtivo() {
-        return valorVenda.divide(BigDecimal.valueOf(quantidade), RoundingMode.HALF_UP);
-    }
 }
