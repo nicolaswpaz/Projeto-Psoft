@@ -24,7 +24,7 @@ public class Carteira {
     @JsonProperty("conta")
     private Conta conta;
 
-    @OneToMany(mappedBy = "carteira", cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL)
     @JsonProperty("ativos")
     private List<AtivoEmCarteira> ativosEmCarteira;
 

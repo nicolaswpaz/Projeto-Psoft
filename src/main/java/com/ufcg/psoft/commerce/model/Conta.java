@@ -23,14 +23,11 @@ public class Conta {
     @JsonProperty("saldo")
     private BigDecimal saldo;
 
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "carteira_id")
     private Carteira carteira;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL)
     private List<Operacao> operacoes;
 
-    @OneToOne
-    @JoinColumn(name = "cliente_id")
-    private Cliente cliente;
 }

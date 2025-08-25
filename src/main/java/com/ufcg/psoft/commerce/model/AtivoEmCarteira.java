@@ -31,12 +31,10 @@ public class AtivoEmCarteira {
     @JsonProperty("ativo")
     private Ativo ativo;
 
-    @ManyToOne
-    @JoinColumn(name = "carteira_id")
-    private Carteira carteira;
-
+    @JsonProperty("desempenho")
     private BigDecimal desempenho;
 
+    @JsonProperty("cotacaoAtual")
     private BigDecimal cotacaoAtual;
 
     @Transient

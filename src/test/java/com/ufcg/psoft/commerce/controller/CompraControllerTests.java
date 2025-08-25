@@ -144,7 +144,6 @@ class CompraControllerTests {
                 .build()
         );
 
-        contaClienteNormal.setCliente(clienteNormal);
         contaRepository.save(contaClienteNormal);
 
         clientePremium = clienteRepository.save(Cliente.builder()
@@ -157,7 +156,6 @@ class CompraControllerTests {
                 .build()
         );
 
-        contaClientePremium.setCliente(clientePremium);
         contaRepository.save(contaClientePremium);
 
         ativoTesouro = ativoRepository.save(Ativo.builder()

@@ -86,7 +86,6 @@ public class ContaServiceImpl implements ContaService {
         ativoEmCarteira.setValorDeAquisicao(compra.getValorVenda().divide(new BigDecimal(ativoEmCarteira.getQuantidadeTotal())));;
         ativoEmCarteira.setCotacaoAtual(ativoEmCarteira.getCotacaoAtual());
         ativoEmCarteira.setDesempenho(ativoEmCarteira.getDesempenho());
-        ativoEmCarteira.setCarteira(conta.getCarteira());
 
         ativoCarteiraRepository.save(ativoEmCarteira);
         conta.getCarteira().getAtivosEmCarteira().add(ativoEmCarteira);

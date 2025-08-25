@@ -27,7 +27,7 @@ public class Cliente extends Usuario {
     @Column(nullable = false)
     private String codigo;
 
-    @OneToOne(mappedBy = "cliente", cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL)
     @JsonIgnore
     private Conta conta;
 
