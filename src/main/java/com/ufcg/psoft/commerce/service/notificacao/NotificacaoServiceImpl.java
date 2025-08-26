@@ -2,11 +2,9 @@ package com.ufcg.psoft.commerce.service.notificacao;
 
 import com.ufcg.psoft.commerce.events.EventoAtivo;
 import com.ufcg.psoft.commerce.events.EventoCompra;
+import com.ufcg.psoft.commerce.events.EventoResgate;
 import com.ufcg.psoft.commerce.listener.NotificacaoListener;
-import com.ufcg.psoft.commerce.model.Ativo;
-import com.ufcg.psoft.commerce.model.Compra;
-import com.ufcg.psoft.commerce.model.InteresseAtivo;
-import com.ufcg.psoft.commerce.model.InteresseCompra;
+import com.ufcg.psoft.commerce.model.*;
 import com.ufcg.psoft.commerce.model.enums.TipoInteresse;
 import com.ufcg.psoft.commerce.repository.InteresseAtivoRepository;
 import com.ufcg.psoft.commerce.repository.InteresseCompraRepository;
@@ -20,13 +18,15 @@ public class NotificacaoServiceImpl implements NotificacaoService{
     private final InteresseAtivoRepository interesseAtivoRepository;
     private final InteresseCompraRepository interesseCompraRepository;
     private final List<NotificacaoListener> listeners;
+    private final NotificacaoListener notificacaoListener;
 
     public NotificacaoServiceImpl(InteresseAtivoRepository interesseAtivoRepository,
                                   InteresseCompraRepository interesseCompraRepository,
-                                  List<NotificacaoListener> listeners) {
+                                  List<NotificacaoListener> listeners, NotificacaoListener notificacaoListener) {
         this.interesseAtivoRepository = interesseAtivoRepository;
         this.interesseCompraRepository = interesseCompraRepository;
         this.listeners = listeners;
+        this.notificacaoListener = notificacaoListener;
     }
 
     @Override
@@ -61,4 +61,10 @@ public class NotificacaoServiceImpl implements NotificacaoService{
             listeners.forEach(listener -> listener.notificarCompraDisponivel(evento));
         });
     }
+
+    @Override
+    public void notificarConfirmacacaoResgate(Resgate resgate) {
+        EventoResgate evento = new EventoResgate(resgate, resgate.getCliente());
+        notificacaoListener.notificarConfirmacaoResgate(evento);
+    }    //EM PROCESSO DE FINALIZAÇÃO
 }

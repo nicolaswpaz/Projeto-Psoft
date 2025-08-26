@@ -1,4 +1,45 @@
 package com.ufcg.psoft.commerce.controller;
 
+import com.ufcg.psoft.commerce.dto.resgate.ResgateResponseDTO;
+import com.ufcg.psoft.commerce.service.resgate.ResgateService;
+import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping(
+        value = "/resgates",
+        produces = MediaType.APPLICATION_JSON_VALUE
+)
 public class ResgateController {
+
+    private final ResgateService resgateService;
+    protected final ModelMapper modelMapper;
+
+    public ResgateController(ResgateService resgateService, ModelMapper modelMapper) {
+        this.resgateService = resgateService;
+        this.modelMapper = modelMapper;
+    }
+
+    @PostMapping("/{idCliente}/{idAtivo}")
+    public ResponseEntity<ResgateResponseDTO> solicitarResgate(
+            @PathVariable Long idCliente,
+            @PathVariable Long idAtivo,
+            @RequestParam String codigoAcesso,
+            @RequestParam int quantidade) {
+
+        ResgateResponseDTO resgateDTO = resgateService.solicitarResgate(idCliente, codigoAcesso, idAtivo, quantidade);
+        return ResponseEntity.status(HttpStatus.CREATED).body(resgateDTO);
+    }
+
+    @PutMapping("/admin/{idResgate}/confirmar")
+    public ResponseEntity<ResgateResponseDTO> confirmarResgate(
+            @PathVariable Long idResgate,
+            @RequestParam String matriculaAdmin) {
+
+        ResgateResponseDTO resgateDTO = resgateService.confirmarResgate(idResgate, matriculaAdmin);
+        return ResponseEntity.ok(resgateDTO);
+    }
 }

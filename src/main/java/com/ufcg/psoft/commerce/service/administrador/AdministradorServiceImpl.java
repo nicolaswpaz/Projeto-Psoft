@@ -15,6 +15,7 @@ import com.ufcg.psoft.commerce.repository.EnderecoRepository;
 import java.math.BigDecimal;
 import java.util.List;
 
+import com.ufcg.psoft.commerce.repository.ResgateRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
@@ -25,15 +26,17 @@ public class AdministradorServiceImpl implements AdministradorService {
     private final ModelMapper modelMapper;
     private final EnderecoRepository enderecoRepository;
     private final CompraRepository compraRepository;
+    private final ResgateRepository resgateRepository;
 
     public AdministradorServiceImpl(AdministradorRepository administradorRepository,
                                     ModelMapper modelMapper,
                                     EnderecoRepository enderecoRepository,
-                                    CompraRepository compraRepository) {
+                                    CompraRepository compraRepository, ResgateRepository resgateRepository) {
         this.administradorRepository = administradorRepository;
         this.modelMapper = modelMapper;
         this.enderecoRepository = enderecoRepository;
         this.compraRepository = compraRepository;
+        this.resgateRepository = resgateRepository;
     }
 
     @Override
@@ -124,4 +127,15 @@ public class AdministradorServiceImpl implements AdministradorService {
         compra.avancarStatus();
         compraRepository.save(compra);
     }
+
+    @Override
+    public void confirmarResgate(Long idResgate, String matricula) {
+        autenticar(matricula);
+
+        Resgate resgate = resgateRepository.findById(idResgate)
+                .orElseThrow(CompraNaoExisteException::new);
+
+        resgate.avancarStatus();
+        resgateRepository.save(resgate);
+    }     //EM PROCESSO DE FINALIZAÇÃO
 }

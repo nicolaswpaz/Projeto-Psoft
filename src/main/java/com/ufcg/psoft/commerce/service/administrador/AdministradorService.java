@@ -17,4 +17,6 @@ public interface AdministradorService {
     AdministradorResponseDTO buscarAdmin();
 
     void confirmarDisponibilidadeCompra(Long idCompra, String matricula);
+
+    void confirmarResgate(Long idResgate, String matricula);
 }
