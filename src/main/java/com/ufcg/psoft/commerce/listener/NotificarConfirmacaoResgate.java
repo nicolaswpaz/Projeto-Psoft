@@ -2,7 +2,6 @@ package com.ufcg.psoft.commerce.listener;
 
 import com.ufcg.psoft.commerce.events.EventoResgate;
 import com.ufcg.psoft.commerce.model.Cliente;
-import com.ufcg.psoft.commerce.model.Compra;
 import com.ufcg.psoft.commerce.model.Resgate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -34,6 +33,4 @@ public class NotificarConfirmacaoResgate extends NotificacaoAdapter{
                 resgate.getDataSolicitacao()
         );
     }
-
-    //EM PROCESSO DE FINALIZAÇÃO
 }

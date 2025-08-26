@@ -4,6 +4,7 @@ import com.ufcg.psoft.commerce.events.EventoAtivo;
 import com.ufcg.psoft.commerce.events.EventoCompra;
 import com.ufcg.psoft.commerce.events.EventoResgate;
 import com.ufcg.psoft.commerce.listener.NotificacaoListener;
+import com.ufcg.psoft.commerce.listener.NotificarConfirmacaoResgate;
 import com.ufcg.psoft.commerce.model.*;
 import com.ufcg.psoft.commerce.model.enums.TipoInteresse;
 import com.ufcg.psoft.commerce.repository.InteresseAtivoRepository;
@@ -18,15 +19,13 @@ public class NotificacaoServiceImpl implements NotificacaoService{
     private final InteresseAtivoRepository interesseAtivoRepository;
     private final InteresseCompraRepository interesseCompraRepository;
     private final List<NotificacaoListener> listeners;
-    private final NotificacaoListener notificacaoListener;
 
     public NotificacaoServiceImpl(InteresseAtivoRepository interesseAtivoRepository,
                                   InteresseCompraRepository interesseCompraRepository,
-                                  List<NotificacaoListener> listeners, NotificacaoListener notificacaoListener) {
+                                  List<NotificacaoListener> listeners) {
         this.interesseAtivoRepository = interesseAtivoRepository;
         this.interesseCompraRepository = interesseCompraRepository;
         this.listeners = listeners;
-        this.notificacaoListener = notificacaoListener;
     }
 
     @Override
@@ -65,6 +64,9 @@ public class NotificacaoServiceImpl implements NotificacaoService{
     @Override
     public void notificarConfirmacacaoResgate(Resgate resgate) {
         EventoResgate evento = new EventoResgate(resgate, resgate.getCliente());
-        notificacaoListener.notificarConfirmacaoResgate(evento);
-    }    //EM PROCESSO DE FINALIZAÇÃO
+        listeners.stream()
+                .filter(l -> l instanceof NotificarConfirmacaoResgate)
+                .findFirst()
+                .ifPresent(l -> l.notificarConfirmacaoResgate(evento));
+    }
 }

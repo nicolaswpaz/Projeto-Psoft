@@ -1,18 +1,14 @@
 package com.ufcg.psoft.commerce.service.resgate;
 
-import com.ufcg.psoft.commerce.dto.compra.CompraResponseDTO;
 import com.ufcg.psoft.commerce.dto.resgate.ResgateResponseDTO;
 import com.ufcg.psoft.commerce.exception.ativo.AtivoIndisponivelException;
 import com.ufcg.psoft.commerce.exception.cliente.ClienteNaoPremiumException;
-import com.ufcg.psoft.commerce.exception.compra.CompraNaoExisteException;
-import com.ufcg.psoft.commerce.exception.compra.CompraNaoPertenceAoClienteException;
 import com.ufcg.psoft.commerce.exception.compra.QuantidadeInvalidaException;
 import com.ufcg.psoft.commerce.exception.compra.StatusCompraInvalidoException;
 import com.ufcg.psoft.commerce.exception.resgate.ClienteNaoPossuiEsseAtivoEmCarteiraException;
 import com.ufcg.psoft.commerce.exception.resgate.ResgateNaoExisteException;
 import com.ufcg.psoft.commerce.exception.resgate.SaldoInsuficienteException;
 import com.ufcg.psoft.commerce.model.*;
-import com.ufcg.psoft.commerce.model.enums.StatusCompra;
 import com.ufcg.psoft.commerce.model.enums.StatusResgate;
 import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
 import com.ufcg.psoft.commerce.model.enums.TipoPlano;
@@ -108,7 +104,7 @@ public class ResgateServiceImpl implements ResgateService {
         administradorService.confirmarResgate(idResgate, matriculaAdmin);
         notificacaoService.notificarConfirmacacaoResgate(resgate);
         return modelMapper.map(resgate, ResgateResponseDTO.class);
-    }    //EM PROCESSO DE FINALIZAÇÃO
+    }
 
     @Override
     public ResgateResponseDTO consultar(Long idCliente, String codigoAcesso, Long idResgate) {

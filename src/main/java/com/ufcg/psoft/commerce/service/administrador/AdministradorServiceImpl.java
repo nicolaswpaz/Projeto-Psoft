@@ -137,5 +137,5 @@ public class AdministradorServiceImpl implements AdministradorService {
 
         resgate.avancarStatus();
         resgateRepository.save(resgate);
-    }     //EM PROCESSO DE FINALIZAÇÃO
+    }
 }
