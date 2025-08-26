@@ -1,17 +1,20 @@
 package com.ufcg.psoft.commerce.service.resgate;
 
 import com.ufcg.psoft.commerce.dto.resgate.ResgateResponseDTO;
-import com.ufcg.psoft.commerce.exception.ativo.AtivoIndisponivelException;
+import com.ufcg.psoft.commerce.exception.cliente.ClienteNaoExisteException;
 import com.ufcg.psoft.commerce.exception.cliente.ClienteNaoPremiumException;
+import com.ufcg.psoft.commerce.exception.compra.CompraNaoExisteException;
 import com.ufcg.psoft.commerce.exception.compra.QuantidadeInvalidaException;
 import com.ufcg.psoft.commerce.exception.compra.StatusCompraInvalidoException;
 import com.ufcg.psoft.commerce.exception.resgate.ClienteNaoPossuiEsseAtivoEmCarteiraException;
 import com.ufcg.psoft.commerce.exception.resgate.ResgateNaoExisteException;
+import com.ufcg.psoft.commerce.exception.resgate.ResgateNaoPertenceAoClienteException;
 import com.ufcg.psoft.commerce.exception.resgate.SaldoInsuficienteException;
 import com.ufcg.psoft.commerce.model.*;
 import com.ufcg.psoft.commerce.model.enums.StatusResgate;
 import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
 import com.ufcg.psoft.commerce.model.enums.TipoPlano;
+import com.ufcg.psoft.commerce.repository.ClienteRepository;
 import com.ufcg.psoft.commerce.repository.ResgateRepository;
 import com.ufcg.psoft.commerce.service.administrador.AdministradorService;
 import com.ufcg.psoft.commerce.service.ativo.AtivoService;
@@ -33,17 +36,19 @@ public class ResgateServiceImpl implements ResgateService {
     private final ModelMapper modelMapper;
     private final AdministradorService administradorService;
     private final NotificacaoService notificacaoService;
+    private final ClienteRepository clienteRepository;
 
-    public ResgateServiceImpl(AtivoService ativoService, ClienteService clienteService, ResgateRepository resgateRepository, ModelMapper modelMapper, AdministradorService administradorService, NotificacaoService notificacaoService) {
+    public ResgateServiceImpl(AtivoService ativoService, ClienteService clienteService, ResgateRepository resgateRepository, ModelMapper modelMapper, AdministradorService administradorService, NotificacaoService notificacaoService, ClienteRepository clienteRepository) {
         this.ativoService = ativoService;
         this.clienteService = clienteService;
         this.resgateRepository = resgateRepository;
         this.modelMapper = modelMapper;
         this.administradorService = administradorService;
         this.notificacaoService = notificacaoService;
+        this.clienteRepository = clienteRepository;
     }
 
-    private AtivoEmCarteira checarSaldo(Carteira carteira, Ativo ativo, int quantidade) {
+    private void checarSaldo(Carteira carteira, Ativo ativo, int quantidade) {
         for (AtivoEmCarteira ativoEmCarteira : carteira.getAtivosEmCarteira()) {
             if (ativoEmCarteira.getAtivo().equals(ativo)) {
                 if (quantidade > ativoEmCarteira.getQuantidadeTotal()) {
@@ -52,7 +57,7 @@ public class ResgateServiceImpl implements ResgateService {
                             ativoEmCarteira.getQuantidadeTotal()
                     );
                 }
-                return ativoEmCarteira;
+                return;
             }
         }
         throw new ClienteNaoPossuiEsseAtivoEmCarteiraException();
@@ -71,6 +76,9 @@ public class ResgateServiceImpl implements ResgateService {
             throw new ClienteNaoPremiumException();
         }
 
+        Carteira carteira = cliente.getConta().getCarteira();
+        checarSaldo(carteira, ativo, quantidade);
+
         Resgate resgate = Resgate.builder()
                 .dataSolicitacao(LocalDate.now())
                 .ativo(ativo)
@@ -88,27 +96,53 @@ public class ResgateServiceImpl implements ResgateService {
         Resgate resgate = resgateRepository.findById(idResgate)
                 .orElseThrow(ResgateNaoExisteException::new);
 
-        if (resgate.getStatusResgate() != StatusResgate.SOLICITADO) {
-            throw new StatusCompraInvalidoException();
-        }
-
-        if(Boolean.FALSE.equals(resgate.getAtivo().isDisponivel())){
-            throw new AtivoIndisponivelException();
-        }
-
-        Carteira carteiraCliente = resgate.getCliente().getConta().getCarteira();
-        checarSaldo(carteiraCliente, resgate.getAtivo(), resgate.getQuantidade());
-
-        //cálculo do imposto correspondente.
-
         administradorService.confirmarResgate(idResgate, matriculaAdmin);
+        liquidarResgate(resgate);
         notificacaoService.notificarConfirmacacaoResgate(resgate);
         return modelMapper.map(resgate, ResgateResponseDTO.class);
     }
 
+    private void liquidarResgate(Resgate resgate) {
+        if (resgate.getStatusResgate() != StatusResgate.CONFIRMADO) {
+            throw new StatusCompraInvalidoException();
+        }
+
+        Cliente cliente = resgate.getCliente();
+        Carteira carteira = cliente.getConta().getCarteira();
+        AtivoEmCarteira ativoCarteira = carteira.getAtivosEmCarteira().stream()
+                .filter(aec -> aec.getAtivo().equals(resgate.getAtivo()))
+                .findFirst()
+                .orElseThrow(ClienteNaoPossuiEsseAtivoEmCarteiraException::new);
+
+        ativoCarteira.setQuantidadeTotal(ativoCarteira.getQuantidadeTotal() - resgate.getQuantidade());
+
+        if(ativoCarteira.getQuantidadeTotal() <= 0) {
+            carteira.getAtivosEmCarteira().remove(ativoCarteira);
+        }
+
+        BigDecimal valorLiquido = resgate.getValorResgatado().subtract(resgate.getImposto());
+        cliente.getConta().setSaldo(cliente.getConta().getSaldo().add(valorLiquido));
+
+        resgate.avancarStatus();
+        resgateRepository.save(resgate);
+    }
+
+
     @Override
     public ResgateResponseDTO consultar(Long idCliente, String codigoAcesso, Long idResgate) {
-        return null;
+        clienteService.autenticar(idCliente, codigoAcesso);
+
+        Resgate resgate = resgateRepository.findById(idResgate)
+                .orElseThrow(ResgateNaoExisteException::new);
+
+        Cliente cliente = clienteRepository.findById(idCliente)
+                .orElseThrow(ClienteNaoExisteException::new);
+
+        if (!resgate.getCliente().getId().equals(cliente.getId())) {
+            throw new ResgateNaoPertenceAoClienteException();
+        }
+
+        return modelMapper.map(resgate, ResgateResponseDTO.class);
     }
 
     @Override

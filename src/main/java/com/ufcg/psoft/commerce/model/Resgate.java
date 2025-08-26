@@ -15,6 +15,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
@@ -92,6 +93,11 @@ public class Resgate extends Operacao{
     }
 
     public void calculaImposto(){
+        if (lucro.compareTo(BigDecimal.ZERO) <= 0) {
+            imposto = BigDecimal.ZERO;
+            return;
+        }
+
         if (this.getAtivo().getTipo() == TipoAtivo.TESOURO_DIRETO) {
             imposto = lucro.multiply(BigDecimal.valueOf(0.10));
         } else if (this.getAtivo().getTipo() == TipoAtivo.ACAO) {
@@ -103,5 +109,7 @@ public class Resgate extends Operacao{
                 imposto = lucro.multiply(BigDecimal.valueOf(0.225));
             }
         }
+
+        imposto = imposto.setScale(2, RoundingMode.HALF_UP);
     }
 }

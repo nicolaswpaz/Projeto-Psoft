@@ -31,6 +31,16 @@ public class ResgateController {
         return ResponseEntity.status(HttpStatus.CREATED).body(resgateDTO);
     }
 
+    @GetMapping("/{idCliente}/{idResgate}")
+    public ResponseEntity<ResgateResponseDTO> consultarResgate(
+            @PathVariable Long idCliente,
+            @PathVariable Long idResgate,
+            @RequestParam String codigoAcesso) {
+
+        ResgateResponseDTO resgateDTO = resgateService.consultar(idCliente, codigoAcesso, idResgate);
+        return ResponseEntity.ok(resgateDTO);
+    }
+
     @PutMapping("/admin/{idResgate}/confirmar")
     public ResponseEntity<ResgateResponseDTO> confirmarResgate(
             @PathVariable Long idResgate,

@@ -5,9 +5,13 @@ import com.ufcg.psoft.commerce.dto.administrador.AdministradorPostPutRequestDTO;
 import com.ufcg.psoft.commerce.exception.administrador.AdminJaExisteException;
 import com.ufcg.psoft.commerce.exception.administrador.AdminNaoExisteException;
 import com.ufcg.psoft.commerce.exception.administrador.MatriculaInvalidaException;
+import com.ufcg.psoft.commerce.exception.ativo.AtivoIndisponivelException;
 import com.ufcg.psoft.commerce.exception.compra.CompraNaoExisteException;
+import com.ufcg.psoft.commerce.exception.compra.StatusCompraInvalidoException;
 import com.ufcg.psoft.commerce.exception.conta.SaldoInsuficienteException;
+import com.ufcg.psoft.commerce.exception.resgate.ResgateNaoExisteException;
 import com.ufcg.psoft.commerce.model.*;
+import com.ufcg.psoft.commerce.model.enums.StatusResgate;
 import com.ufcg.psoft.commerce.repository.AdministradorRepository;
 import com.ufcg.psoft.commerce.repository.CompraRepository;
 import com.ufcg.psoft.commerce.repository.EnderecoRepository;
@@ -133,7 +137,18 @@ public class AdministradorServiceImpl implements AdministradorService {
         autenticar(matricula);
 
         Resgate resgate = resgateRepository.findById(idResgate)
-                .orElseThrow(CompraNaoExisteException::new);
+                .orElseThrow(ResgateNaoExisteException::new);
+
+        if (resgate.getStatusResgate() != StatusResgate.SOLICITADO) {
+            throw new StatusCompraInvalidoException();
+        }
+
+        if(Boolean.FALSE.equals(resgate.getAtivo().isDisponivel())){
+            throw new AtivoIndisponivelException();
+        }
+
+        resgate.calculaLucro();
+        resgate.calculaImposto();
 
         resgate.avancarStatus();
         resgateRepository.save(resgate);
