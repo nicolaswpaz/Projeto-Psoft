@@ -1,8 +1,16 @@
 package com.ufcg.psoft.commerce.controller;
 
+import com.ufcg.psoft.commerce.dto.compra.CompraResponseDTO;
+import com.ufcg.psoft.commerce.dto.operacao.OperacaoResponseDTO;
+import com.ufcg.psoft.commerce.dto.resgate.ResgateResponseDTO;
+import com.ufcg.psoft.commerce.service.operacao.OperacaoService;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
+import java.util.List;
 
 @RestController
 @RequestMapping(
@@ -11,5 +19,34 @@ import org.springframework.web.bind.annotation.RestController;
 )
 public class OperacaoController {
 
-    // tratar as consultas de compra e resgate com filtros
+    private final OperacaoService operacaoService;
+
+    public OperacaoController(OperacaoService operacaoService){
+        this.operacaoService = operacaoService;
+    }
+
+    @GetMapping("/{idCliente}")
+    public ResponseEntity<List<OperacaoResponseDTO>> consultarOperacaoCliente(
+            @PathVariable Long idCliente,
+            @RequestParam String codigoAcesso,
+            @RequestParam String tipoAtivo,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicio,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim,
+            @RequestParam String statusOperacao) {
+
+        List<OperacaoResponseDTO> operacaoDTO = operacaoService.consultarOperacaoComCLiente(idCliente, codigoAcesso, tipoAtivo, dataInicio, dataFim, statusOperacao);
+        return ResponseEntity.ok(operacaoDTO);
+    }
+
+    @GetMapping("/admin/{idCliente}")
+    public ResponseEntity<List<OperacaoResponseDTO>> consultarResgateCompraAdmin(
+            @RequestParam String matriculaAdmin,
+            @PathVariable Long idCliente,
+            @RequestParam String tipoAtivo,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate data,
+            @RequestParam String tipoOperacao) {
+
+        List<OperacaoResponseDTO> operacaoDTO = operacaoService.consultarOperacoesComAdmin(matriculaAdmin, idCliente, tipoAtivo, data, tipoOperacao);
+        return ResponseEntity.ok(operacaoDTO);
+    }
 }

@@ -1,4 +1,4 @@
-package com.ufcg.psoft.commerce.service.resgate;
+package com.ufcg.psoft.commerce.service.operacao.resgate;
 
 import com.ufcg.psoft.commerce.dto.resgate.ResgateResponseDTO;
 

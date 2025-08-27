@@ -1,19 +1,11 @@
 package com.ufcg.psoft.commerce.listener;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.ufcg.psoft.commerce.events.EventoResgate;
 import com.ufcg.psoft.commerce.model.Cliente;
 import com.ufcg.psoft.commerce.model.Resgate;
-import com.ufcg.psoft.commerce.model.enums.StatusResgate;
-import com.ufcg.psoft.commerce.service.resgate.status.StatusResgateState;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Transient;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Component;
-
-import java.math.BigDecimal;
 
 @Component
 public class NotificarConfirmacaoResgate extends NotificacaoAdapter{

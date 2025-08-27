@@ -1,4 +1,4 @@
-package com.ufcg.psoft.commerce.service.compra.status;
+package com.ufcg.psoft.commerce.service.operacao.compra.status;
 
 public interface StatusCompraState {
     void mover();

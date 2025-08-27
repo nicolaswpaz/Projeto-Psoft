@@ -1,4 +1,4 @@
-package com.ufcg.psoft.commerce.service.compra;
+package com.ufcg.psoft.commerce.service.operacao.compra;
 
 import com.ufcg.psoft.commerce.dto.compra.CompraResponseDTO;
 import com.ufcg.psoft.commerce.model.Cliente;

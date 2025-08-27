@@ -1,4 +1,4 @@
-package com.ufcg.psoft.commerce.service.compra.status;
+package com.ufcg.psoft.commerce.service.operacao.compra.status;
 
 import com.ufcg.psoft.commerce.model.Compra;
 import com.ufcg.psoft.commerce.model.enums.StatusCompra;

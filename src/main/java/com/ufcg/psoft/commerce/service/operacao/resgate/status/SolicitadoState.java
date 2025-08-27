@@ -1,4 +1,4 @@
-package com.ufcg.psoft.commerce.service.resgate.status;
+package com.ufcg.psoft.commerce.service.operacao.resgate.status;
 
 import com.ufcg.psoft.commerce.model.Resgate;
 import com.ufcg.psoft.commerce.model.enums.StatusResgate;

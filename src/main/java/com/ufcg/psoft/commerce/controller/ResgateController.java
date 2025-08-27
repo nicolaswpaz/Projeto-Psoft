@@ -1,7 +1,7 @@
 package com.ufcg.psoft.commerce.controller;
 
 import com.ufcg.psoft.commerce.dto.resgate.ResgateResponseDTO;
-import com.ufcg.psoft.commerce.service.resgate.ResgateService;
+import com.ufcg.psoft.commerce.service.operacao.resgate.ResgateService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;

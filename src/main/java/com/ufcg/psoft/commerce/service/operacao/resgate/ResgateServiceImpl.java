@@ -1,9 +1,8 @@
-package com.ufcg.psoft.commerce.service.resgate;
+package com.ufcg.psoft.commerce.service.operacao.resgate;
 
 import com.ufcg.psoft.commerce.dto.resgate.ResgateResponseDTO;
 import com.ufcg.psoft.commerce.exception.cliente.ClienteNaoExisteException;
 import com.ufcg.psoft.commerce.exception.cliente.ClienteNaoPremiumException;
-import com.ufcg.psoft.commerce.exception.compra.CompraNaoExisteException;
 import com.ufcg.psoft.commerce.exception.compra.QuantidadeInvalidaException;
 import com.ufcg.psoft.commerce.exception.compra.StatusCompraInvalidoException;
 import com.ufcg.psoft.commerce.exception.resgate.ClienteNaoPossuiEsseAtivoEmCarteiraException;
@@ -82,6 +81,8 @@ public class ResgateServiceImpl implements ResgateService {
         Resgate resgate = Resgate.builder()
                 .dataSolicitacao(LocalDate.now())
                 .ativo(ativo)
+                .lucro(BigDecimal.ZERO)
+                .imposto(BigDecimal.ZERO)
                 .quantidade(quantidade)
                 .valorResgatado(BigDecimal.valueOf(quantidade).multiply(ativo.getCotacao()))
                 .cliente(cliente)
@@ -126,7 +127,6 @@ public class ResgateServiceImpl implements ResgateService {
         resgate.avancarStatus();
         resgateRepository.save(resgate);
     }
-
 
     @Override
     public ResgateResponseDTO consultar(Long idCliente, String codigoAcesso, Long idResgate) {
