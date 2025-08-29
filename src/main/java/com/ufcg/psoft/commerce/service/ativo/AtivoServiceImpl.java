@@ -161,6 +161,10 @@ public class AtivoServiceImpl implements AtivoService {
 
         Ativo ativo = ativoRepository.findById(id).orElseThrow(AtivoNaoExisteException::new);
 
+        if (valor.compareTo(BigDecimal.ZERO) < 1) {
+            throw new ValorCotacaoNaoPodeAtualizarException();
+        }
+
         TipoAtivoStrategy tipoAtivoStrategy = tipoAtivoMap.get(ativo.getTipo());
 
         if (!(tipoAtivoStrategy.podeTerCotacaoAtualizada())) {

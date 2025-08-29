@@ -17,6 +17,7 @@ import com.ufcg.psoft.commerce.repository.ClienteRepository;
 import com.ufcg.psoft.commerce.repository.ResgateRepository;
 import com.ufcg.psoft.commerce.service.administrador.AdministradorService;
 import com.ufcg.psoft.commerce.service.ativo.AtivoService;
+import com.ufcg.psoft.commerce.service.carteira.AtivoEmCarteiravService;
 import com.ufcg.psoft.commerce.service.cliente.ClienteService;
 import com.ufcg.psoft.commerce.service.notificacao.NotificacaoService;
 import org.modelmapper.ModelMapper;
@@ -36,8 +37,9 @@ public class ResgateServiceImpl implements ResgateService {
     private final AdministradorService administradorService;
     private final NotificacaoService notificacaoService;
     private final ClienteRepository clienteRepository;
+    private final AtivoEmCarteiravService ativoEmCarteiravService;
 
-    public ResgateServiceImpl(AtivoService ativoService, ClienteService clienteService, ResgateRepository resgateRepository, ModelMapper modelMapper, AdministradorService administradorService, NotificacaoService notificacaoService, ClienteRepository clienteRepository) {
+    public ResgateServiceImpl(AtivoService ativoService, ClienteService clienteService, ResgateRepository resgateRepository, ModelMapper modelMapper, AdministradorService administradorService, NotificacaoService notificacaoService, ClienteRepository clienteRepository, AtivoEmCarteiravService ativoEmCarteiravService) {
         this.ativoService = ativoService;
         this.clienteService = clienteService;
         this.resgateRepository = resgateRepository;
@@ -45,6 +47,7 @@ public class ResgateServiceImpl implements ResgateService {
         this.administradorService = administradorService;
         this.notificacaoService = notificacaoService;
         this.clienteRepository = clienteRepository;
+        this.ativoEmCarteiravService = ativoEmCarteiravService;
     }
 
     private void checarSaldo(Carteira carteira, Ativo ativo, int quantidade) {
@@ -114,11 +117,13 @@ public class ResgateServiceImpl implements ResgateService {
                 .filter(aec -> aec.getAtivo().equals(resgate.getAtivo()))
                 .findFirst()
                 .orElseThrow(ClienteNaoPossuiEsseAtivoEmCarteiraException::new);
+        checarSaldo(carteira, resgate.getAtivo(), resgate.getQuantidade());
 
         ativoCarteira.setQuantidadeTotal(ativoCarteira.getQuantidadeTotal() - resgate.getQuantidade());
 
         if(ativoCarteira.getQuantidadeTotal() <= 0) {
             carteira.getAtivosEmCarteira().remove(ativoCarteira);
+            ativoEmCarteiravService.remover(ativoCarteira.getId());
         }
 
         BigDecimal valorLiquido = resgate.getValorResgatado().subtract(resgate.getImposto());
