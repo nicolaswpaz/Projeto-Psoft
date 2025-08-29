@@ -73,4 +73,9 @@ public class Compra extends Operacao{
         }
         return this.statusCompra != null ? this.statusCompra.name() : "INDEFINIDO";
     }
+
+    @Override
+    public String getTipoOperacao() {
+        return "COMPRA";
+    }
 }

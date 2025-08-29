@@ -1,6 +1,7 @@
 package com.ufcg.psoft.commerce.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.ufcg.psoft.commerce.model.enums.TipoPlano;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -14,7 +15,6 @@ import java.util.List;
 @NoArgsConstructor
 @Table(name = "conta")
 public class Conta {
-
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
@@ -30,4 +30,10 @@ public class Conta {
     @OneToMany(cascade = CascadeType.ALL)
     private List<Operacao> operacoes;
 
+    @PrePersist
+    public void prePersist(){
+        if (this.saldo == null){
+            this.saldo = BigDecimal.valueOf(0);
+        }
+    }
 }

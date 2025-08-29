@@ -113,4 +113,9 @@ public class Resgate extends Operacao{
 
         imposto = imposto.setScale(2, RoundingMode.HALF_UP);
     }
+
+    @Override
+    public String getTipoOperacao() {
+        return "RESGATE";
+    }
 }
