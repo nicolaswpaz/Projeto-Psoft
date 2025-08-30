@@ -1,7 +1,6 @@
 package com.ufcg.psoft.commerce.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.ufcg.psoft.commerce.model.enums.TipoPlano;
 import jakarta.persistence.*;
 import lombok.*;
 

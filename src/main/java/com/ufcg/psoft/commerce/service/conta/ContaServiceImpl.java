@@ -113,8 +113,7 @@ public class ContaServiceImpl implements ContaService {
 
                     BigDecimal valorDeAquisicao = ativoEmCarteira.getValorDeAquisicao();
 
-                    BigDecimal valorAtual = ativo.getCotacao()
-                            .multiply(BigDecimal.valueOf(quantidadeTotal));
+                    BigDecimal valorAtual = ativo.getCotacao();
 
                     BigDecimal desempenho = valorAtual.subtract(valorDeAquisicao);
 

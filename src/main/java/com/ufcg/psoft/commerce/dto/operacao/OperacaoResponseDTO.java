@@ -4,14 +4,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.ufcg.psoft.commerce.model.Ativo;
 import com.ufcg.psoft.commerce.model.Cliente;
 import com.ufcg.psoft.commerce.model.Operacao;
-import com.ufcg.psoft.commerce.model.enums.StatusCompra;
-import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Data

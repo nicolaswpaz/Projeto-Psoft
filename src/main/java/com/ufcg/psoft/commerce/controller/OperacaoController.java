@@ -1,8 +1,6 @@
 package com.ufcg.psoft.commerce.controller;
 
-import com.ufcg.psoft.commerce.dto.compra.CompraResponseDTO;
 import com.ufcg.psoft.commerce.dto.operacao.OperacaoResponseDTO;
-import com.ufcg.psoft.commerce.dto.resgate.ResgateResponseDTO;
 import com.ufcg.psoft.commerce.service.operacao.OperacaoService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
@@ -38,13 +36,13 @@ public class OperacaoController {
         return ResponseEntity.ok(operacaoDTO);
     }
 
-    @GetMapping("/admin/{idCliente}")
+    @GetMapping("/admin/")
     public ResponseEntity<List<OperacaoResponseDTO>> consultarResgateCompraAdmin(
             @RequestParam String matriculaAdmin,
-            @PathVariable Long idCliente,
-            @RequestParam String tipoAtivo,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate data,
-            @RequestParam String tipoOperacao) {
+            @RequestParam(required = false) Long idCliente,
+            @RequestParam(required = false) String tipoAtivo,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate data,
+            @RequestParam(required = false) String tipoOperacao) {
 
         List<OperacaoResponseDTO> operacaoDTO = operacaoService.consultarOperacoesComAdmin(matriculaAdmin, idCliente, tipoAtivo, data, tipoOperacao);
         return ResponseEntity.ok(operacaoDTO);

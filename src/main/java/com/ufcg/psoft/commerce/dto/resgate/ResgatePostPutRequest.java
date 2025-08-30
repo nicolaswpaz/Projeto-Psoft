@@ -3,7 +3,6 @@ package com.ufcg.psoft.commerce.dto.resgate;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.ufcg.psoft.commerce.model.Ativo;
 import com.ufcg.psoft.commerce.model.Cliente;
-import com.ufcg.psoft.commerce.model.enums.StatusCompra;
 import com.ufcg.psoft.commerce.model.enums.StatusResgate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
