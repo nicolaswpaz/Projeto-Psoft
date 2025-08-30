@@ -14,7 +14,7 @@ import com.ufcg.psoft.commerce.model.enums.StatusCompra;
 import com.ufcg.psoft.commerce.repository.ClienteRepository;
 import com.ufcg.psoft.commerce.repository.CompraRepository;
 import com.ufcg.psoft.commerce.repository.ContaRepository;
-import com.ufcg.psoft.commerce.repository.AtivoCarteiraRepository;;
+import com.ufcg.psoft.commerce.repository.AtivoCarteiraRepository;
 import com.ufcg.psoft.commerce.service.notificacao.NotificacaoServiceImpl;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -51,7 +51,7 @@ public class ContaServiceImpl implements ContaService {
 
         Conta conta = Conta.builder()
                 .saldo(BigDecimal.valueOf(0.00))
-                .operacoes(new ArrayList<Operacao>())
+                .operacoes(new ArrayList<>())
                 .carteira(carteira)
                 .build();
 
@@ -83,7 +83,7 @@ public class ContaServiceImpl implements ContaService {
         AtivoEmCarteira ativoEmCarteira = new AtivoEmCarteira();
         ativoEmCarteira.setAtivo(compra.getAtivo());
         ativoEmCarteira.setQuantidadeTotal(compra.getQuantidade());
-        ativoEmCarteira.setValorDeAquisicao(compra.getValorVenda().divide(new BigDecimal(ativoEmCarteira.getQuantidadeTotal())));;
+        ativoEmCarteira.setValorDeAquisicao(compra.getValorVenda().divide(new BigDecimal(ativoEmCarteira.getQuantidadeTotal())));
         ativoEmCarteira.setCotacaoAtual(ativoEmCarteira.getCotacaoAtual());
         ativoEmCarteira.setDesempenho(ativoEmCarteira.getDesempenho());
 

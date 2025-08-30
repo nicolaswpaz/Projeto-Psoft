@@ -171,13 +171,7 @@ public class AtivoServiceImpl implements AtivoService {
             throw new CotacaoNaoPodeAtualizarException();
         }
 
-        BigDecimal valorAtual = ativo.getCotacao();
-
-        BigDecimal diferenca = valor.subtract(valorAtual);
-        BigDecimal variacaoPercentual = diferenca
-                .divide(valorAtual, MathContext.DECIMAL64)
-                .abs()
-                .multiply(BigDecimal.valueOf(100));
+        BigDecimal variacaoPercentual = getBigDecimal(valor, ativo);
 
         if (variacaoPercentual.compareTo(BigDecimal.valueOf(1.0)) < 0) {
             throw new VariacaoCotacaoMenorQuerUmPorCentroException();
@@ -200,6 +194,22 @@ public class AtivoServiceImpl implements AtivoService {
                 ativoCarteiraRepository.saveAll(ativosEmCarteiraAtualizados);
 
         return modelMapper.map(ativo, AtivoResponseDTO.class);
+    }
+
+    private static BigDecimal getBigDecimal(BigDecimal valor, Ativo ativo) {
+        BigDecimal valorAtual = ativo.getCotacao();
+
+        BigDecimal variacaoPercentual;
+        if (valorAtual == null || valorAtual.compareTo(BigDecimal.ZERO) == 0) {
+            variacaoPercentual = BigDecimal.valueOf(100); // ou outra regra de negócio
+        } else {
+            BigDecimal diferenca = valor.subtract(valorAtual);
+            variacaoPercentual = diferenca
+                    .divide(valorAtual, MathContext.DECIMAL64)
+                    .abs()
+                    .multiply(BigDecimal.valueOf(100));
+        }
+        return variacaoPercentual;
     }
 
     @Override

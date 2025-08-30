@@ -1,6 +1,6 @@
 package com.ufcg.psoft.commerce.service.operacao;
 
-import com.ufcg.psoft.commerce.dto.operacao.OperacaoResponseDTO;;
+import com.ufcg.psoft.commerce.dto.operacao.OperacaoResponseDTO;
 import com.ufcg.psoft.commerce.model.Operacao;
 import com.ufcg.psoft.commerce.repository.OperacaoRepository;
 import com.ufcg.psoft.commerce.service.administrador.AdministradorService;
