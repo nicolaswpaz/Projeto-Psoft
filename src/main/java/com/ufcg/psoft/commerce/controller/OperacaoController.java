@@ -32,7 +32,7 @@ public class OperacaoController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim,
             @RequestParam String statusOperacao) {
 
-        List<OperacaoResponseDTO> operacaoDTO = operacaoService.consultarOperacaoComCLiente(idCliente, codigoAcesso, tipoAtivo, dataInicio, dataFim, statusOperacao);
+        List<OperacaoResponseDTO> operacaoDTO = operacaoService.consultarOperacaoCliente(idCliente, codigoAcesso, tipoAtivo, dataInicio, dataFim, statusOperacao);
         return ResponseEntity.ok(operacaoDTO);
     }
 

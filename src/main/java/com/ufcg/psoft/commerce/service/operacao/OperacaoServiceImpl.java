@@ -24,9 +24,18 @@ public class OperacaoServiceImpl implements OperacaoService {
     }
 
     @Override
-    public List<OperacaoResponseDTO> consultarOperacaoComCLiente(Long idCliente, String codigoAcesso, String tipoAtivo, LocalDate dataInicio, LocalDate dataFim, String statusOperacao) {
+    public List<OperacaoResponseDTO> consultarOperacaoCliente(Long idCliente, String codigoAcesso, String tipoAtivo, LocalDate dataInicio, LocalDate dataFim, String statusOperacao) {
         clienteService.autenticar(idCliente, codigoAcesso);
-        return List.of();
+
+        List<Operacao> operacoesCliente = operacaoRepository.findByClienteId(idCliente);
+
+        return operacoesCliente.stream()
+                .filter(op -> tipoAtivo == null || op.getAtivo().getTipo().name().equalsIgnoreCase(tipoAtivo))
+                .filter(op -> dataInicio == null || !op.getDataSolicitacao().isBefore(dataInicio))
+                .filter(op -> dataFim == null || !op.getDataSolicitacao().isAfter(dataFim))
+                .filter(op -> statusOperacao == null || op.getStatusAtual().equalsIgnoreCase(statusOperacao))
+                .map(OperacaoResponseDTO::new)
+                .toList();
     }
 
     @Override
