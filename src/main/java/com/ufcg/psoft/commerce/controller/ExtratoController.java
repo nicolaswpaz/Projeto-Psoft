@@ -1,13 +1,12 @@
 package com.ufcg.psoft.commerce.controller;
 
-import com.ufcg.psoft.commerce.service.extrato.ExtratoService;
+import com.ufcg.psoft.commerce.service.extrato.ExtratoServiceImpl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -18,10 +17,10 @@ import java.util.Date;
 )
 public class ExtratoController {
 
-    private final ExtratoService extratoService;
+    private final ExtratoServiceImpl extratoServiceImpl;
 
-    public ExtratoController(ExtratoService extratoService) {
-        this.extratoService = extratoService;
+    public ExtratoController(ExtratoServiceImpl extratoServiceImpl) {
+        this.extratoServiceImpl = extratoServiceImpl;
     }
 
     @GetMapping(
@@ -33,7 +32,7 @@ public class ExtratoController {
             @RequestParam String codigoAcesso) {
 
         StreamingResponseBody stream = outputStream -> {
-            extratoService.gerarExtratoCSV(clienteId, codigoAcesso, outputStream);
+            extratoServiceImpl.gerarExtratoCSV(clienteId, codigoAcesso, outputStream);
         };
 
         String currentDateTime = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new Date());

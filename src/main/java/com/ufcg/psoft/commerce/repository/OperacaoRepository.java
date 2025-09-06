@@ -7,5 +7,4 @@ import java.util.List;
 
 public interface OperacaoRepository extends JpaRepository<Operacao, Long> {
     List<Operacao> findByClienteId(Long idCliente);
-    List<Operacao> findByContaIdOrderByDataSolicitacaoAsc(Long contaId);
 }
