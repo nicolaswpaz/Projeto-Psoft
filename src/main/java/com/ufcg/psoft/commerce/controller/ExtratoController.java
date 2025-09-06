@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 @RestController
@@ -24,19 +26,18 @@ public class ExtratoController {
     }
 
     @GetMapping(
-            value = "/cliente/{clienteId}/csv",
+            value = "/cliente/{idCliente}/csv",
             produces = "text/csv"
     )
     public ResponseEntity<StreamingResponseBody> exportarExtratoCSV(
-            @PathVariable Long clienteId,
+            @PathVariable Long idCliente,
             @RequestParam String codigoAcesso) {
 
-        StreamingResponseBody stream = outputStream -> {
-            extratoServiceImpl.gerarExtratoCSV(clienteId, codigoAcesso, outputStream);
-        };
+        StreamingResponseBody stream = outputStream -> extratoServiceImpl.gerarExtratoCSV(idCliente, codigoAcesso, outputStream);
 
-        String currentDateTime = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new Date());
-        String filename = String.format("extrato_cliente_%d_%s.csv", clienteId, currentDateTime);
+        String currentDateTime = java.time.LocalDateTime.now()
+                .format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss"));
+        String filename = String.format("extrato_cliente_%d_%s.csv", idCliente, currentDateTime);
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
