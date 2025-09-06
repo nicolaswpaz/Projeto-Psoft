@@ -21,7 +21,7 @@ public class AtivoEmCarteiraResponseDTO {
     private Long ativoId;
     private String nomeAtivo;
     private TipoAtivo tipo;
-    private Integer quantidadeTotal;
+    private Integer quantidade;
     private BigDecimal valorDeAquisicao;
     private BigDecimal valorAtual;
     private BigDecimal desempenho;
@@ -31,7 +31,7 @@ public class AtivoEmCarteiraResponseDTO {
         this.ativoId = tempAtivo.getId();
         this.nomeAtivo = tempAtivo.getNome();
         this.tipo = tempAtivo.getTipo();
-        this.quantidadeTotal = item.getQuantidadeTotal();
+        this.quantidade = item.getQuantidade();
         this.valorDeAquisicao = item.getValorDeAquisicao();
         this.valorAtual = tempAtivo.getCotacao();
         this.desempenho = item.getDesempenho();

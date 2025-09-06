@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class AtivoEmCarteiraServiceImpl implements AtivoEmCarteiravService {
+public class AtivoEmCarteiraServiceImpl implements AtivoEmCarteiraService {
 
     private final AtivoCarteiraRepository ativoCarteiraRepository;
 
@@ -18,7 +18,7 @@ public class AtivoEmCarteiraServiceImpl implements AtivoEmCarteiravService {
         this.ativoCarteiraRepository = ativoCarteiraRepository;
     }
 
-    @Override
+    /*@Override
     public AtivoEmCarteiraResponseDTO buscarPorId(Long id) {
         AtivoEmCarteira ativoEmCarteira = ativoCarteiraRepository.findById(id)
                 .orElseThrow(AtivoCarteiraNaoExisteException::new);
@@ -37,7 +37,7 @@ public class AtivoEmCarteiraServiceImpl implements AtivoEmCarteiravService {
     public AtivoEmCarteiraResponseDTO salvar(AtivoEmCarteira ativoEmCarteira) {
         AtivoEmCarteira salvo = ativoCarteiraRepository.save(ativoEmCarteira);
         return new AtivoEmCarteiraResponseDTO(salvo);
-    }
+    }*/
 
     @Override
     public void remover(Long id) {

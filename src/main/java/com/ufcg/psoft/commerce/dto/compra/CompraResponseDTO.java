@@ -1,6 +1,8 @@
 package com.ufcg.psoft.commerce.dto.compra;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.ufcg.psoft.commerce.dto.ativo.AtivoResponseDTO;
+import com.ufcg.psoft.commerce.dto.cliente.ClienteResponseDTO;
 import com.ufcg.psoft.commerce.model.Ativo;
 import com.ufcg.psoft.commerce.model.Cliente;
 import com.ufcg.psoft.commerce.model.Compra;
@@ -26,7 +28,7 @@ public class CompraResponseDTO {
     private LocalDate dataSolicitacao;
 
     @JsonProperty("ativo")
-    private Ativo ativo;
+    private AtivoResponseDTO ativo;
 
     @JsonProperty("quantidade")
     private int quantidade;
@@ -35,7 +37,7 @@ public class CompraResponseDTO {
     private BigDecimal valorVenda;
 
     @JsonProperty("cliente")
-    private Cliente cliente;
+    private ClienteResponseDTO cliente;
 
     @JsonProperty("status")
     private StatusCompra statusCompra;
@@ -43,10 +45,10 @@ public class CompraResponseDTO {
     public CompraResponseDTO(Compra compra) {
         this.id = compra.getId();
         this.dataSolicitacao = compra.getDataSolicitacao();
-        this.ativo = compra.getAtivo();
+        this.ativo = new AtivoResponseDTO(compra.getAtivo());
         this.quantidade = compra.getQuantidade();
         this.valorVenda = compra.getValorVenda();
-        this.cliente = compra.getCliente();
+        this.cliente = new ClienteResponseDTO(compra.getCliente());
         this.statusCompra = compra.getStatusCompra();
     }
 }

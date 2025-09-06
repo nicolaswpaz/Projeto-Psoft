@@ -5,14 +5,14 @@ import com.ufcg.psoft.commerce.model.AtivoEmCarteira;
 
 import java.util.List;
 
-public interface AtivoEmCarteiravService {
+public interface AtivoEmCarteiraService {
 
-    AtivoEmCarteiraResponseDTO buscarPorId(Long id);
+    /*AtivoEmCarteiraResponseDTO buscarPorId(Long id);
 
     List<AtivoEmCarteiraResponseDTO> listarTodos();
 
     AtivoEmCarteiraResponseDTO salvar(AtivoEmCarteira item);
-
+    */
     void remover(Long id);
-
+    //DISCUTIR A EXISTÊNCIA DESSE SERVICE)
 }

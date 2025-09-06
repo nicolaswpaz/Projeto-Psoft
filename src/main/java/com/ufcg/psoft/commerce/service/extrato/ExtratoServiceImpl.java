@@ -28,7 +28,6 @@ public class ExtratoServiceImpl implements ExtratoService{
 
     @Autowired
     public ExtratoServiceImpl(OperacaoRepository operacaoRepository, ClienteService clienteService) {
-
         this.operacaoRepository = operacaoRepository;
         this.clienteService = clienteService;
     }

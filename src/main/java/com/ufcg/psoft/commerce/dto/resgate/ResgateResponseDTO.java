@@ -1,6 +1,8 @@
 package com.ufcg.psoft.commerce.dto.resgate;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.ufcg.psoft.commerce.dto.ativo.AtivoResponseDTO;
+import com.ufcg.psoft.commerce.dto.cliente.ClienteResponseDTO;
 import com.ufcg.psoft.commerce.model.Ativo;
 import com.ufcg.psoft.commerce.model.Cliente;
 import com.ufcg.psoft.commerce.model.Resgate;
@@ -26,7 +28,7 @@ public class ResgateResponseDTO {
     private LocalDate dataSolicitacao;
 
     @JsonProperty("ativo")
-    private Ativo ativo;
+    private AtivoResponseDTO ativo;
 
     @JsonProperty("quantidade")
     private int quantidade;
@@ -41,7 +43,7 @@ public class ResgateResponseDTO {
     private BigDecimal imposto;
 
     @JsonProperty("cliente")
-    private Cliente cliente;
+    private ClienteResponseDTO cliente;
 
     @JsonProperty("status")
     private StatusResgate statusResgate;
@@ -49,12 +51,12 @@ public class ResgateResponseDTO {
     public ResgateResponseDTO(Resgate resgate) {
         this.id = resgate.getId();
         this.dataSolicitacao = resgate.getDataSolicitacao();
-        this.ativo = resgate.getAtivo();
+        this.ativo = new AtivoResponseDTO(resgate.getAtivo());
         this.quantidade = resgate.getQuantidade();
         this.valorResgatado = resgate.getValorResgatado();
         this.lucro = resgate.getLucro();
         this.imposto = resgate.getImposto();
-        this.cliente = resgate.getCliente();
+        this.cliente = new ClienteResponseDTO(resgate.getCliente());
         this.statusResgate = resgate.getStatusResgate();
     }
 }

@@ -5,9 +5,15 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.ufcg.psoft.commerce.dto.resgate.ResgateResponseDTO;
 import com.ufcg.psoft.commerce.exception.CustomErrorType;
+import com.ufcg.psoft.commerce.exception.cliente.ClienteNaoExisteException;
+import com.ufcg.psoft.commerce.exception.compra.QuantidadeInvalidaException;
+import com.ufcg.psoft.commerce.exception.resgate.ResgateNaoExisteException;
+import com.ufcg.psoft.commerce.exception.resgate.ResgateNaoPertenceAoClienteException;
 import com.ufcg.psoft.commerce.listener.NotificacaoCompraDisponivel;
 import com.ufcg.psoft.commerce.model.*;
+import com.ufcg.psoft.commerce.model.enums.StatusResgate;
 import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
 import com.ufcg.psoft.commerce.model.enums.TipoPlano;
 import com.ufcg.psoft.commerce.repository.*;
@@ -256,4 +262,213 @@ class ResgateControllerTests {
             assertEquals("O cliente nao possui esse ativo em carteira!", resultado.getMessage());
         }
     }
+
+    @Nested
+    @DisplayName("Consulta/Acompanhamento do resgate")
+    class ConsultaResgate {
+
+        @Test
+        @DisplayName("Resgate solicitado deve conter data, imposto inicial e estado SOLICITADO")
+        void resgateSolicitadoDeveConterDataEImposto() throws Exception {
+            ResgateResponseDTO resgateSolicitado = resgateService.solicitarResgate(
+                    clientePremium.getId(), clientePremium.getCodigo(), ativoAcao.getId(), 1);
+
+            String responseJsonString = driver.perform(get(uriResgates + "/" + clientePremium.getId() + "/" + resgateSolicitado.getId())
+                            .param("codigoAcesso", clientePremium.getCodigo())
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andReturn().getResponse().getContentAsString();
+
+            ResgateResponseDTO consultado = objectMapper.readValue(responseJsonString, ResgateResponseDTO.class);
+
+            assertNotNull(consultado.getDataSolicitacao(), "Data do resgate deve ser registrada");
+            assertNotNull(consultado.getImposto(), "Imposto deve estar presente (mesmo que zero)");
+            assertEquals(StatusResgate.SOLICITADO, consultado.getStatusResgate(),
+                    "Status inicial deve ser SOLICITADO");
+        }
+
+        @Test
+        @DisplayName("Resgate confirmado deve conter data, imposto e estado EM_CONTA")
+        void resgateConfirmadoDeveConterDataEImposto() throws Exception {
+            ResgateResponseDTO resgateSolicitado = resgateService.solicitarResgate(
+                    clientePremium.getId(), clientePremium.getCodigo(), ativoAcao.getId(), 1);
+            resgateService.confirmarResgate(resgateSolicitado.getId(), administrador.getMatricula());
+
+            String responseJsonString = driver.perform(get(uriResgates + "/" + clientePremium.getId() + "/" + resgateSolicitado.getId())
+                            .param("codigoAcesso", clientePremium.getCodigo()))
+                    .andExpect(status().isOk())
+                    .andReturn().getResponse().getContentAsString();
+
+            ResgateResponseDTO consultado = objectMapper.readValue(responseJsonString, ResgateResponseDTO.class);
+
+            assertNotNull(consultado.getDataSolicitacao(), "Data do resgate deve permanecer registrada");
+            assertNotNull(consultado.getImposto(), "Imposto deve ser calculado e registrado");
+            assertEquals(StatusResgate.EM_CONTA, consultado.getStatusResgate(),
+                    "Após liquidação, status deve ser EM_CONTA");
+        }
+
+        @Test
+        @DisplayName("Cliente deve conseguir consultar um resgate solicitado")
+        void clienteConsultaResgateSolicitado() throws Exception {
+            ResgateResponseDTO resgateSolicitado = resgateService.solicitarResgate(
+                    clientePremium.getId(), clientePremium.getCodigo(), ativoAcao.getId(), 1);
+            String responseJsonString = driver.perform(get(uriResgates + "/" + clientePremium.getId() + "/" + resgateSolicitado.getId())
+                            .param("codigoAcesso", clientePremium.getCodigo())
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            ResgateResponseDTO resgateConsultado = objectMapper.readValue(responseJsonString, ResgateResponseDTO.class);
+
+            assertEquals(StatusResgate.SOLICITADO, resgateConsultado.getStatusResgate());
+            assertNotNull(resgateConsultado.getDataSolicitacao());
+            assertEquals(clientePremium.getId(), resgateConsultado.getCliente().getId());
+        }
+
+        @Test
+        @DisplayName("Cliente deve conseguir consultar um resgate liquidado (Em conta)")
+        void clienteConsultaResgateLiquidado() throws Exception {
+            ResgateResponseDTO resgateSolicitado = resgateService.solicitarResgate(
+                    clientePremium.getId(), clientePremium.getCodigo(), ativoAcao.getId(), 1);
+
+            resgateService.confirmarResgate(resgateSolicitado.getId(), administrador.getMatricula());
+
+            String responseJsonString = driver.perform(get(uriResgates + "/" + clientePremium.getId() + "/" + resgateSolicitado.getId())
+                            .param("codigoAcesso", clientePremium.getCodigo()))
+                    .andExpect(status().isOk())
+                    .andReturn().getResponse().getContentAsString();
+
+            ResgateResponseDTO resgateConsultado = objectMapper.readValue(responseJsonString, ResgateResponseDTO.class);
+
+            assertEquals(StatusResgate.EM_CONTA, resgateConsultado.getStatusResgate());
+            assertNotNull(resgateConsultado.getImposto());
+            assertNotNull(resgateConsultado.getDataSolicitacao());
+        }
+
+        @Test
+        @DisplayName("Cliente não pode consultar resgate que não é dele")
+        void clienteNaoPodeConsultarResgateDeOutroCliente() throws Exception {
+            ResgateResponseDTO resgateSolicitado = resgateService.solicitarResgate(
+                    clientePremium.getId(), clientePremium.getCodigo(), ativoAcao.getId(), 1);
+
+            driver.perform(get(uriResgates + "/" + clienteNormal.getId() + "/" + resgateSolicitado.getId())
+                            .param("codigoAcesso", clienteNormal.getCodigo()))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(result -> assertInstanceOf(
+                            ResgateNaoPertenceAoClienteException.class,
+                            result.getResolvedException()
+                    ));
+        }
+
+        @Test
+        @DisplayName("Cliente não existente não pode consultar resgate")
+        void clienteNaoExistenteNaoPodeConsultarResgate() throws Exception {
+            driver.perform(get(uriResgates + "/99999/1")
+                            .param("codigoAcesso", "1234"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(result -> assertInstanceOf(ClienteNaoExisteException.class, result.getResolvedException()));
+        }
+
+        @Test
+        @DisplayName("Cliente com código de acesso inválido não pode consultar resgate")
+        void clienteComCodigoInvalidoNaoPodeConsultarResgate() throws Exception {
+            ResgateResponseDTO resgateSolicitado = resgateService.solicitarResgate(
+                    clientePremium.getId(), clientePremium.getCodigo(), ativoAcao.getId(), 1);
+
+            driver.perform(get(uriResgates + "/" + clientePremium.getId() + "/" + resgateSolicitado.getId())
+                            .param("codigoAcesso", "senhaErrada"))
+                    .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @DisplayName("Consulta de resgate liquidado deve exibir imposto e valor resgatado corretamente")
+        void consultaResgateLiquidadoExibeImpostoEValor() throws Exception {
+            ResgateResponseDTO resgateSolicitado = resgateService.solicitarResgate(
+                    clientePremium.getId(), clientePremium.getCodigo(), ativoAcao.getId(), 1);
+
+            ResgateResponseDTO resgateLiquidado = resgateService.confirmarResgate(
+                    resgateSolicitado.getId(), administrador.getMatricula());
+
+            String responseJsonString = driver.perform(get(uriResgates + "/" + clientePremium.getId() + "/" + resgateLiquidado.getId())
+                            .param("codigoAcesso", clientePremium.getCodigo()))
+                    .andExpect(status().isOk())
+                    .andReturn().getResponse().getContentAsString();
+
+            ResgateResponseDTO consultado = objectMapper.readValue(responseJsonString, ResgateResponseDTO.class);
+
+            assertEquals(StatusResgate.EM_CONTA, consultado.getStatusResgate());
+            assertNotNull(consultado.getImposto(), "Imposto não deve ser nulo");
+            assertTrue(consultado.getValorResgatado().compareTo(BigDecimal.ZERO) > 0);
+        }
+
+        @Test
+        @DisplayName("Data de solicitação deve ser preenchida corretamente")
+        void dataDeSolicitacaoPreenchida() throws Exception {
+            ResgateResponseDTO resgateSolicitado = resgateService.solicitarResgate(
+                    clientePremium.getId(), clientePremium.getCodigo(), ativoAcao.getId(), 1);
+
+            String responseJsonString = driver.perform(get(uriResgates + "/" + clientePremium.getId() + "/" + resgateSolicitado.getId())
+                            .param("codigoAcesso", clientePremium.getCodigo()))
+                    .andExpect(status().isOk())
+                    .andReturn().getResponse().getContentAsString();
+
+            ResgateResponseDTO consultado = objectMapper.readValue(responseJsonString, ResgateResponseDTO.class);
+
+            assertNotNull(consultado.getDataSolicitacao());
+            assertEquals(LocalDate.now(), consultado.getDataSolicitacao());
+        }
+
+        @Test
+        @DisplayName("Consultar resgate inexistente deve lançar ResgateNaoExisteException")
+        void consultaResgateInexistente() throws Exception {
+            driver.perform(get(uriResgates + "/" + clientePremium.getId() + "/99999")
+                            .param("codigoAcesso", clientePremium.getCodigo()))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(result -> assertInstanceOf(
+                            ResgateNaoExisteException.class,
+                            result.getResolvedException()
+                    ));
+        }
+
+        @Test
+        @DisplayName("Resgate liquidado deve atualizar o saldo da conta do cliente")
+        void resgateAtualizaSaldoConta() throws Exception {
+            BigDecimal saldoInicial = clientePremium.getConta().getSaldo();
+
+            ResgateResponseDTO resgateSolicitado = resgateService.solicitarResgate(
+                    clientePremium.getId(), clientePremium.getCodigo(), ativoAcao.getId(), 1);
+
+            resgateService.confirmarResgate(resgateSolicitado.getId(), administrador.getMatricula());
+
+            String responseJsonString = driver.perform(get(uriResgates + "/" + clientePremium.getId() + "/" + resgateSolicitado.getId())
+                            .param("codigoAcesso", clientePremium.getCodigo()))
+                    .andExpect(status().isOk())
+                    .andReturn().getResponse().getContentAsString();
+
+            ResgateResponseDTO consultado = objectMapper.readValue(responseJsonString, ResgateResponseDTO.class);
+
+            BigDecimal saldoFinal = clientePremium.getConta().getSaldo();
+            assertTrue(saldoFinal.compareTo(saldoInicial) > 0, "Saldo deve aumentar após resgate");
+            assertEquals(StatusResgate.EM_CONTA, consultado.getStatusResgate());
+        }
+
+        @Test
+        @DisplayName("Resgate liquidado deve remover apenas o ativo da carteira que zerar")
+        void resgateRemoveApenasAtivoQueZerar() throws Exception {
+            ResgateResponseDTO resgateSolicitado = resgateService.solicitarResgate(
+                    clientePremium.getId(), clientePremium.getCodigo(), ativoAcao.getId(), 2);
+
+            resgateService.confirmarResgate(resgateSolicitado.getId(), administrador.getMatricula());
+
+            boolean ativoAindaNaCarteira = clientePremium.getConta()
+                    .getCarteira()
+                    .getAtivosEmCarteira()
+                    .stream()
+                    .anyMatch(ativo -> ativo.getAtivo().getId().equals(ativoAcao.getId()));
+
+            assertFalse(ativoAindaNaCarteira, "O ativo resgatado deve ser removido se a quantidade chegar a zero");
+        }
+    }
+
 }

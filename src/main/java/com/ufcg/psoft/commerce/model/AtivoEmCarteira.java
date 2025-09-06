@@ -22,9 +22,9 @@ public class AtivoEmCarteira {
     private long id;
 
     @JsonProperty("quantidade")
-    private int quantidadeTotal;
+    private int quantidade;
 
-    @JsonProperty("valor_de_aquisicao")
+    @JsonProperty("valorDeAquisicao")
     private BigDecimal valorDeAquisicao;
 
     @ManyToOne

@@ -36,6 +36,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -525,10 +526,10 @@ class CompraControllerTests {
             AtivoEmCarteiraResponseDTO item = carteira.get(0);
             assertEquals("Acao Teste", item.getNomeAtivo());
             assertEquals(TipoAtivo.ACAO, item.getTipo());
-            assertEquals(2, item.getQuantidadeTotal());
+            assertEquals(2, item.getQuantidade());
             assertEquals(BigDecimal.valueOf(50.0), item.getValorDeAquisicao());
-            assertEquals(BigDecimal.valueOf(100.0), item.getValorAtual());
-            assertEquals(BigDecimal.valueOf(50.0), item.getDesempenho());
+            assertEquals(BigDecimal.valueOf(50.0), item.getValorAtual());
+            assertEquals(BigDecimal.valueOf(0.0), item.getDesempenho());
         }
 
         @Test

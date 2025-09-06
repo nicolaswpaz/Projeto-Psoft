@@ -82,8 +82,8 @@ public class ContaServiceImpl implements ContaService {
 
         AtivoEmCarteira ativoEmCarteira = new AtivoEmCarteira();
         ativoEmCarteira.setAtivo(compra.getAtivo());
-        ativoEmCarteira.setQuantidadeTotal(compra.getQuantidade());
-        ativoEmCarteira.setValorDeAquisicao(compra.getValorVenda().divide(new BigDecimal(ativoEmCarteira.getQuantidadeTotal())));
+        ativoEmCarteira.setQuantidade(compra.getQuantidade());
+        ativoEmCarteira.setValorDeAquisicao(compra.getValorVenda().divide(new BigDecimal(ativoEmCarteira.getQuantidade())));
         ativoEmCarteira.setCotacaoAtual(ativoEmCarteira.getCotacaoAtual());
         ativoEmCarteira.setDesempenho(ativoEmCarteira.getDesempenho());
 
@@ -109,7 +109,7 @@ public class ContaServiceImpl implements ContaService {
                 .map(ativoEmCarteira -> {
                     Ativo ativo = ativoEmCarteira.getAtivo();
 
-                    Integer quantidadeTotal = ativoEmCarteira.getQuantidadeTotal();
+                    Integer quantidadeTotal = ativoEmCarteira.getQuantidade();
 
                     BigDecimal valorDeAquisicao = ativoEmCarteira.getValorDeAquisicao();
 
@@ -121,7 +121,7 @@ public class ContaServiceImpl implements ContaService {
                             .ativoId(ativo.getId())
                             .nomeAtivo(ativo.getNome())
                             .tipo(ativo.getTipo())
-                            .quantidadeTotal(quantidadeTotal)
+                            .quantidade(quantidadeTotal)
                             .valorDeAquisicao(valorDeAquisicao)
                             .valorAtual(valorAtual)
                             .desempenho(desempenho)

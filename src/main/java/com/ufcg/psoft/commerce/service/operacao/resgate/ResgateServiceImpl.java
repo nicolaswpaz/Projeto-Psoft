@@ -17,7 +17,7 @@ import com.ufcg.psoft.commerce.repository.ClienteRepository;
 import com.ufcg.psoft.commerce.repository.ResgateRepository;
 import com.ufcg.psoft.commerce.service.administrador.AdministradorService;
 import com.ufcg.psoft.commerce.service.ativo.AtivoService;
-import com.ufcg.psoft.commerce.service.carteira.AtivoEmCarteiravService;
+import com.ufcg.psoft.commerce.service.carteira.AtivoEmCarteiraService;
 import com.ufcg.psoft.commerce.service.cliente.ClienteService;
 import com.ufcg.psoft.commerce.service.notificacao.NotificacaoService;
 import org.modelmapper.ModelMapper;
@@ -25,7 +25,6 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
 
 @Service
 public class ResgateServiceImpl implements ResgateService {
@@ -37,9 +36,9 @@ public class ResgateServiceImpl implements ResgateService {
     private final AdministradorService administradorService;
     private final NotificacaoService notificacaoService;
     private final ClienteRepository clienteRepository;
-    private final AtivoEmCarteiravService ativoEmCarteiravService;
+    private final AtivoEmCarteiraService ativoEmCarteiravService;
 
-    public ResgateServiceImpl(AtivoService ativoService, ClienteService clienteService, ResgateRepository resgateRepository, ModelMapper modelMapper, AdministradorService administradorService, NotificacaoService notificacaoService, ClienteRepository clienteRepository, AtivoEmCarteiravService ativoEmCarteiravService) {
+    public ResgateServiceImpl(AtivoService ativoService, ClienteService clienteService, ResgateRepository resgateRepository, ModelMapper modelMapper, AdministradorService administradorService, NotificacaoService notificacaoService, ClienteRepository clienteRepository, AtivoEmCarteiraService ativoEmCarteiravService) {
         this.ativoService = ativoService;
         this.clienteService = clienteService;
         this.resgateRepository = resgateRepository;
@@ -53,10 +52,10 @@ public class ResgateServiceImpl implements ResgateService {
     private void checarSaldo(Carteira carteira, Ativo ativo, int quantidade) {
         for (AtivoEmCarteira ativoEmCarteira : carteira.getAtivosEmCarteira()) {
             if (ativoEmCarteira.getAtivo().equals(ativo)) {
-                if (quantidade > ativoEmCarteira.getQuantidadeTotal()) {
+                if (quantidade > ativoEmCarteira.getQuantidade()) {
                     throw new SaldoInsuficienteException(
                             quantidade,
-                            ativoEmCarteira.getQuantidadeTotal()
+                            ativoEmCarteira.getQuantidade()
                     );
                 }
                 return;
@@ -119,9 +118,9 @@ public class ResgateServiceImpl implements ResgateService {
                 .orElseThrow(ClienteNaoPossuiEsseAtivoEmCarteiraException::new);
         checarSaldo(carteira, resgate.getAtivo(), resgate.getQuantidade());
 
-        ativoCarteira.setQuantidadeTotal(ativoCarteira.getQuantidadeTotal() - resgate.getQuantidade());
+        ativoCarteira.setQuantidade(ativoCarteira.getQuantidade() - resgate.getQuantidade());
 
-        if(ativoCarteira.getQuantidadeTotal() <= 0) {
+        if(ativoCarteira.getQuantidade() <= 0) {
             carteira.getAtivosEmCarteira().remove(ativoCarteira);
             ativoEmCarteiravService.remover(ativoCarteira.getId());
         }
@@ -148,10 +147,5 @@ public class ResgateServiceImpl implements ResgateService {
         }
 
         return modelMapper.map(resgate, ResgateResponseDTO.class);
-    }
-
-    @Override
-    public List<ResgateResponseDTO> listar(String matriculaAdmin) {
-        return List.of();
     }
 }
