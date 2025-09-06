@@ -1,6 +1,5 @@
 package com.ufcg.psoft.commerce.service.extrato;
 
-
 import com.ufcg.psoft.commerce.model.*;
 import com.ufcg.psoft.commerce.repository.OperacaoRepository;
 import com.ufcg.psoft.commerce.service.cliente.ClienteService;
@@ -15,13 +14,11 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
-import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-
-
 @Service
-public class ExtratoServiceImpl implements ExtratoService{
+public class ExtratoServiceImpl implements ExtratoService {
 
     private final OperacaoRepository operacaoRepository;
     private final ClienteService clienteService;
@@ -34,54 +31,63 @@ public class ExtratoServiceImpl implements ExtratoService{
 
     @Transactional(readOnly = true)
     @Override
-    public void gerarExtratoCSV(Long clienteId, String codigoAcesso, OutputStream outputStream) throws IOException {
+    public void gerarExtratoCSV(Long idCliente, String codigoAcesso, OutputStream outputStream) throws IOException {
+        final String[] CSV_HEADER = {"Data", "Tipo da Operacao", "Ativo", "Quantidade", "Valor da Operacao", "Imposto Pago", "Valor Lucro", "Status da Operação"};
 
-        final String[] CSV_HEADER = {"Data", "Tipo Operacao", "Ativo", "Quantidade", "Valor Operacao", "Imposto Pago", "Valor Lucro"};
-
-        Cliente cliente = clienteService.autenticar(clienteId,codigoAcesso);
+        Cliente cliente = clienteService.autenticar(idCliente, codigoAcesso);
         Conta conta = cliente.getConta();
 
-        try (Writer writer = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8)) {
+        try (Writer writer = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8);
+             CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT.builder().setHeader(CSV_HEADER).build())) {
+
             if (conta == null) {
-                try (CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT.withHeader(CSV_HEADER))) {
-                    csvPrinter.flush();
-                    return;
-                }
+                csvPrinter.flush();
+                return;
             }
 
             List<Operacao> operacoes = operacaoRepository.findByClienteId(cliente.getId());
+            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-            try (CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT.withHeader(CSV_HEADER))) {
-                SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-
-                for (Operacao operacao : operacoes) {
-                    String tipoOperacao = "";
-                    String impostoPago = "N/A";
-                    String valorLucro = "N/A";
-                    String valorOperacao = "0.00";
-
-                    if (operacao instanceof Compra) {
-                        tipoOperacao = "COMPRA";
-                    } else if (operacao instanceof Resgate) {
-                        tipoOperacao = "RESGATE";
-                        Resgate resgate = (Resgate) operacao;
-                        impostoPago = resgate.getImposto() != null ? resgate.getImposto().toPlainString() : "0.00";
-                        valorLucro = resgate.getLucro() != null ? resgate.getLucro().toPlainString() : "0.00";
-                        valorOperacao = resgate.getValorResgatado().toPlainString() != null ? resgate.getValorResgatado().toPlainString() : "0.00";
-                    }
-
-                    csvPrinter.printRecord(
-                            dateFormat.format(operacao.getDataSolicitacao()),
-                            tipoOperacao,
-                            operacao.getAtivo().getNome(),
-                            operacao.getQuantidade(),
-                            valorOperacao,
-                            impostoPago,
-                            valorLucro
-                    );
-                }
-                csvPrinter.flush();
+            for (Operacao operacao : operacoes) {
+                csvPrinter.printRecord(gerarLinhaCSV(operacao, dateFormatter));
             }
+
+            csvPrinter.flush();
         }
     }
+
+    private Object[] gerarLinhaCSV(Operacao operacao, DateTimeFormatter dateFormatter) {
+        String tipoOperacao;
+        String valorOperacao = "0.00";
+        String impostoPago = "N/A";
+        String valorLucro = "N/A";
+        String statusOperacao = "N/A";
+
+        if (operacao instanceof Compra compra) {
+            tipoOperacao = "COMPRA";
+            valorOperacao = compra.getValorVenda() != null ? compra.getValorVenda().toPlainString() : "0.00";
+            statusOperacao = compra.getStatusCompra() != null ? compra.getStatusCompra().name() : "N/A";
+        } else if (operacao instanceof Resgate resgate) {
+            tipoOperacao = "RESGATE";
+            valorOperacao = resgate.getValorResgatado() != null ? resgate.getValorResgatado().toPlainString() : "0.00";
+            impostoPago = resgate.getImposto() != null ? resgate.getImposto().toPlainString() : "0.00";
+            valorLucro = resgate.getLucro() != null ? resgate.getLucro().toPlainString() : "0.00";
+            statusOperacao = resgate.getStatusResgate() != null ? resgate.getStatusResgate().name() : "N/A";
+        } else {
+            tipoOperacao = "DESCONHECIDA";
+        }
+
+        return new Object[]{
+                operacao.getDataSolicitacao().format(dateFormatter),
+                tipoOperacao,
+                operacao.getAtivo().getNome(),
+                operacao.getQuantidade(),
+                valorOperacao,
+                impostoPago,
+                valorLucro,
+                statusOperacao
+        };
+    }
 }
+
+
