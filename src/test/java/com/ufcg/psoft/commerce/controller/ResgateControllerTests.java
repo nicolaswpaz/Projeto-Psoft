@@ -6,6 +6,7 @@ import ch.qos.logback.core.read.ListAppender;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.ufcg.psoft.commerce.dto.resgate.ResgateResponseDTO;
+import com.ufcg.psoft.commerce.exception.CommerceException;
 import com.ufcg.psoft.commerce.exception.CustomErrorType;
 import com.ufcg.psoft.commerce.exception.cliente.ClienteNaoExisteException;
 import com.ufcg.psoft.commerce.exception.resgate.ResgateNaoExisteException;
@@ -35,6 +36,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -744,5 +746,87 @@ class ResgateControllerTests {
             assertFalse(ativoAindaNaCarteira, "O ativo resgatado deve ser removido se a quantidade chegar a zero");
         }
     }
+
+    @Nested
+    @DisplayName("Confirmar resgate pelo Admin, caso de sucesso")
+    class ConfirmaResgatePeloAdmin{
+
+        @Test
+        @DisplayName("Caso de sucesso para quando o ADMIN confirma o resgate do cliente")
+        void resgateConfirmadoComSucesso() throws Exception {
+            ResgateResponseDTO resgateSolicitado = resgateService.solicitarResgate(
+                    clientePremium.getId(), clientePremium.getCodigo(), ativoAcao.getId(), 1);
+
+            String responseJsonString = driver.perform(put(uriResgates + "/admin/" + resgateSolicitado.getId() + "/confirmar")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .param("matriculaAdmin", administrador.getMatricula()))
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            ResgateResponseDTO resgateConfirmadoDTO = objectMapper.readValue(responseJsonString, ResgateResponseDTO.class);
+            assertNotNull(resgateConfirmadoDTO);
+            assertEquals(resgateSolicitado.getId(), resgateConfirmadoDTO.getId());
+            assertEquals("EM_CONTA", resgateConfirmadoDTO.getStatusResgate().name());
+        }
+
+        @Test
+        @DisplayName("Quando o Administrador tenta confirmar um resgate inexistente")
+        void quandoConfirmamosUmResgateInesistente() throws Exception{
+
+            long idResgateInexistente = 9999L;
+
+            String respondeJsonString = driver.perform(put(uriResgates + "/admin/" + idResgateInexistente + "/confirmar")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .param("matriculaAdmin", administrador.getMatricula()))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType resultado = objectMapper.readValue(respondeJsonString, CustomErrorType.class);
+            assertEquals("O resgate nao existe!", resultado.getMessage());
+
+        }
+        @Test
+        @DisplayName("Quando tentamos confirmar um Resgate já confirmado anteriormente")
+        void quandoConfirmamosUmResgateJaConfirmado() throws Exception {
+
+            ResgateResponseDTO resgateSolicitado = resgateService.solicitarResgate(
+                    clientePremium.getId(), clientePremium.getCodigo(), ativoAcao.getId(), 1);
+            resgateService.confirmarResgate(resgateSolicitado.getId(), administrador.getMatricula());
+
+            driver.perform(put(uriResgates + "/admin/" + resgateSolicitado.getId() + "/confirmar")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .param("matriculaAdmin", administrador.getMatricula()))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.message").value("Status de compra nao permite essa acao"));
+        }
+
+        @Test
+        @DisplayName("Quando tentamos confirmar um resgate com uma matrícula inválida")
+        void matriculaInvalidaAdmin() throws Exception {
+            ResgateResponseDTO resgateSolicitado = resgateService.solicitarResgate(
+                    clientePremium.getId(), clientePremium.getCodigo(), ativoAcao.getId(), 1);
+            String matriculaInvalida = "99999";
+
+            driver.perform(put(uriResgates + "/admin/" + resgateSolicitado.getId() + "/confirmar")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .param("matriculaAdmin", matriculaInvalida))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.message").value("Autenticacao falhou!"));
+
+        }
+
+        @Test
+        @DisplayName("Deve retornar Bad Request ao tentar confirmar sem matrícula do admin")
+        void quandoNaoInformamosAMatriculaDoAdministrador() throws Exception {
+            ResgateResponseDTO resgateSolicitado = resgateService.solicitarResgate(
+                    clientePremium.getId(), clientePremium.getCodigo(), ativoAcao.getId(), 1);
+            driver.perform(put(uriResgates + "/admin/" + resgateSolicitado.getId() + "/confirmar")
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isBadRequest());
+        }
+    }
+
 
 }
