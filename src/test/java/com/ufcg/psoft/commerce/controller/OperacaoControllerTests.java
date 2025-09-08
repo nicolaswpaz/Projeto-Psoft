@@ -115,11 +115,11 @@ class OperacaoControllerTests {
         );
 
         contaClienteNormal = contaRepository.save(
-                Conta.builder().saldo(BigDecimal.valueOf(10000.0)).carteira(new Carteira()).operacoes(new ArrayList<Operacao>()).build()
+                Conta.builder().saldo(BigDecimal.valueOf(10000.0)).carteira(new Carteira()).build()
         );
 
         contaClientePremium = contaRepository.save(
-                Conta.builder().saldo(BigDecimal.valueOf(50000.0)).carteira(new Carteira()).operacoes(new ArrayList<Operacao>()).build()
+                Conta.builder().saldo(BigDecimal.valueOf(50000.0)).carteira(new Carteira()).build()
         );
 
         enderecoClienteNormal = enderecoRepository.save(Endereco.builder()

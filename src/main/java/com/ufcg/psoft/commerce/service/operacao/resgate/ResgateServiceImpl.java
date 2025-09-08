@@ -1,6 +1,7 @@
 package com.ufcg.psoft.commerce.service.operacao.resgate;
 
 import com.ufcg.psoft.commerce.dto.resgate.ResgateResponseDTO;
+import com.ufcg.psoft.commerce.exception.ativocarteira.AtivoCarteiraNaoExisteException;
 import com.ufcg.psoft.commerce.exception.cliente.ClienteNaoExisteException;
 import com.ufcg.psoft.commerce.exception.cliente.ClienteNaoPremiumException;
 import com.ufcg.psoft.commerce.exception.compra.QuantidadeInvalidaException;
@@ -13,11 +14,11 @@ import com.ufcg.psoft.commerce.model.*;
 import com.ufcg.psoft.commerce.model.enums.StatusResgate;
 import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
 import com.ufcg.psoft.commerce.model.enums.TipoPlano;
+import com.ufcg.psoft.commerce.repository.AtivoCarteiraRepository;
 import com.ufcg.psoft.commerce.repository.ClienteRepository;
 import com.ufcg.psoft.commerce.repository.ResgateRepository;
 import com.ufcg.psoft.commerce.service.administrador.AdministradorService;
 import com.ufcg.psoft.commerce.service.ativo.AtivoService;
-import com.ufcg.psoft.commerce.service.carteira.AtivoEmCarteiraService;
 import com.ufcg.psoft.commerce.service.cliente.ClienteService;
 import com.ufcg.psoft.commerce.service.notificacao.NotificacaoService;
 import org.modelmapper.ModelMapper;
@@ -32,21 +33,21 @@ public class ResgateServiceImpl implements ResgateService {
     private final AtivoService ativoService;
     private final ClienteService clienteService;
     private final ResgateRepository resgateRepository;
+    private final AtivoCarteiraRepository ativoCarteiraRepository;
     private final ModelMapper modelMapper;
     private final AdministradorService administradorService;
     private final NotificacaoService notificacaoService;
     private final ClienteRepository clienteRepository;
-    private final AtivoEmCarteiraService ativoEmCarteiravService;
 
-    public ResgateServiceImpl(AtivoService ativoService, ClienteService clienteService, ResgateRepository resgateRepository, ModelMapper modelMapper, AdministradorService administradorService, NotificacaoService notificacaoService, ClienteRepository clienteRepository, AtivoEmCarteiraService ativoEmCarteiravService) {
+    public ResgateServiceImpl(AtivoService ativoService, ClienteService clienteService, ResgateRepository resgateRepository, AtivoCarteiraRepository ativoCarteiraRepository, ModelMapper modelMapper, AdministradorService administradorService, NotificacaoService notificacaoService, ClienteRepository clienteRepository) {
         this.ativoService = ativoService;
         this.clienteService = clienteService;
         this.resgateRepository = resgateRepository;
+        this.ativoCarteiraRepository = ativoCarteiraRepository;
         this.modelMapper = modelMapper;
         this.administradorService = administradorService;
         this.notificacaoService = notificacaoService;
         this.clienteRepository = clienteRepository;
-        this.ativoEmCarteiravService = ativoEmCarteiravService;
     }
 
     private void checarSaldo(Carteira carteira, Ativo ativo, int quantidade) {
@@ -122,7 +123,10 @@ public class ResgateServiceImpl implements ResgateService {
 
         if(ativoCarteira.getQuantidade() <= 0) {
             carteira.getAtivosEmCarteira().remove(ativoCarteira);
-            ativoEmCarteiravService.remover(ativoCarteira.getId());
+            if (!ativoCarteiraRepository.existsById(ativoCarteira.getId())) {
+                throw new AtivoCarteiraNaoExisteException();
+            }
+            ativoCarteiraRepository.deleteById(ativoCarteira.getId());
         }
 
         BigDecimal valorLiquido = resgate.getValorResgatado().subtract(resgate.getImposto());

@@ -34,9 +34,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -112,11 +110,11 @@ class CompraControllerTests {
         );
 
         contaClienteNormal = contaRepository.save(
-                Conta.builder().saldo(BigDecimal.valueOf(10000.0)).carteira(new Carteira()).operacoes(new ArrayList<Operacao>()).build()
+                Conta.builder().saldo(BigDecimal.valueOf(10000.0)).carteira(new Carteira()).build()
         );
 
         contaClientePremium = contaRepository.save(
-                Conta.builder().saldo(BigDecimal.valueOf(500.0)).carteira(new Carteira()).operacoes(new ArrayList<Operacao>()).build()
+                Conta.builder().saldo(BigDecimal.valueOf(500.0)).carteira(new Carteira()).build()
         );
 
         enderecoClienteNormal = enderecoRepository.save(Endereco.builder()
@@ -524,11 +522,8 @@ class CompraControllerTests {
             assertEquals(1, carteira.size(), "Deve haver 1 ativo na carteira");
 
             AtivoEmCarteiraResponseDTO item = carteira.get(0);
-            assertEquals("Acao Teste", item.getNomeAtivo());
-            assertEquals(TipoAtivo.ACAO, item.getTipo());
             assertEquals(2, item.getQuantidade());
             assertEquals(BigDecimal.valueOf(50.0), item.getValorDeAquisicao());
-            assertEquals(BigDecimal.valueOf(50.0), item.getValorAtual());
             assertEquals(BigDecimal.valueOf(0.0), item.getDesempenho());
         }
 

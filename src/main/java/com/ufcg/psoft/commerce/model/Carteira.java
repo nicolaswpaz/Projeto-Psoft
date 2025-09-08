@@ -20,10 +20,6 @@ public class Carteira {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
-    @ManyToOne
-    @JsonProperty("conta")
-    private Conta conta;
-
     @OneToMany(cascade = CascadeType.ALL)
     @JsonProperty("ativos")
     private List<AtivoEmCarteira> ativosEmCarteira;

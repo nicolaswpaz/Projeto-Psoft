@@ -26,9 +26,6 @@ public class Conta {
     @JoinColumn(name = "carteira_id")
     private Carteira carteira;
 
-    @OneToMany(cascade = CascadeType.ALL)
-    private List<Operacao> operacoes;
-
     @PrePersist
     public void prePersist(){
         if (this.saldo == null){

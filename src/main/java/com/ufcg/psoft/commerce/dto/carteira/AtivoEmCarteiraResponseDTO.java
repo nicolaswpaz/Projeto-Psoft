@@ -1,9 +1,10 @@
 package com.ufcg.psoft.commerce.dto.carteira;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.ufcg.psoft.commerce.model.Ativo;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.ufcg.psoft.commerce.dto.ativo.AtivoResponseDTO;
 import com.ufcg.psoft.commerce.model.AtivoEmCarteira;
-import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,22 +19,30 @@ import java.math.BigDecimal;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AtivoEmCarteiraResponseDTO {
 
-    private Long ativoId;
-    private String nomeAtivo;
-    private TipoAtivo tipo;
+    @JsonProperty("id")
+    private Long id;
+
+    @JsonProperty("ativo")
+    @NotBlank(message = "Ativo obrigatorio")
+    private AtivoResponseDTO ativo;
+
+    @JsonProperty("quantidade")
+    @NotBlank(message = "Quantidade obrigatorio")
     private Integer quantidade;
+
+    @JsonProperty("valorDeAquisicao")
+    @NotBlank(message = "Valor de aquisicao obrigatorio")
     private BigDecimal valorDeAquisicao;
-    private BigDecimal valorAtual;
+
+    @JsonProperty("desempenho")
+    @NotBlank(message = "Desempenho obrigatorio")
     private BigDecimal desempenho;
 
     public AtivoEmCarteiraResponseDTO(AtivoEmCarteira item) {
-        Ativo tempAtivo = item.getAtivo();
-        this.ativoId = tempAtivo.getId();
-        this.nomeAtivo = tempAtivo.getNome();
-        this.tipo = tempAtivo.getTipo();
+        this.id = item.getId();
+        this.ativo = new AtivoResponseDTO(item.getAtivo());
         this.quantidade = item.getQuantidade();
         this.valorDeAquisicao = item.getValorDeAquisicao();
-        this.valorAtual = tempAtivo.getCotacao();
         this.desempenho = item.getDesempenho();
     }
 }

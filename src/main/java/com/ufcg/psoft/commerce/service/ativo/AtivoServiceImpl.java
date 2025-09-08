@@ -186,10 +186,7 @@ public class AtivoServiceImpl implements AtivoService {
 
         List<AtivoEmCarteira> ativosEmCarteiraAtualizados = ativoCarteiraRepository.findByAtivoId(id);
 
-                ativosEmCarteiraAtualizados.forEach(item -> {
-                    item.setCotacaoAtual(ativo.getCotacao());
-                    item.setDesempenho(item.getCotacaoAtual().subtract(item.getValorDeAquisicao()));
-                });
+                ativosEmCarteiraAtualizados.forEach(item -> item.setDesempenho(item.getAtivo().getCotacao().subtract(item.getValorDeAquisicao())));
 
                 ativoCarteiraRepository.saveAll(ativosEmCarteiraAtualizados);
 

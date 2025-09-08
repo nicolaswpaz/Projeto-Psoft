@@ -14,7 +14,7 @@ import java.math.BigDecimal;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "ativo_carteira")
+@Table(name = "ativo_em_carteira")
 public class AtivoEmCarteira {
     @Id
     @JsonProperty("id")
@@ -34,22 +34,11 @@ public class AtivoEmCarteira {
     @JsonProperty("desempenho")
     private BigDecimal desempenho;
 
-    @JsonProperty("cotacaoAtual")
-    private BigDecimal cotacaoAtual;
-
-    @Transient
-    public BigDecimal getCotacaoAtual() {
-        if (ativo == null || ativo.getCotacao() == null) {
-            return BigDecimal.ZERO;
-        }
-        return ativo.getCotacao();
-    }
-
     @Transient
     public BigDecimal getDesempenho() {
         if (valorDeAquisicao == null) {
             return BigDecimal.ZERO;
         }
-        return getCotacaoAtual().subtract(valorDeAquisicao);
+        return ativo.getCotacao().subtract(valorDeAquisicao);
     }
 }
