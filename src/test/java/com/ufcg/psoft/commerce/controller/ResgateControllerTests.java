@@ -8,7 +8,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.ufcg.psoft.commerce.dto.resgate.ResgateResponseDTO;
 import com.ufcg.psoft.commerce.exception.CustomErrorType;
 import com.ufcg.psoft.commerce.exception.cliente.ClienteNaoExisteException;
-import com.ufcg.psoft.commerce.exception.compra.QuantidadeInvalidaException;
 import com.ufcg.psoft.commerce.exception.resgate.ResgateNaoExisteException;
 import com.ufcg.psoft.commerce.exception.resgate.ResgateNaoPertenceAoClienteException;
 import com.ufcg.psoft.commerce.listener.NotificacaoCompraDisponivel;
@@ -81,10 +80,14 @@ class ResgateControllerTests {
     Conta contaClienteNormal;
     Conta contaClientePremium;
     Ativo ativoTesouro;
+    Ativo ativoTesouro2;
     Ativo ativoAcao;
+    Ativo ativoCripto;
     Endereco enderecoClienteNormal;
     Endereco enderecoClientePremium;
-    Compra compraTeste;
+    Compra compraAcao;
+    Compra compraTesouro;
+    Compra compraCripto;
     ListAppender<ILoggingEvent> listAppender;
 
     @BeforeEach
@@ -112,11 +115,11 @@ class ResgateControllerTests {
         );
 
         contaClienteNormal = contaRepository.save(
-                Conta.builder().saldo(BigDecimal.valueOf(10000.0)).carteira(new Carteira()).operacoes(new ArrayList<Operacao>()).build()
+                Conta.builder().saldo(BigDecimal.valueOf(1000000.0)).carteira(new Carteira()).operacoes(new ArrayList<Operacao>()).build()
         );
 
         contaClientePremium = contaRepository.save(
-                Conta.builder().saldo(BigDecimal.valueOf(500.0)).carteira(new Carteira()).operacoes(new ArrayList<Operacao>()).build()
+                Conta.builder().saldo(BigDecimal.valueOf(1000000.0)).carteira(new Carteira()).operacoes(new ArrayList<Operacao>()).build()
         );
 
         enderecoClienteNormal = enderecoRepository.save(Endereco.builder()
@@ -167,6 +170,14 @@ class ResgateControllerTests {
                 .descricao("Ativo Tesouro")
                 .build());
 
+        ativoTesouro2 = ativoRepository.save(Ativo.builder()
+                .nome("Tesouro Teste")
+                .tipo(TipoAtivo.TESOURO_DIRETO)
+                .cotacao(BigDecimal.valueOf(100.0))
+                .disponivel(true)
+                .descricao("Ativo Tesouro")
+                .build());
+
         ativoAcao = ativoRepository.save(Ativo.builder()
                 .nome("Acao Teste")
                 .tipo(TipoAtivo.ACAO)
@@ -175,18 +186,51 @@ class ResgateControllerTests {
                 .descricao("Ativo Acao")
                 .build());
 
-        compraTeste = compraRepository.save(
-                Compra.builder()
-                        .ativo(ativoAcao)
-                        .cliente(clientePremium)
-                        .quantidade(2)
-                        .dataSolicitacao(LocalDate.now())
-                        .valorVenda(ativoAcao.getCotacao().multiply(BigDecimal.valueOf(2)))
+        ativoCripto = ativoRepository.save(
+                Ativo.builder()
+                        .nome("Cripto Teste")
+                        .tipo(TipoAtivo.CRIPTOMOEDA)
+                        .cotacao(BigDecimal.valueOf(1000.00))
+                        .disponivel(true)
+                        .descricao("Ativo CRIPTO")
                         .build()
         );
 
-        compraService.disponibilizarCompra(compraTeste.getId(), administrador.getMatricula());
-        compraService.confirmarCompra(clientePremium.getId(), clientePremium.getCodigo(), compraTeste.getId());
+        compraAcao = compraRepository.save(
+                Compra.builder()
+                        .ativo(ativoAcao)
+                        .cliente(clientePremium)
+                        .quantidade(10)
+                        .dataSolicitacao(LocalDate.now())
+                        .valorVenda(ativoAcao.getCotacao().multiply(BigDecimal.valueOf(10)))
+                        .build()
+        );
+        compraService.disponibilizarCompra(compraAcao.getId(), administrador.getMatricula());
+        compraService.confirmarCompra(clientePremium.getId(), clientePremium.getCodigo(), compraAcao.getId());
+
+        Compra compraTesouro = compraRepository.save(
+                Compra.builder()
+                        .ativo(ativoTesouro)
+                        .cliente(clientePremium)
+                        .quantidade(5)
+                        .dataSolicitacao(LocalDate.now())
+                        .valorVenda(ativoTesouro.getCotacao().multiply(BigDecimal.valueOf(5)))
+                        .build()
+        );
+        compraService.disponibilizarCompra(compraTesouro.getId(), administrador.getMatricula());
+        compraService.confirmarCompra(clientePremium.getId(), clientePremium.getCodigo(), compraTesouro.getId());
+
+        Compra compraCripto = compraRepository.save(
+                Compra.builder()
+                        .ativo(ativoCripto)
+                        .cliente(clientePremium)
+                        .quantidade(2)
+                        .dataSolicitacao(LocalDate.now())
+                        .valorVenda(ativoCripto.getCotacao().multiply(BigDecimal.valueOf(2)))
+                        .build()
+        );
+        compraService.disponibilizarCompra(compraCripto.getId(), administrador.getMatricula());
+        compraService.confirmarCompra(clientePremium.getId(), clientePremium.getCodigo(), compraCripto.getId());
     }
 
     @AfterEach
@@ -235,14 +279,14 @@ class ResgateControllerTests {
             String responseJsonString = driver.perform(post(uriResgates + "/" + clientePremium.getId() + "/" + ativoAcao.getId())
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("codigoAcesso", clientePremium.getCodigo())
-                            .param("quantidade", "10"))
+                            .param("quantidade", "11"))
                     .andExpect(status().isBadRequest())
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
 
             CustomErrorType resultado = objectMapper.readValue(responseJsonString, CustomErrorType.class);
             assertEquals(
-                    "Saldo insuficiente: cliente tentou resgatar 10 unidades desse ativo, mas possui apenas 2 na carteira.",
+                    "Saldo insuficiente: cliente tentou resgatar 11 unidades desse ativo, mas possui apenas 10 na carteira.",
                     resultado.getMessage()
             );
         }
@@ -250,7 +294,7 @@ class ResgateControllerTests {
         @Test
         @DisplayName("Solicitar resgate de ativo que não existe na carteira do cliente deve falhar")
         void solicitarResgateAtivoNaoNaCarteira() throws Exception {
-            String responseJsonString = driver.perform(post(uriResgates + "/" + clientePremium.getId() + "/" + ativoTesouro.getId())
+            String responseJsonString = driver.perform(post(uriResgates + "/" + clientePremium.getId() + "/" + ativoTesouro2.getId())
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("codigoAcesso", clientePremium.getCodigo())
                             .param("quantidade", "1"))
@@ -260,6 +304,236 @@ class ResgateControllerTests {
 
             CustomErrorType resultado = objectMapper.readValue(responseJsonString, CustomErrorType.class);
             assertEquals("O cliente nao possui esse ativo em carteira!", resultado.getMessage());
+        }
+    }
+
+    @Nested
+    @DisplayName("Teste do imposto no resgate sobre lucro")
+    class ResgateImposto {
+        @Test
+        @DisplayName("Resgate total deve remover ativo da carteira")
+        void resgateTotalRemoveAtivoDaCarteira() throws Exception {
+
+            ativoAcao.setCotacao(BigDecimal.valueOf(55.00));
+            ativoRepository.save(ativoAcao);
+
+
+            ResgateResponseDTO resgateSolicitado = resgateService.solicitarResgate(
+                    clientePremium.getId(), clientePremium.getCodigo(), ativoAcao.getId(), 10);
+
+            ResgateResponseDTO resgateConfirmado = resgateService.confirmarResgate(
+                    resgateSolicitado.getId(), administrador.getMatricula());
+
+            BigDecimal lucroUnitario = BigDecimal.valueOf(15.00).subtract(BigDecimal.valueOf(10.00)); // 5,00
+            BigDecimal lucroTotal = lucroUnitario.multiply(BigDecimal.valueOf(10)); // 25,00
+            BigDecimal impostoEsperado = lucroTotal.multiply(BigDecimal.valueOf(0.15)); // 3,75
+
+            assertEquals(0, impostoEsperado.compareTo(resgateConfirmado.getImposto()),
+                    "Imposto deve ser R$3,75");
+
+            boolean ativoNaCarteira = clientePremium.getConta()
+                    .getCarteira()
+                    .getAtivosEmCarteira()
+                    .stream()
+                    .anyMatch(ca -> ca.getAtivo().getId().equals(ativoAcao.getId()));
+
+            assertFalse(ativoNaCarteira, "Ativo deve ser removido da carteira após resgate total");
+        }
+
+        @Test
+        @DisplayName("Resgate parcial deve calcular imposto corretamente e manter ativo na carteira")
+        void resgateParcialDeveCalcularImpostoEManterCarteira() throws Exception {
+            ativoAcao.setCotacao(BigDecimal.valueOf(70.0));
+            ativoRepository.save(ativoAcao);
+
+            ResgateResponseDTO resgateSolicitado = resgateService.solicitarResgate(
+                    clientePremium.getId(), clientePremium.getCodigo(), ativoAcao.getId(), 4);
+
+            ResgateResponseDTO resgateConfirmado = resgateService.confirmarResgate(
+                    resgateSolicitado.getId(), administrador.getMatricula());
+
+            BigDecimal lucroUnitario = BigDecimal.valueOf(70.0).subtract(BigDecimal.valueOf(50.0)); // 20
+            BigDecimal lucroTotal = lucroUnitario.multiply(BigDecimal.valueOf(4)); // 80
+            BigDecimal impostoEsperado = lucroTotal.multiply(BigDecimal.valueOf(0.15)); // 12
+
+            assertEquals(0, impostoEsperado.compareTo(resgateConfirmado.getImposto()));
+
+            long quantidadeRestante = clientePremium.getConta()
+                    .getCarteira()
+                    .getAtivosEmCarteira()
+                    .stream()
+                    .filter(ca -> ca.getAtivo().getId().equals(ativoAcao.getId()))
+                    .findFirst()
+                    .get()
+                    .getQuantidade();
+
+            assertEquals(6, quantidadeRestante);
+        }
+
+        @Test
+        @DisplayName("Arredondamento de imposto deve seguir regra do sistema")
+        void arredondamentoImposto() throws Exception {
+
+            ativoAcao.setCotacao(BigDecimal.valueOf(56.7));
+            ativoRepository.save(ativoAcao);
+
+            ResgateResponseDTO resgateSolicitado = resgateService.solicitarResgate(
+                    clientePremium.getId(), clientePremium.getCodigo(), ativoAcao.getId(), 1);
+
+            ResgateResponseDTO resgateConfirmado = resgateService.confirmarResgate(
+                    resgateSolicitado.getId(), administrador.getMatricula());
+
+            BigDecimal impostoEsperado = BigDecimal.valueOf(1.01);
+
+            assertEquals(0, impostoEsperado.compareTo(resgateConfirmado.getImposto()),
+                    "Imposto deve ser arredondado para 1,00");
+        }
+
+        @Test
+        @DisplayName("Resgate com ativo em desvalorização não deve cobrar imposto")
+        void resgateAtivoDesvalorizado() throws Exception {
+
+            ativoAcao.setCotacao(BigDecimal.valueOf(20));
+            ativoRepository.save(ativoAcao);
+
+            ResgateResponseDTO resgateSolicitado = resgateService.solicitarResgate(
+                    clientePremium.getId(), clientePremium.getCodigo(), ativoAcao.getId(), 1);
+
+            ResgateResponseDTO resgateConfirmado = resgateService.confirmarResgate(
+                    resgateSolicitado.getId(), administrador.getMatricula());
+
+            BigDecimal impostoEsperado = BigDecimal.ZERO;
+            BigDecimal valorResgatadoEsperado = BigDecimal.valueOf(20.0);
+
+            assertEquals(0, impostoEsperado.compareTo(resgateConfirmado.getImposto()),
+                    "Imposto deve ser zero para lucro negativo");
+            assertEquals(0, valorResgatadoEsperado.compareTo(resgateConfirmado.getValorResgatado()),
+                    "Valor resgatado deve ser 20,00");
+        }
+
+        @Test
+        @DisplayName("Resgate parcial deve calcular imposto corretamente e manter ativo na carteira")
+        void resgateParcialCalculaImpostoEManterAtivo() throws Exception {
+            ativoAcao.setCotacao(BigDecimal.valueOf(70.0));
+            ativoRepository.save(ativoAcao);
+
+
+            ResgateResponseDTO resgateSolicitado = resgateService.solicitarResgate(
+                    clientePremium.getId(), clientePremium.getCodigo(), ativoAcao.getId(), 4);
+
+            ResgateResponseDTO resgateConfirmado = resgateService.confirmarResgate(
+                    resgateSolicitado.getId(), administrador.getMatricula());
+
+            BigDecimal lucroUnitario = BigDecimal.valueOf(60.00).subtract(BigDecimal.valueOf(40.00)); //20,00
+            BigDecimal lucroTotal = lucroUnitario.multiply(BigDecimal.valueOf(4)); //80,00
+            BigDecimal impostoEsperado = lucroTotal.multiply(BigDecimal.valueOf(0.15)); //12,00
+
+            assertEquals(0, impostoEsperado.compareTo(resgateConfirmado.getImposto()),
+                    "Imposto deve ser R$12,00");
+
+            // Verificar que ainda restam 6 unidades na carteira
+            long quantidadeRestante = clientePremium.getConta()
+                    .getCarteira()
+                    .getAtivosEmCarteira()
+                    .stream()
+                    .filter(ca -> ca.getAtivo().getId().equals(ativoAcao.getId()))
+                    .findFirst()
+                    .get()
+                    .getQuantidade();
+
+            assertEquals(6, quantidadeRestante, "Deveriam restar 6 unidades na carteira");
+        }
+
+        @Test
+        @DisplayName("Resgate de Tesouro Direto deve aplicar 10% de imposto")
+        void resgateTesouroDiretoAplica10Porcento() throws Exception {
+            ativoTesouro.setTipo(TipoAtivo.TESOURO_DIRETO);
+            ativoTesouro.setCotacao(BigDecimal.valueOf(110.00));
+            ativoRepository.save(ativoTesouro);
+
+            ResgateResponseDTO resgateSolicitado = resgateService.solicitarResgate(
+                    clientePremium.getId(), clientePremium.getCodigo(), ativoTesouro.getId(), 1);
+
+            ResgateResponseDTO resgateConfirmado = resgateService.confirmarResgate(
+                    resgateSolicitado.getId(), administrador.getMatricula());
+            BigDecimal impostoEsperado = new BigDecimal("1.00");
+
+            assertEquals(0, impostoEsperado.compareTo(resgateConfirmado.getImposto()),
+                    "Tesouro Direto deve aplicar 10% de imposto");
+        }
+
+        @Test
+        @DisplayName("Criptomoeda com lucro até R$5.000 deve aplicar 15%")
+        void criptomoedaAte5000Aplica15Porcento() throws Exception {
+            ativoCripto.setCotacao(BigDecimal.valueOf(5999.00));
+            ativoRepository.save(ativoCripto);
+
+            ResgateResponseDTO resgateSolicitado = resgateService.solicitarResgate(
+                    clientePremium.getId(), clientePremium.getCodigo(), ativoCripto.getId(), 1);
+
+            ResgateResponseDTO resgateConfirmado = resgateService.confirmarResgate(
+                    resgateSolicitado.getId(), administrador.getMatricula());
+
+            BigDecimal impostoEsperado = new BigDecimal("749.85");
+
+            assertEquals(0, impostoEsperado.compareTo(resgateConfirmado.getImposto()),
+                    "Criptomoeda com lucro até R$5.000 deve aplicar 15%");
+        }
+
+        @Test
+        @DisplayName("Criptomoeda com lucro acima de R$5.000 deve aplicar 22.5%")
+        void criptomoedaAcima5000Aplica225Porcento() throws Exception {
+            ativoCripto.setCotacao(BigDecimal.valueOf(6001.00));
+            ativoRepository.save(ativoCripto);
+
+            ResgateResponseDTO resgateSolicitado = resgateService.solicitarResgate(
+                    clientePremium.getId(), clientePremium.getCodigo(), ativoCripto.getId(), 1);
+
+            ResgateResponseDTO resgateConfirmado = resgateService.confirmarResgate(
+                    resgateSolicitado.getId(), administrador.getMatricula());
+
+            BigDecimal impostoEsperado = new BigDecimal("1125.23");
+
+            assertEquals(0, impostoEsperado.compareTo(resgateConfirmado.getImposto()),
+                    "Criptomoeda com lucro acima de R$5.000 deve aplicar 22,5%");
+        }
+
+        @Test
+        @DisplayName("Criptomoeda no limite exato de R$5.000 deve aplicar 15%")
+        void criptomoedaNoLimite5000Aplica15Porcento() throws Exception {
+            ativoCripto.setCotacao(BigDecimal.valueOf(6000.00));
+            ativoRepository.save(ativoCripto);
+
+            ResgateResponseDTO resgateSolicitado = resgateService.solicitarResgate(
+                    clientePremium.getId(), clientePremium.getCodigo(), ativoCripto.getId(), 1);
+
+            ResgateResponseDTO resgateConfirmado = resgateService.confirmarResgate(
+                    resgateSolicitado.getId(), administrador.getMatricula());
+
+            // Lucro: 6000,00 - 1000,00 = 5000,00
+            // Imposto: 5000,00 * 0,15 = 750,00
+            BigDecimal impostoEsperado = new BigDecimal("750.00");
+
+            assertEquals(0, impostoEsperado.compareTo(resgateConfirmado.getImposto()),
+                    "Criptomoeda no limite de R$5.000 deve aplicar 15%");
+        }
+
+        @Test
+        @DisplayName("Criptomoeda em desvalorização não deve cobrar imposto")
+        void criptomoedaDesvalorizada() throws Exception {
+            ativoCripto.setCotacao(BigDecimal.valueOf(800.00));
+            ativoRepository.save(ativoCripto);
+
+            ResgateResponseDTO resgateSolicitado = resgateService.solicitarResgate(
+                    clientePremium.getId(), clientePremium.getCodigo(), ativoCripto.getId(), 1);
+
+            ResgateResponseDTO resgateConfirmado = resgateService.confirmarResgate(
+                    resgateSolicitado.getId(), administrador.getMatricula());
+
+            BigDecimal impostoEsperado = BigDecimal.ZERO;
+
+            assertEquals(0, impostoEsperado.compareTo(resgateConfirmado.getImposto()),
+                    "Criptomoeda em desvalorização não deve cobrar imposto");
         }
     }
 
@@ -457,7 +731,7 @@ class ResgateControllerTests {
         @DisplayName("Resgate liquidado deve remover apenas o ativo da carteira que zerar")
         void resgateRemoveApenasAtivoQueZerar() throws Exception {
             ResgateResponseDTO resgateSolicitado = resgateService.solicitarResgate(
-                    clientePremium.getId(), clientePremium.getCodigo(), ativoAcao.getId(), 2);
+                    clientePremium.getId(), clientePremium.getCodigo(), ativoAcao.getId(), 10);
 
             resgateService.confirmarResgate(resgateSolicitado.getId(), administrador.getMatricula());
 
