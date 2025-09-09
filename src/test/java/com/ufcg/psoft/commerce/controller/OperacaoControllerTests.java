@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -87,6 +88,7 @@ class OperacaoControllerTests {
     Endereco enderecoClientePremium;
     Compra compraTeste1;
     Compra compraTeste2;
+    Compra compraTeste3;
     Resgate resgateTeste;
     ListAppender<ILoggingEvent> listAppender;
 
@@ -206,6 +208,19 @@ class OperacaoControllerTests {
         // Status DISPONIVEL
         compraService.disponibilizarCompra(compraTeste2.getId(), administrador.getMatricula());
 
+        compraTeste3 = compraRepository.save(
+                Compra.builder()
+                        .ativo(ativoTesouro)
+                        .cliente(clienteNormal)
+                        .quantidade(3)
+                        .dataSolicitacao(LocalDate.now())
+                        .valorVenda(ativoTesouro.getCotacao().multiply(BigDecimal.valueOf(10)))
+                        .build()
+        );
+
+        // Compra do Cliente normal
+        compraService.disponibilizarCompra(compraTeste3.getId(), administrador.getMatricula());
+        compraService.confirmarCompra(clienteNormal.getId(), clienteNormal.getCodigo(), compraTeste3.getId());
 
         resgateTeste = resgateRepository.save(
                 Resgate.builder()
@@ -235,8 +250,8 @@ class OperacaoControllerTests {
     class FluxoConsultaOperacoesCliente {
 
         @Test
-        @DisplayName("A consulta das operações (COMPRA) do cliente com os dados corretos deve funcionart")
-        void consultarOperacoesDoClienteComDadopsCorretosCompra() throws Exception {
+        @DisplayName("A consulta das operações (COMPRA) do cliente com os dados corretos deve funcionar")
+        void consultarOperacoesDoClienteComDadosCorretosCompra() throws Exception {
             String responseJsonString = driver.perform(get(uriOperacoes + "/" + clientePremium.getId())
                             .param("codigoAcesso", clientePremium.getCodigo())
                             .param("tipoAtivo", "ACAO")
@@ -248,7 +263,8 @@ class OperacaoControllerTests {
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
 
-            List<OperacaoResponseDTO> operacoes = objectMapper.readValue(responseJsonString, new TypeReference<>() {});
+            List<OperacaoResponseDTO> operacoes = objectMapper.readValue(responseJsonString, new TypeReference<>() {
+            });
             assertEquals(1, operacoes.size());
             assertEquals("COMPRA", operacoes.get(0).getTipoOperacao());
 
@@ -258,7 +274,7 @@ class OperacaoControllerTests {
 
         @Test
         @DisplayName("A consulta das operações (RESGATE) do cliente com os dados corretos deve funcionar")
-        void consultarOperacoesDoClienteComDadopsCorretosResgate() throws Exception {
+        void consultarOperacoesDoClienteComDadosCorretosResgate() throws Exception {
             String responseJsonString = driver.perform(get(uriOperacoes + "/" + clientePremium.getId())
                             .param("codigoAcesso", clientePremium.getCodigo())
                             .param("tipoAtivo", "ACAO")
@@ -270,12 +286,81 @@ class OperacaoControllerTests {
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
 
-            List<OperacaoResponseDTO> operacoes = objectMapper.readValue(responseJsonString, new TypeReference<>() {});
+            List<OperacaoResponseDTO> operacoes = objectMapper.readValue(responseJsonString, new TypeReference<>() {
+            });
             assertEquals(1, operacoes.size());
             assertEquals("RESGATE", operacoes.get(0).getTipoOperacao());
 
             Resgate resgate = resgateRepository.findById(operacoes.get(0).getId()).orElseThrow();
             assertEquals(StatusResgate.EM_CONTA, resgate.getStatusResgate());
+        }
+    }
+
+    @Nested
+    @DisplayName("Fluxo de consulta de operações pelo Administrador")
+    class FluxoAdministradorConsultaOperacaoCompraClientes {
+
+        @Test
+        @DisplayName("Consulta todas as operações de todos os clientes")
+        void adminConsultaOperacoesDeTodosClientes() throws Exception {
+            String responseJsonString = driver.perform(get(uriOperacoes + "/admin/")
+                            .param("matriculaAdmin", administrador.getMatricula())
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            List<OperacaoResponseDTO> operacoes = objectMapper.readValue(responseJsonString, new TypeReference<>() {
+            });
+            assertEquals(4, operacoes.size());
+
+            assertEquals(
+                    List.of("COMPRA", "COMPRA", "COMPRA", "RESGATE"),
+                    operacoes.stream().map(OperacaoResponseDTO::getTipoOperacao).toList()
+            );
+        }
+
+        @Test
+        @DisplayName("Consulta todas as operações de um tipo especifico")
+        void adminConsultaOperacoesTipoEspecifico() throws Exception {
+            String responseJsonString = driver.perform(get(uriOperacoes + "/admin/")
+                            .param("matriculaAdmin", administrador.getMatricula())
+                            .param("tipoOperacao", "COMPRA")
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            List<OperacaoResponseDTO> operacoes = objectMapper.readValue(responseJsonString, new TypeReference<>() {
+            });
+            assertEquals(3, operacoes.size());
+
+            assertTrue(
+                    operacoes.stream().allMatch(op -> "COMPRA".equals(op.getTipoOperacao()))
+            );
+
+            assertEquals(operacoes.get(0).getId(), compraTeste1.getId());
+        }
+
+        @Test
+        @DisplayName("Consulta operações de um cliente especifico")
+        void adminConsultaOperacaoClienteEspecifico() throws Exception {
+            String responseJsonString = driver.perform(get(uriOperacoes + "/admin/")
+                            .param("matriculaAdmin", administrador.getMatricula())
+                            .param("idCliente", String.valueOf(clientePremium.getId()))
+                            .param("data", LocalDate.now().toString())
+                            .param("tipoOperacao", "RESGATE")
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            List<OperacaoResponseDTO> operacoes = objectMapper.readValue(responseJsonString, new TypeReference<>() {
+            });
+
+            assertEquals(1, operacoes.size());
+            assertEquals("RESGATE", operacoes.get(0).getTipoOperacao());
+            assertEquals(resgateTeste.getId(), operacoes.get(0).getId());
         }
     }
 }

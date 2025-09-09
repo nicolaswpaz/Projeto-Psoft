@@ -19,6 +19,7 @@ import com.ufcg.psoft.commerce.repository.AtivoCarteiraRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,6 +31,8 @@ public class ContaServiceImpl implements ContaService {
     private final ModelMapper modelMapper;
     private final ClienteRepository clienteRepository;
     private final AtivoCarteiraRepository ativoCarteiraRepository;
+    public static final int SCALE = 2;
+    public static final RoundingMode ROUNDING = RoundingMode.HALF_UP;
 
     public ContaServiceImpl(ContaRepository contaRepository,
                             CompraRepository compraRepository,
@@ -78,7 +81,7 @@ public class ContaServiceImpl implements ContaService {
         AtivoEmCarteira ativoEmCarteira = AtivoEmCarteira.builder()
                 .quantidade(compra.getQuantidade())
                 .ativo(compra.getAtivo())
-                .valorDeAquisicao(compra.getValorVenda().divide(new BigDecimal(compra.getQuantidade())))
+                .valorDeAquisicao(compra.getValorVenda().divide(new BigDecimal(compra.getQuantidade()), SCALE, ROUNDING))
                 .desempenho(BigDecimal.ZERO)
                 .build();
 
