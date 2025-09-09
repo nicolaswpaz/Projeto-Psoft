@@ -4,6 +4,7 @@ import com.ufcg.psoft.commerce.dto.ativo.AtivoPostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.ativo.AtivoResponseDTO;
 import com.ufcg.psoft.commerce.service.ativo.AtivoService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -13,14 +14,11 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping(value = "/ativos", produces = MediaType.APPLICATION_JSON_VALUE)
 public class AtivoController {
 
     private final AtivoService ativoService;
-
-    public AtivoController(AtivoService ativoService) {
-        this.ativoService = ativoService;
-    }
 
     @PostMapping()
     public ResponseEntity<AtivoResponseDTO> criarAtivo(@RequestParam String matriculaAdmin,

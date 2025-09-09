@@ -6,7 +6,6 @@ import ch.qos.logback.core.read.ListAppender;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.ufcg.psoft.commerce.dto.resgate.ResgateResponseDTO;
-import com.ufcg.psoft.commerce.exception.CommerceException;
 import com.ufcg.psoft.commerce.exception.CustomErrorType;
 import com.ufcg.psoft.commerce.exception.cliente.ClienteNaoExisteException;
 import com.ufcg.psoft.commerce.exception.resgate.ResgateNaoExisteException;
@@ -30,7 +29,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -88,8 +86,6 @@ class ResgateControllerTests {
     Endereco enderecoClienteNormal;
     Endereco enderecoClientePremium;
     Compra compraAcao;
-    Compra compraTesouro;
-    Compra compraCripto;
     ListAppender<ILoggingEvent> listAppender;
 
     @BeforeEach
@@ -827,6 +823,8 @@ class ResgateControllerTests {
                     .andExpect(status().isBadRequest());
         }
     }
+
+
 
 
 }

@@ -2,13 +2,12 @@ package com.ufcg.psoft.commerce.service.extrato;
 
 import com.ufcg.psoft.commerce.model.*;
 import com.ufcg.psoft.commerce.repository.OperacaoRepository;
-import com.ufcg.psoft.commerce.service.cliente.ClienteService;
+import com.ufcg.psoft.commerce.service.autenticacao.AutenticacaoService;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -18,27 +17,22 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class ExtratoServiceImpl implements ExtratoService {
 
     private final OperacaoRepository operacaoRepository;
-    private final ClienteService clienteService;
-
-    @Autowired
-    public ExtratoServiceImpl(OperacaoRepository operacaoRepository, ClienteService clienteService) {
-        this.operacaoRepository = operacaoRepository;
-        this.clienteService = clienteService;
-    }
+    private final AutenticacaoService autenticacaoService;
 
     @Transactional(readOnly = true)
     @Override
     public void gerarExtratoCSV(Long idCliente, String codigoAcesso, OutputStream outputStream) throws IOException {
-        final String[] CSV_HEADER = {"Data", "Tipo da Operacao", "Ativo", "Quantidade", "Valor da Operacao", "Imposto Pago", "Valor Lucro", "Status da Operação"};
+        final String[] csvHeader = {"Data", "Tipo da Operacao", "Ativo", "Quantidade", "Valor da Operacao", "Imposto Pago", "Valor Lucro", "Status da Operação"};
 
-        Cliente cliente = clienteService.autenticar(idCliente, codigoAcesso);
+        Cliente cliente = autenticacaoService.autenticarCliente(idCliente, codigoAcesso);
         Conta conta = cliente.getConta();
 
         try (Writer writer = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8);
-             CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT.builder().setHeader(CSV_HEADER).build())) {
+             CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT.builder().setHeader(csvHeader).build())) {
 
             if (conta == null) {
                 csvPrinter.flush();

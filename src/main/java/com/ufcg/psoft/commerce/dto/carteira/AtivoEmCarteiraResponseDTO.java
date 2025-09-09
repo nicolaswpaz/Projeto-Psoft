@@ -31,7 +31,7 @@ public class AtivoEmCarteiraResponseDTO {
     private Integer quantidade;
 
     @JsonProperty("valorDeAquisicao")
-    @NotBlank(message = "Valor de aquisicao obrigatorio")
+    @NotBlank(message = "Valor de Aquisicao obrigatorio")
     private BigDecimal valorDeAquisicao;
 
     @JsonProperty("desempenho")

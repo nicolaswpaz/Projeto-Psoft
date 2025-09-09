@@ -9,24 +9,18 @@ import com.ufcg.psoft.commerce.model.*;
 import com.ufcg.psoft.commerce.model.enums.TipoInteresse;
 import com.ufcg.psoft.commerce.repository.InteresseAtivoRepository;
 import com.ufcg.psoft.commerce.repository.InteresseCompraRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 
 @Service
+@RequiredArgsConstructor
 public class NotificacaoServiceImpl implements NotificacaoService{
 
     private final InteresseAtivoRepository interesseAtivoRepository;
     private final InteresseCompraRepository interesseCompraRepository;
     private final List<NotificacaoListener> listeners;
-
-    public NotificacaoServiceImpl(InteresseAtivoRepository interesseAtivoRepository,
-                                  InteresseCompraRepository interesseCompraRepository,
-                                  List<NotificacaoListener> listeners) {
-        this.interesseAtivoRepository = interesseAtivoRepository;
-        this.interesseCompraRepository = interesseCompraRepository;
-        this.listeners = listeners;
-    }
 
     @Override
     public void notificarDisponibilidadeAtivo(Ativo ativo) {
@@ -62,10 +56,11 @@ public class NotificacaoServiceImpl implements NotificacaoService{
     }
 
     @Override
-    public void notificarConfirmacacaoResgate(Resgate resgate) {
+    public void notificarConfirmacaoResgate(Resgate resgate) {
         EventoResgate evento = new EventoResgate(resgate, resgate.getCliente());
         listeners.stream()
-                .filter(l -> l instanceof NotificarConfirmacaoResgate)
+                .filter(NotificarConfirmacaoResgate.class::isInstance)
+                .map(NotificarConfirmacaoResgate.class::cast)
                 .findFirst()
                 .ifPresent(l -> l.notificarConfirmacaoResgate(evento));
     }

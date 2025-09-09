@@ -16,6 +16,7 @@ import com.ufcg.psoft.commerce.repository.ClienteRepository;
 import com.ufcg.psoft.commerce.repository.CompraRepository;
 import com.ufcg.psoft.commerce.repository.ContaRepository;
 import com.ufcg.psoft.commerce.repository.AtivoCarteiraRepository;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
@@ -24,6 +25,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class ContaServiceImpl implements ContaService {
 
     private final ContaRepository contaRepository;
@@ -33,18 +35,6 @@ public class ContaServiceImpl implements ContaService {
     private final AtivoCarteiraRepository ativoCarteiraRepository;
     public static final int SCALE = 2;
     public static final RoundingMode ROUNDING = RoundingMode.HALF_UP;
-
-    public ContaServiceImpl(ContaRepository contaRepository,
-                            CompraRepository compraRepository,
-                            ModelMapper modelMapper,
-                            ClienteRepository clienteRepository,
-                            AtivoCarteiraRepository ativoCarteiraRepository) {
-        this.contaRepository = contaRepository;
-        this.compraRepository = compraRepository;
-        this.modelMapper = modelMapper;
-        this.clienteRepository = clienteRepository;
-        this.ativoCarteiraRepository = ativoCarteiraRepository;
-    }
 
     @Override
     public Conta criarContaPadrao() {

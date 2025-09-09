@@ -2,6 +2,7 @@ package com.ufcg.psoft.commerce.controller;
 
 import com.ufcg.psoft.commerce.dto.compra.CompraResponseDTO;
 import com.ufcg.psoft.commerce.service.operacao.compra.CompraService;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -11,19 +12,16 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping(
         value = "/compras",
         produces = MediaType.APPLICATION_JSON_VALUE
 )
+
 public class CompraController {
 
     private final CompraService compraService;
     protected final ModelMapper modelMapper;
-
-    public CompraController(CompraService compraService, ModelMapper modelMapper) {
-        this.compraService = compraService;
-        this.modelMapper = modelMapper;
-    }
 
     @PostMapping("/{idCliente}/{idAtivo}")
     public ResponseEntity<CompraResponseDTO> solicitarCompra(

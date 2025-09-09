@@ -11,5 +11,5 @@ public interface NotificacaoService {
 
     void notificarDisponibilidadeCompra(Compra compra);
 
-    void notificarConfirmacacaoResgate(Resgate resgate);
+    void notificarConfirmacaoResgate(Resgate resgate);
 }

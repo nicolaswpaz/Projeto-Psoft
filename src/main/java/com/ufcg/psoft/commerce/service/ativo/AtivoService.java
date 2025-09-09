@@ -34,4 +34,6 @@ public interface AtivoService {
     Ativo verificarAtivoExistente(Long id);
 
     void registrarInteresse(Cliente cliente, Ativo ativo, TipoInteresse tipoInteresse);
+
+    BigDecimal calcularImposto(Ativo ativo, BigDecimal lucro);
 }

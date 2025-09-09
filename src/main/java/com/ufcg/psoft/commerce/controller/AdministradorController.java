@@ -4,19 +4,17 @@ import com.ufcg.psoft.commerce.dto.administrador.AdministradorPostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.administrador.AdministradorResponseDTO;
 import com.ufcg.psoft.commerce.service.administrador.AdministradorService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/administrador")
 public class AdministradorController {
 
     private final AdministradorService administradorService;
-
-    public AdministradorController(AdministradorService administradorService) {
-        this.administradorService = administradorService;
-    }
 
     @PostMapping
     public ResponseEntity<AdministradorResponseDTO> criarAdministrador(

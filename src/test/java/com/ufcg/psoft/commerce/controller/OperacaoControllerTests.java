@@ -17,6 +17,7 @@ import com.ufcg.psoft.commerce.repository.*;
 import com.ufcg.psoft.commerce.service.operacao.compra.CompraService;
 import com.ufcg.psoft.commerce.service.operacao.resgate.ResgateService;
 import jakarta.transaction.Transactional;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.*;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,17 +25,17 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -363,4 +364,38 @@ class OperacaoControllerTests {
             assertEquals(resgateTeste.getId(), operacoes.get(0).getId());
         }
     }
+
+    @Nested
+    @DisplayName("Fluxo de consulta do extratato gerado pelo cliente")
+    class clienteConsultaExtrato {
+
+        @Test
+        @DisplayName("Gera extrato CSV de um cliente com operações registradas")
+        void gerarExtratoCSVCliente() throws Exception {
+            MvcResult result = driver.perform(
+                            get(uriOperacoes + "/clientes/" + clientePremium.getId() + "/gerarExtrato")
+                                    .param("codigoAcesso", clientePremium.getCodigo())
+                                    .accept("text/csv")) // <-- bate com o que o controller retorna
+                    .andExpect(status().isOk())
+                    .andExpect(header().string("Content-Disposition",
+                            Matchers.containsString("extrato_cliente_" + clientePremium.getId())))
+                    .andExpect(content().contentType("text/csv")) // <-- garante que o retorno é text/csv
+                    .andReturn();
+
+            // Captura o conteúdo do CSV gerado pelo StreamingResponseBody
+            String csv = result.getResponse().getContentAsString();
+
+            // Verifica que tem header
+            assertTrue(csv.contains("Data,Tipo da Operacao,Ativo,Quantidade,Valor da Operacao,Imposto Pago,Valor Lucro,Status da Operação"));
+
+            // Verifica que operações do cliente aparecem
+            assertTrue(csv.contains("COMPRA"));
+            assertTrue(csv.contains("RESGATE"));
+            assertTrue(csv.contains("Acao Teste") || csv.contains("Tesouro Teste"));
+        }
+
+
+    }
+
+
 }

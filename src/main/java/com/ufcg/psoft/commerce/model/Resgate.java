@@ -3,7 +3,6 @@ package com.ufcg.psoft.commerce.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.ufcg.psoft.commerce.exception.resgate.ClienteNaoPossuiEsseAtivoEmCarteiraException;
 import com.ufcg.psoft.commerce.model.enums.StatusResgate;
-import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
 import com.ufcg.psoft.commerce.service.operacao.resgate.status.SolicitadoState;
 import com.ufcg.psoft.commerce.service.operacao.resgate.status.StatusResgateState;
 import com.ufcg.psoft.commerce.service.operacao.resgate.status.ConfirmadoState;
@@ -83,7 +82,7 @@ public class Resgate extends Operacao{
         AtivoEmCarteira ativoEmCarteira = carteira.getAtivosEmCarteira().stream()
                 .filter(aec -> aec.getAtivo().getId().equals(this.getAtivo().getId()))
                 .findFirst()
-                .orElseThrow(() -> new ClienteNaoPossuiEsseAtivoEmCarteiraException());
+                .orElseThrow(ClienteNaoPossuiEsseAtivoEmCarteiraException::new);
 
         BigDecimal valorAtual = ativoEmCarteira.getAtivo().getCotacao()
                 .multiply(BigDecimal.valueOf(this.getQuantidade()));
@@ -93,25 +92,8 @@ public class Resgate extends Operacao{
         this.lucro = valorAtual.subtract(valorCompraTotal);
     }
 
-    public void calculaImposto(){
-        if (lucro.compareTo(BigDecimal.ZERO) <= 0) {
-            imposto = BigDecimal.ZERO;
-            return;
-        }
-
-        if (this.getAtivo().getTipo() == TipoAtivo.TESOURO_DIRETO) {
-            imposto = lucro.multiply(BigDecimal.valueOf(0.10));
-        } else if (this.getAtivo().getTipo() == TipoAtivo.ACAO) {
-            imposto = lucro.multiply(BigDecimal.valueOf(0.15));
-        } else if (this.getAtivo().getTipo() == TipoAtivo.CRIPTOMOEDA) {
-            if (lucro.compareTo(BigDecimal.valueOf(5000)) <= 0) {
-                imposto = lucro.multiply(BigDecimal.valueOf(0.15));
-            } else {
-                imposto = lucro.multiply(BigDecimal.valueOf(0.225));
-            }
-        }
-
-        imposto = imposto.setScale(2, RoundingMode.HALF_UP);
+    public void atribuirImposto(BigDecimal imposto) {
+        this.imposto = imposto.setScale(2, RoundingMode.HALF_UP);
     }
 
     @Override

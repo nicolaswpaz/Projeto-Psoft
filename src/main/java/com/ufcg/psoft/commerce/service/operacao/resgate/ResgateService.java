@@ -2,8 +2,6 @@ package com.ufcg.psoft.commerce.service.operacao.resgate;
 
 import com.ufcg.psoft.commerce.dto.resgate.ResgateResponseDTO;
 
-import java.util.List;
-
 public interface ResgateService {
 
     ResgateResponseDTO solicitarResgate(Long idCliente, String codigoAcesso, Long idAtivo, int quantidade);

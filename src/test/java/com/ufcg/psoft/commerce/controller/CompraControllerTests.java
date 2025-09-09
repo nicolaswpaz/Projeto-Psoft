@@ -523,8 +523,8 @@ class CompraControllerTests {
 
             AtivoEmCarteiraResponseDTO item = carteira.get(0);
             assertEquals(2, item.getQuantidade());
-            assertEquals(BigDecimal.valueOf(50.0), item.getValorDeAquisicao());
-            assertEquals(BigDecimal.valueOf(0.0), item.getDesempenho());
+            assertTrue(item.getValorDeAquisicao().compareTo(BigDecimal.valueOf(50.00)) == 0);
+            assertTrue(item.getDesempenho().compareTo(BigDecimal.ZERO) == 0);
         }
 
         @Test

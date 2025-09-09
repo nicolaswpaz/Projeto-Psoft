@@ -14,6 +14,7 @@ import com.ufcg.psoft.commerce.model.*;
 import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
 import com.ufcg.psoft.commerce.model.enums.TipoPlano;
 import com.ufcg.psoft.commerce.repository.*;
+import com.ufcg.psoft.commerce.service.autenticacao.AutenticacaoService;
 import com.ufcg.psoft.commerce.service.cliente.ClienteService;
 import com.ufcg.psoft.commerce.listener.NotificacaoAtivoDisponivel;
 import com.ufcg.psoft.commerce.listener.NotificacaoAtivoVariouCotacao;
@@ -85,6 +86,9 @@ class    ClienteControllerTests {
     Endereco endereco2;
     @Autowired
     ClienteService clienteService;
+
+    @Autowired
+    AutenticacaoService autenticacaoService;
 
     AdministradorPostPutRequestDTO administradorPostPutRequestDTO;
     Administrador administrador;
@@ -553,7 +557,7 @@ class    ClienteControllerTests {
 
             assertAll(
                     () -> assertEquals(cliente.getId().longValue(), resultado.getId().longValue()),
-                    () -> assertEquals("987654", clienteService.autenticar(cliente.getId(), "987654").getCodigo())
+                    () -> assertEquals("987654", autenticacaoService.autenticarCliente(cliente.getId(), "987654").getCodigo())
             );
         }
     }

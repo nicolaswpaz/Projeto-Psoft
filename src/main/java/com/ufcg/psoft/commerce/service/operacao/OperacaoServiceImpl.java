@@ -3,29 +3,23 @@ package com.ufcg.psoft.commerce.service.operacao;
 import com.ufcg.psoft.commerce.dto.operacao.OperacaoResponseDTO;
 import com.ufcg.psoft.commerce.model.Operacao;
 import com.ufcg.psoft.commerce.repository.OperacaoRepository;
-import com.ufcg.psoft.commerce.service.administrador.AdministradorService;
-import com.ufcg.psoft.commerce.service.cliente.ClienteService;
+import com.ufcg.psoft.commerce.service.autenticacao.AutenticacaoService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class OperacaoServiceImpl implements OperacaoService {
 
-    private final ClienteService clienteService;
-    private final AdministradorService administradorService;
+    private final AutenticacaoService autenticacaoService;
     private final OperacaoRepository operacaoRepository;
-
-    public OperacaoServiceImpl(ClienteService clienteService, AdministradorService administradorService, OperacaoRepository operacaoRepository) {
-        this.clienteService = clienteService;
-        this.administradorService = administradorService;
-        this.operacaoRepository = operacaoRepository;
-    }
 
     @Override
     public List<OperacaoResponseDTO> consultarOperacaoCliente(Long idCliente, String codigoAcesso, String tipoAtivo, LocalDate dataInicio, LocalDate dataFim, String statusOperacao) {
-        clienteService.autenticar(idCliente, codigoAcesso);
+        autenticacaoService.autenticarCliente(idCliente, codigoAcesso);
 
         List<Operacao> operacoesCliente = operacaoRepository.findByClienteId(idCliente);
 
@@ -40,7 +34,7 @@ public class OperacaoServiceImpl implements OperacaoService {
 
     @Override
     public List<OperacaoResponseDTO> consultarOperacoesComAdmin(String matriculaAdmin, Long idCliente, String tipoAtivo, LocalDate data, String tipoOperacao) {
-        administradorService.autenticar(matriculaAdmin);
+        autenticacaoService.autenticarAdmin(matriculaAdmin);
 
         List<Operacao> todasOperacoes = operacaoRepository.findAll();
 

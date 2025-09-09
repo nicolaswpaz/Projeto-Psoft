@@ -12,12 +12,13 @@ import com.ufcg.psoft.commerce.model.enums.TipoInteresse;
 import com.ufcg.psoft.commerce.repository.AtivoRepository;
 import com.ufcg.psoft.commerce.repository.InteresseAtivoRepository;
 import com.ufcg.psoft.commerce.repository.AtivoCarteiraRepository;
-import com.ufcg.psoft.commerce.service.administrador.AdministradorService;
 import com.ufcg.psoft.commerce.service.ativo.tipoativo.Acao;
 import com.ufcg.psoft.commerce.service.ativo.tipoativo.Criptomoeda;
 import com.ufcg.psoft.commerce.service.ativo.tipoativo.TesouroDireto;
 import com.ufcg.psoft.commerce.service.ativo.tipoativo.TipoAtivoStrategy;
+import com.ufcg.psoft.commerce.service.autenticacao.AutenticacaoService;
 import com.ufcg.psoft.commerce.service.notificacao.NotificacaoServiceImpl;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
@@ -28,28 +29,15 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class AtivoServiceImpl implements AtivoService {
 
     private final AtivoRepository ativoRepository;
     private final InteresseAtivoRepository interesseAtivoRepository;
     private final AtivoCarteiraRepository ativoCarteiraRepository;
-    private final AdministradorService administradorService;
+    private final AutenticacaoService autenticacaoService;
     private final NotificacaoServiceImpl notificacaoService;
     private final ModelMapper modelMapper;
-
-    public AtivoServiceImpl(AtivoRepository ativoRepository,
-                            InteresseAtivoRepository interesseAtivoRepository,
-                            AtivoCarteiraRepository ativoCarteiraRepository,
-                            AdministradorService administradorService,
-                            NotificacaoServiceImpl notificacaoService,
-                            ModelMapper modelMapper) {
-        this.ativoRepository = ativoRepository;
-        this.interesseAtivoRepository = interesseAtivoRepository;
-        this.ativoCarteiraRepository = ativoCarteiraRepository;
-        this.administradorService = administradorService;
-        this.notificacaoService = notificacaoService;
-        this.modelMapper = modelMapper;
-    }
 
     private final Map<TipoAtivo, TipoAtivoStrategy> tipoAtivoMap = Map.of(
             TipoAtivo.ACAO, new Acao(),
@@ -59,7 +47,7 @@ public class AtivoServiceImpl implements AtivoService {
 
     @Override
     public AtivoResponseDTO criar(String matriculaAdmin, AtivoPostPutRequestDTO ativoPostPutRequestDTO) {
-        administradorService.autenticar(matriculaAdmin);
+        autenticacaoService.autenticarAdmin(matriculaAdmin);
 
         Ativo ativo = modelMapper.map(ativoPostPutRequestDTO, Ativo.class);
         ativoRepository.save(ativo);
@@ -69,7 +57,7 @@ public class AtivoServiceImpl implements AtivoService {
 
     @Override
     public AtivoResponseDTO alterar(String matriculaAdmin, Long id, AtivoPostPutRequestDTO ativoPostPutRequestDTO) {
-        administradorService.autenticar(matriculaAdmin);
+        autenticacaoService.autenticarAdmin(matriculaAdmin);
 
         Ativo ativo = ativoRepository.findById(id).orElseThrow(AtivoNaoExisteException::new);
 
@@ -90,7 +78,7 @@ public class AtivoServiceImpl implements AtivoService {
 
     @Override
     public void remover(String matriculaAdmin, Long id) {
-        administradorService.autenticar(matriculaAdmin);
+        autenticacaoService.autenticarAdmin(matriculaAdmin);
 
         Ativo ativo = ativoRepository.findById(id).orElseThrow(AtivoNaoExisteException::new);
 
@@ -123,7 +111,7 @@ public class AtivoServiceImpl implements AtivoService {
 
     @Override
     public AtivoResponseDTO tornarDisponivel(String matriculaAdmin, Long id) {
-        administradorService.autenticar(matriculaAdmin);
+        autenticacaoService.autenticarAdmin(matriculaAdmin);
 
         Ativo ativo = ativoRepository.findById(id).orElseThrow(AtivoNaoExisteException::new);
 
@@ -141,7 +129,7 @@ public class AtivoServiceImpl implements AtivoService {
 
     @Override
     public AtivoResponseDTO tornarIndisponivel(String matriculaAdmin, Long id) {
-        administradorService.autenticar(matriculaAdmin);
+        autenticacaoService.autenticarAdmin(matriculaAdmin);
 
         Ativo ativo = ativoRepository.findById(id).orElseThrow(AtivoNaoExisteException::new);
 
@@ -157,7 +145,7 @@ public class AtivoServiceImpl implements AtivoService {
 
     @Override
     public AtivoResponseDTO atualizarCotacao(String matriculaAdmin, Long id, BigDecimal valor) {
-        administradorService.autenticar(matriculaAdmin);
+        autenticacaoService.autenticarAdmin(matriculaAdmin);
 
         Ativo ativo = ativoRepository.findById(id).orElseThrow(AtivoNaoExisteException::new);
 
@@ -234,4 +222,13 @@ public class AtivoServiceImpl implements AtivoService {
         interesseAtivoRepository.save(interesse);
     }
 
+    @Override
+    public BigDecimal calcularImposto(Ativo ativo, BigDecimal lucro){
+        if (lucro.compareTo(BigDecimal.ZERO) <= 0) {
+             return BigDecimal.ZERO;
+        }
+
+        TipoAtivoStrategy strategy = tipoAtivoMap.get(ativo.getTipo());
+        return strategy.calculaImposto(lucro);
+    }
 }

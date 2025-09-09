@@ -3,8 +3,6 @@ package com.ufcg.psoft.commerce.dto.operacao;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.ufcg.psoft.commerce.dto.ativo.AtivoResponseDTO;
 import com.ufcg.psoft.commerce.dto.cliente.ClienteResponseDTO;
-import com.ufcg.psoft.commerce.model.Ativo;
-import com.ufcg.psoft.commerce.model.Cliente;
 import com.ufcg.psoft.commerce.model.Operacao;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

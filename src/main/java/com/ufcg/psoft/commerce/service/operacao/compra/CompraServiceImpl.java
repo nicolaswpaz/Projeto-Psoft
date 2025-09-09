@@ -17,9 +17,10 @@ import com.ufcg.psoft.commerce.repository.CompraRepository;
 import com.ufcg.psoft.commerce.repository.InteresseCompraRepository;
 import com.ufcg.psoft.commerce.service.administrador.AdministradorService;
 import com.ufcg.psoft.commerce.service.ativo.AtivoService;
+import com.ufcg.psoft.commerce.service.autenticacao.AutenticacaoService;
 import com.ufcg.psoft.commerce.service.cliente.ClienteService;
 import com.ufcg.psoft.commerce.service.notificacao.NotificacaoService;
-import com.ufcg.psoft.commerce.service.notificacao.NotificacaoServiceImpl;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
@@ -29,36 +30,23 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class CompraServiceImpl implements CompraService{
 
     private final CompraRepository compraRepository;
     private final ClienteService clienteService;
     private final InteresseCompraRepository interesseCompraRepository;
     private final AdministradorService administradorService;
+    private final AutenticacaoService autenticacaoService;
     private final NotificacaoService notificacaoService;
     private final AtivoService ativoService;
     private final ClienteRepository clienteRepository;
     private final ModelMapper modelMapper;
 
-    public CompraServiceImpl(CompraRepository compraRepository,
-                             ClienteService clienteService, InteresseCompraRepository interesseCompraRepository,
-                             AdministradorService administradorService, NotificacaoServiceImpl notificacaoService,
-                             AtivoService ativoService, ClienteRepository clienteRepository,
-                             ModelMapper modelMapper) {
-        this.compraRepository = compraRepository;
-        this.clienteService = clienteService;
-        this.interesseCompraRepository = interesseCompraRepository;
-        this.administradorService = administradorService;
-        this.notificacaoService = notificacaoService;
-        this.ativoService = ativoService;
-        this.clienteRepository = clienteRepository;
-        this.modelMapper = modelMapper;
-    }
-
     @Override
     public CompraResponseDTO solicitarCompra(Long idCliente, String codigoAcesso, Long idAtivo, int quantidade) {
         Ativo ativo = ativoService.verificarAtivoExistente(idAtivo);
-        Cliente cliente = clienteService.autenticar(idCliente, codigoAcesso);
+        Cliente cliente = autenticacaoService.autenticarCliente(idCliente, codigoAcesso);
 
         if (cliente.getPlano() == TipoPlano.NORMAL && ativo.getTipo() != TipoAtivo.TESOURO_DIRETO) {
             throw new ClienteNaoPremiumException();
@@ -122,7 +110,7 @@ public class CompraServiceImpl implements CompraService{
 
     @Override
     public CompraResponseDTO consultar(Long idCliente, String codigoAcesso, Long idCompra) {
-        clienteService.autenticar(idCliente, codigoAcesso);
+        autenticacaoService.autenticarCliente(idCliente, codigoAcesso);
 
         Compra compra = compraRepository.findById(idCompra)
                 .orElseThrow(CompraNaoExisteException::new);
@@ -139,7 +127,7 @@ public class CompraServiceImpl implements CompraService{
 
     @Override
     public List<CompraResponseDTO> listar(String matriculaAdmin) {
-        administradorService.autenticar(matriculaAdmin);
+        autenticacaoService.autenticarAdmin(matriculaAdmin);
 
         return compraRepository.findAll().stream()
                 .map(CompraResponseDTO::new)

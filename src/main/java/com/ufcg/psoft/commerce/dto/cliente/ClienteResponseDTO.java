@@ -34,7 +34,7 @@ public class ClienteResponseDTO {
     private TipoPlano plano;
 
     @JsonProperty("saldo")
-    private BigDecimal saldo ;
+    private BigDecimal saldo;
 
     public ClienteResponseDTO(Cliente cliente) {
         this.id = cliente.getId();
@@ -50,8 +50,9 @@ public class ClienteResponseDTO {
 
         this.saldo = cliente.getConta() != null && cliente.getConta().getSaldo() != null
                 ? cliente.getConta().getSaldo()
-                : new BigDecimal(0);
+                : BigDecimal.ZERO;
     }
+
 
     public BigDecimal getSaldo() {
         return saldo != null ? saldo : BigDecimal.ZERO;
