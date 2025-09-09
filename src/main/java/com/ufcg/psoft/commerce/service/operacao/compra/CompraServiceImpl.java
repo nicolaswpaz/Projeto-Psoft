@@ -66,7 +66,7 @@ public class CompraServiceImpl implements CompraService{
 
         compraRepository.save(compra);
         this.registrarInteresse(cliente, compra);
-        return modelMapper.map(compra, CompraResponseDTO.class);
+        return new CompraResponseDTO(compra);
     }
 
     @Override
@@ -84,7 +84,7 @@ public class CompraServiceImpl implements CompraService{
 
         administradorService.confirmarDisponibilidadeCompra(idCompra, matriculaAdmin);
         notificacaoService.notificarDisponibilidadeCompra(compra);
-        return modelMapper.map(compra, CompraResponseDTO.class);
+        return new CompraResponseDTO(compra);
     }
 
     @Override
@@ -105,7 +105,7 @@ public class CompraServiceImpl implements CompraService{
         }
 
         clienteService.confirmarCompraAtivo(idCliente, idCompra, codigoAcesso);
-        return modelMapper.map(compra, CompraResponseDTO.class);
+        return new CompraResponseDTO(compra);
     }
 
     @Override
@@ -122,7 +122,7 @@ public class CompraServiceImpl implements CompraService{
             throw new CompraNaoPertenceAoClienteException();
         }
 
-        return modelMapper.map(compra, CompraResponseDTO.class);
+        return new CompraResponseDTO(compra);
     }
 
     @Override

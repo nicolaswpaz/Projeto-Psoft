@@ -49,7 +49,7 @@ import org.slf4j.LoggerFactory;
 @AutoConfigureMockMvc
 @Transactional
 @DisplayName("Testes do controlador de Clientes")
-class    ClienteControllerTests {
+class ClienteControllerTests {
 
     final String uriClientes = "/clientes";
     final String uriAtivos = "/ativos";

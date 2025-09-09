@@ -1,5 +1,6 @@
 package com.ufcg.psoft.commerce.service.operacao.resgate;
 
+import com.ufcg.psoft.commerce.dto.compra.CompraResponseDTO;
 import com.ufcg.psoft.commerce.dto.resgate.ResgateResponseDTO;
 import com.ufcg.psoft.commerce.exception.ativocarteira.AtivoCarteiraNaoExisteException;
 import com.ufcg.psoft.commerce.exception.cliente.ClienteNaoExisteException;
@@ -82,7 +83,7 @@ public class ResgateServiceImpl implements ResgateService {
 
         resgate.calculaLucro();
         resgateRepository.save(resgate);
-        return modelMapper.map(resgate, ResgateResponseDTO.class);
+        return new ResgateResponseDTO(resgate);
     }
 
     @Override
@@ -97,7 +98,7 @@ public class ResgateServiceImpl implements ResgateService {
         administradorService.confirmarResgate(idResgate, matriculaAdmin);
         liquidarResgate(resgate);
         notificacaoService.notificarConfirmacaoResgate(resgate);
-        return modelMapper.map(resgate, ResgateResponseDTO.class);
+        return new ResgateResponseDTO(resgate);
     }
 
     private void liquidarResgate(Resgate resgate) {
@@ -147,6 +148,6 @@ public class ResgateServiceImpl implements ResgateService {
             throw new ResgateNaoPertenceAoClienteException();
         }
 
-        return modelMapper.map(resgate, ResgateResponseDTO.class);
+        return new ResgateResponseDTO(resgate);
     }
 }

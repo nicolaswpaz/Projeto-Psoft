@@ -795,7 +795,7 @@ class ResgateControllerTests {
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("matriculaAdmin", administrador.getMatricula()))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.message").value("Status de compra nao permite essa acao"));
+                    .andExpect(jsonPath("$.message").value("Status de resgate nao permite essa acao"));
         }
 
         @Test

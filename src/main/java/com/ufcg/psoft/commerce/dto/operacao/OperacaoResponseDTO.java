@@ -35,11 +35,16 @@ public class OperacaoResponseDTO {
     @JsonProperty("tipoOperacao")
     private String tipoOperacao;
 
+    @JsonProperty("StatusOperacao")
+    private String statusOperacao;
+
     public OperacaoResponseDTO(Operacao operacao) {
         this.id = operacao.getId();
         this.cliente = new ClienteResponseDTO(operacao.getCliente());
         this.ativo = new AtivoResponseDTO((operacao.getAtivo()));
         this.dataSolicitacao = operacao.getDataSolicitacao();
         this.tipoOperacao = operacao.getTipoOperacao();
+        this.quantidade = operacao.getQuantidade();
+        this.statusOperacao = operacao.getStatusAtual();
     }
 }

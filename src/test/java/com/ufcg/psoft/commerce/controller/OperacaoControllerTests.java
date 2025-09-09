@@ -304,7 +304,7 @@ class OperacaoControllerTests {
         @Test
         @DisplayName("Consulta todas as operações de todos os clientes")
         void adminConsultaOperacoesDeTodosClientes() throws Exception {
-            String responseJsonString = driver.perform(get(uriOperacoes + "/admin/")
+            String responseJsonString = driver.perform(get(uriOperacoes + "/admin")
                             .param("matriculaAdmin", administrador.getMatricula())
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
@@ -324,7 +324,7 @@ class OperacaoControllerTests {
         @Test
         @DisplayName("Consulta todas as operações de um tipo especifico")
         void adminConsultaOperacoesTipoEspecifico() throws Exception {
-            String responseJsonString = driver.perform(get(uriOperacoes + "/admin/")
+            String responseJsonString = driver.perform(get(uriOperacoes + "/admin")
                             .param("matriculaAdmin", administrador.getMatricula())
                             .param("tipoOperacao", "COMPRA")
                             .contentType(MediaType.APPLICATION_JSON))
@@ -346,7 +346,7 @@ class OperacaoControllerTests {
         @Test
         @DisplayName("Consulta operações de um cliente especifico")
         void adminConsultaOperacaoClienteEspecifico() throws Exception {
-            String responseJsonString = driver.perform(get(uriOperacoes + "/admin/")
+            String responseJsonString = driver.perform(get(uriOperacoes + "/admin")
                             .param("matriculaAdmin", administrador.getMatricula())
                             .param("idCliente", String.valueOf(clientePremium.getId()))
                             .param("data", LocalDate.now().toString())
