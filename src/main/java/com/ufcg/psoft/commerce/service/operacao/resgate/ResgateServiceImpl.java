@@ -1,6 +1,5 @@
 package com.ufcg.psoft.commerce.service.operacao.resgate;
 
-import com.ufcg.psoft.commerce.dto.compra.CompraResponseDTO;
 import com.ufcg.psoft.commerce.dto.resgate.ResgateResponseDTO;
 import com.ufcg.psoft.commerce.exception.ativocarteira.AtivoCarteiraNaoExisteException;
 import com.ufcg.psoft.commerce.exception.cliente.ClienteNaoExisteException;

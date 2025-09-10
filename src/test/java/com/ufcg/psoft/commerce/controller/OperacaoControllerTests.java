@@ -31,7 +31,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-
+import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.asyncDispatch;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
+import static org.mockito.Mockito.reset;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
@@ -39,7 +42,6 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.any;
@@ -258,6 +260,7 @@ class OperacaoControllerTests {
     void tearDown() {
         ativoRepository.deleteAll();
         clienteRepository.deleteAll();
+        reset(extratoService);
     }
 
     @Nested
@@ -384,27 +387,38 @@ class OperacaoControllerTests {
     class clienteConsultaExtrato {
         @Test
         @DisplayName("Deve exportar extrato CSV com sucesso")
-        void exportarExtratoCSVSucesso() throws Exception {
+        void exportarExtratoCSV_sucesso() throws Exception {
             Long idCliente = clientePremium.getId();
             String codigoAcesso = clientePremium.getCodigo();
 
             doAnswer(invocation -> {
                 OutputStream os = invocation.getArgument(2);
-                os.write("Data,Tipo da Operacao,Ativo\n01/01/2025,COMPRA,TESTE\n".getBytes());
+                os.write("Data,Tipo da Operacao,Ativo\n01/01/2025,COMPRA,TESTE\n".getBytes(StandardCharsets.UTF_8));
+                os.flush();
                 return null;
-            }).when(extratoService).gerarExtratoCSV(eq(idCliente), eq(codigoAcesso), any());
+            }).when(extratoService).gerarExtratoCSV(eq(idCliente), eq(codigoAcesso), any(OutputStream.class));
 
-            MvcResult result = driver.perform(get("/operacoes/clientes/{idCliente}/gerarExtrato", idCliente)
-                            .param("codigoAcesso", codigoAcesso))
-                    .andExpect(status().isOk())
-                    .andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION, Matchers.containsString("attachment; filename=")))
-                    .andExpect(content().contentType("text/csv"))
+
+            MvcResult asyncStarted = driver.perform(
+                            get("/operacoes/clientes/{idCliente}/gerarExtrato", idCliente)
+                                    .param("codigoAcesso", codigoAcesso))
+                    .andExpect(request().asyncStarted())
                     .andReturn();
 
-            String csvContent = result.getResponse().getContentAsString();
+            MvcResult result = driver.perform(asyncDispatch(asyncStarted))
+                    .andExpect(status().isOk())
+                    .andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION, Matchers.containsString("attachment; filename=")))
+                    .andExpect(content().contentTypeCompatibleWith("text/csv"))
+                    .andReturn();
+
+            String csvContent = new String(result.getResponse().getContentAsByteArray(), StandardCharsets.UTF_8)
+                    .replace("\r\n", "\n");
+
             assertThat(csvContent)
                     .contains("Data,Tipo da Operacao,Ativo")
                     .contains("COMPRA");
+
+            verify(extratoService).gerarExtratoCSV(eq(idCliente), eq(codigoAcesso), any(OutputStream.class));
         }
 
         @Test

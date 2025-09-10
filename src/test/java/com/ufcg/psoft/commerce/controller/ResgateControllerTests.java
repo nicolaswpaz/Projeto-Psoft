@@ -308,26 +308,21 @@ class ResgateControllerTests {
     @Nested
     @DisplayName("Teste do imposto no resgate sobre lucro")
     class ResgateImposto {
+
         @Test
         @DisplayName("Resgate total deve remover ativo da carteira")
         void resgateTotalRemoveAtivoDaCarteira() throws Exception {
-
             ativoAcao.setCotacao(BigDecimal.valueOf(55.00));
             ativoRepository.save(ativoAcao);
 
+            ResgateResponseDTO resgateConfirmado = solicitarEConfirmarResgate(clientePremium.getId(), clientePremium.getCodigo(),
+                    ativoAcao.getId(), 10);
 
-            ResgateResponseDTO resgateSolicitado = resgateService.solicitarResgate(
-                    clientePremium.getId(), clientePremium.getCodigo(), ativoAcao.getId(), 10);
+            BigDecimal lucroUnitario = BigDecimal.valueOf(55.00).subtract(BigDecimal.valueOf(50.00));
+            BigDecimal lucroTotal = lucroUnitario.multiply(BigDecimal.valueOf(10));
+            BigDecimal impostoEsperado = lucroTotal.multiply(BigDecimal.valueOf(0.15));
 
-            ResgateResponseDTO resgateConfirmado = resgateService.confirmarResgate(
-                    resgateSolicitado.getId(), administrador.getMatricula());
-
-            BigDecimal lucroUnitario = BigDecimal.valueOf(15.00).subtract(BigDecimal.valueOf(10.00)); // 5,00
-            BigDecimal lucroTotal = lucroUnitario.multiply(BigDecimal.valueOf(10)); // 25,00
-            BigDecimal impostoEsperado = lucroTotal.multiply(BigDecimal.valueOf(0.15)); // 3,75
-
-            assertEquals(0, impostoEsperado.compareTo(resgateConfirmado.getImposto()),
-                    "Imposto deve ser R$3,75");
+            assertEquals(0, impostoEsperado.compareTo(resgateConfirmado.getImposto()));
 
             boolean ativoNaCarteira = clientePremium.getConta()
                     .getCarteira()
@@ -335,7 +330,7 @@ class ResgateControllerTests {
                     .stream()
                     .anyMatch(ca -> ca.getAtivo().getId().equals(ativoAcao.getId()));
 
-            assertFalse(ativoNaCarteira, "Ativo deve ser removido da carteira após resgate total");
+            assertFalse(ativoNaCarteira);
         }
 
         @Test
@@ -344,15 +339,12 @@ class ResgateControllerTests {
             ativoAcao.setCotacao(BigDecimal.valueOf(70.0));
             ativoRepository.save(ativoAcao);
 
-            ResgateResponseDTO resgateSolicitado = resgateService.solicitarResgate(
-                    clientePremium.getId(), clientePremium.getCodigo(), ativoAcao.getId(), 4);
+            ResgateResponseDTO resgateConfirmado = solicitarEConfirmarResgate(clientePremium.getId(), clientePremium.getCodigo(),
+                    ativoAcao.getId(), 4);
 
-            ResgateResponseDTO resgateConfirmado = resgateService.confirmarResgate(
-                    resgateSolicitado.getId(), administrador.getMatricula());
-
-            BigDecimal lucroUnitario = BigDecimal.valueOf(70.0).subtract(BigDecimal.valueOf(50.0)); // 20
-            BigDecimal lucroTotal = lucroUnitario.multiply(BigDecimal.valueOf(4)); // 80
-            BigDecimal impostoEsperado = lucroTotal.multiply(BigDecimal.valueOf(0.15)); // 12
+            BigDecimal lucroUnitario = BigDecimal.valueOf(70.0).subtract(BigDecimal.valueOf(50.0));
+            BigDecimal lucroTotal = lucroUnitario.multiply(BigDecimal.valueOf(4));
+            BigDecimal impostoEsperado = lucroTotal.multiply(BigDecimal.valueOf(0.15));
 
             assertEquals(0, impostoEsperado.compareTo(resgateConfirmado.getImposto()));
 
@@ -371,75 +363,31 @@ class ResgateControllerTests {
         @Test
         @DisplayName("Arredondamento de imposto deve seguir regra do sistema")
         void arredondamentoImposto() throws Exception {
-
             ativoAcao.setCotacao(BigDecimal.valueOf(56.7));
             ativoRepository.save(ativoAcao);
 
-            ResgateResponseDTO resgateSolicitado = resgateService.solicitarResgate(
-                    clientePremium.getId(), clientePremium.getCodigo(), ativoAcao.getId(), 1);
-
-            ResgateResponseDTO resgateConfirmado = resgateService.confirmarResgate(
-                    resgateSolicitado.getId(), administrador.getMatricula());
+            ResgateResponseDTO resgateConfirmado = solicitarEConfirmarResgate(clientePremium.getId(), clientePremium.getCodigo(),
+                    ativoAcao.getId(), 1);
 
             BigDecimal impostoEsperado = BigDecimal.valueOf(1.01);
 
-            assertEquals(0, impostoEsperado.compareTo(resgateConfirmado.getImposto()),
-                    "Imposto deve ser arredondado para 1,00");
+            assertEquals(0, impostoEsperado.compareTo(resgateConfirmado.getImposto()));
         }
 
         @Test
         @DisplayName("Resgate com ativo em desvalorização não deve cobrar imposto")
         void resgateAtivoDesvalorizado() throws Exception {
-
             ativoAcao.setCotacao(BigDecimal.valueOf(20));
             ativoRepository.save(ativoAcao);
 
-            ResgateResponseDTO resgateSolicitado = resgateService.solicitarResgate(
-                    clientePremium.getId(), clientePremium.getCodigo(), ativoAcao.getId(), 1);
-
-            ResgateResponseDTO resgateConfirmado = resgateService.confirmarResgate(
-                    resgateSolicitado.getId(), administrador.getMatricula());
+            ResgateResponseDTO resgateConfirmado = solicitarEConfirmarResgate(clientePremium.getId(), clientePremium.getCodigo(),
+                    ativoAcao.getId(), 1);
 
             BigDecimal impostoEsperado = BigDecimal.ZERO;
             BigDecimal valorResgatadoEsperado = BigDecimal.valueOf(20.0);
 
-            assertEquals(0, impostoEsperado.compareTo(resgateConfirmado.getImposto()),
-                    "Imposto deve ser zero para lucro negativo");
-            assertEquals(0, valorResgatadoEsperado.compareTo(resgateConfirmado.getValorResgatado()),
-                    "Valor resgatado deve ser 20,00");
-        }
-
-        @Test
-        @DisplayName("Resgate parcial deve calcular imposto corretamente e manter ativo na carteira")
-        void resgateParcialCalculaImpostoEManterAtivo() throws Exception {
-            ativoAcao.setCotacao(BigDecimal.valueOf(70.0));
-            ativoRepository.save(ativoAcao);
-
-
-            ResgateResponseDTO resgateSolicitado = resgateService.solicitarResgate(
-                    clientePremium.getId(), clientePremium.getCodigo(), ativoAcao.getId(), 4);
-
-            ResgateResponseDTO resgateConfirmado = resgateService.confirmarResgate(
-                    resgateSolicitado.getId(), administrador.getMatricula());
-
-            BigDecimal lucroUnitario = BigDecimal.valueOf(60.00).subtract(BigDecimal.valueOf(40.00)); //20,00
-            BigDecimal lucroTotal = lucroUnitario.multiply(BigDecimal.valueOf(4)); //80,00
-            BigDecimal impostoEsperado = lucroTotal.multiply(BigDecimal.valueOf(0.15)); //12,00
-
-            assertEquals(0, impostoEsperado.compareTo(resgateConfirmado.getImposto()),
-                    "Imposto deve ser R$12,00");
-
-            // Verificar que ainda restam 6 unidades na carteira
-            long quantidadeRestante = clientePremium.getConta()
-                    .getCarteira()
-                    .getAtivosEmCarteira()
-                    .stream()
-                    .filter(ca -> ca.getAtivo().getId().equals(ativoAcao.getId()))
-                    .findFirst()
-                    .get()
-                    .getQuantidade();
-
-            assertEquals(6, quantidadeRestante, "Deveriam restar 6 unidades na carteira");
+            assertEquals(0, impostoEsperado.compareTo(resgateConfirmado.getImposto()));
+            assertEquals(0, valorResgatadoEsperado.compareTo(resgateConfirmado.getValorResgatado()));
         }
 
         @Test
@@ -449,15 +397,12 @@ class ResgateControllerTests {
             ativoTesouro.setCotacao(BigDecimal.valueOf(110.00));
             ativoRepository.save(ativoTesouro);
 
-            ResgateResponseDTO resgateSolicitado = resgateService.solicitarResgate(
-                    clientePremium.getId(), clientePremium.getCodigo(), ativoTesouro.getId(), 1);
+            ResgateResponseDTO resgateConfirmado = solicitarEConfirmarResgate(clientePremium.getId(), clientePremium.getCodigo(),
+                    ativoTesouro.getId(), 1);
 
-            ResgateResponseDTO resgateConfirmado = resgateService.confirmarResgate(
-                    resgateSolicitado.getId(), administrador.getMatricula());
             BigDecimal impostoEsperado = new BigDecimal("1.00");
 
-            assertEquals(0, impostoEsperado.compareTo(resgateConfirmado.getImposto()),
-                    "Tesouro Direto deve aplicar 10% de imposto");
+            assertEquals(0, impostoEsperado.compareTo(resgateConfirmado.getImposto()));
         }
 
         @Test
@@ -466,16 +411,12 @@ class ResgateControllerTests {
             ativoCripto.setCotacao(BigDecimal.valueOf(5999.00));
             ativoRepository.save(ativoCripto);
 
-            ResgateResponseDTO resgateSolicitado = resgateService.solicitarResgate(
-                    clientePremium.getId(), clientePremium.getCodigo(), ativoCripto.getId(), 1);
-
-            ResgateResponseDTO resgateConfirmado = resgateService.confirmarResgate(
-                    resgateSolicitado.getId(), administrador.getMatricula());
+            ResgateResponseDTO resgateConfirmado = solicitarEConfirmarResgate(clientePremium.getId(), clientePremium.getCodigo(),
+                    ativoCripto.getId(), 1);
 
             BigDecimal impostoEsperado = new BigDecimal("749.85");
 
-            assertEquals(0, impostoEsperado.compareTo(resgateConfirmado.getImposto()),
-                    "Criptomoeda com lucro até R$5.000 deve aplicar 15%");
+            assertEquals(0, impostoEsperado.compareTo(resgateConfirmado.getImposto()));
         }
 
         @Test
@@ -484,16 +425,12 @@ class ResgateControllerTests {
             ativoCripto.setCotacao(BigDecimal.valueOf(6001.00));
             ativoRepository.save(ativoCripto);
 
-            ResgateResponseDTO resgateSolicitado = resgateService.solicitarResgate(
-                    clientePremium.getId(), clientePremium.getCodigo(), ativoCripto.getId(), 1);
-
-            ResgateResponseDTO resgateConfirmado = resgateService.confirmarResgate(
-                    resgateSolicitado.getId(), administrador.getMatricula());
+            ResgateResponseDTO resgateConfirmado = solicitarEConfirmarResgate(clientePremium.getId(), clientePremium.getCodigo(),
+                    ativoCripto.getId(), 1);
 
             BigDecimal impostoEsperado = new BigDecimal("1125.23");
 
-            assertEquals(0, impostoEsperado.compareTo(resgateConfirmado.getImposto()),
-                    "Criptomoeda com lucro acima de R$5.000 deve aplicar 22,5%");
+            assertEquals(0, impostoEsperado.compareTo(resgateConfirmado.getImposto()));
         }
 
         @Test
@@ -502,18 +439,12 @@ class ResgateControllerTests {
             ativoCripto.setCotacao(BigDecimal.valueOf(6000.00));
             ativoRepository.save(ativoCripto);
 
-            ResgateResponseDTO resgateSolicitado = resgateService.solicitarResgate(
-                    clientePremium.getId(), clientePremium.getCodigo(), ativoCripto.getId(), 1);
+            ResgateResponseDTO resgateConfirmado = solicitarEConfirmarResgate(clientePremium.getId(), clientePremium.getCodigo(),
+                    ativoCripto.getId(), 1);
 
-            ResgateResponseDTO resgateConfirmado = resgateService.confirmarResgate(
-                    resgateSolicitado.getId(), administrador.getMatricula());
-
-            // Lucro: 6000,00 - 1000,00 = 5000,00
-            // Imposto: 5000,00 * 0,15 = 750,00
             BigDecimal impostoEsperado = new BigDecimal("750.00");
 
-            assertEquals(0, impostoEsperado.compareTo(resgateConfirmado.getImposto()),
-                    "Criptomoeda no limite de R$5.000 deve aplicar 15%");
+            assertEquals(0, impostoEsperado.compareTo(resgateConfirmado.getImposto()));
         }
 
         @Test
@@ -522,16 +453,35 @@ class ResgateControllerTests {
             ativoCripto.setCotacao(BigDecimal.valueOf(800.00));
             ativoRepository.save(ativoCripto);
 
-            ResgateResponseDTO resgateSolicitado = resgateService.solicitarResgate(
-                    clientePremium.getId(), clientePremium.getCodigo(), ativoCripto.getId(), 1);
-
-            ResgateResponseDTO resgateConfirmado = resgateService.confirmarResgate(
-                    resgateSolicitado.getId(), administrador.getMatricula());
+            ResgateResponseDTO resgateConfirmado = solicitarEConfirmarResgate(clientePremium.getId(), clientePremium.getCodigo(),
+                    ativoCripto.getId(), 1);
 
             BigDecimal impostoEsperado = BigDecimal.ZERO;
 
-            assertEquals(0, impostoEsperado.compareTo(resgateConfirmado.getImposto()),
-                    "Criptomoeda em desvalorização não deve cobrar imposto");
+            assertEquals(0, impostoEsperado.compareTo(resgateConfirmado.getImposto()));
+        }
+
+        private ResgateResponseDTO solicitarEConfirmarResgate(Long clienteId, String codigoAcesso, Long ativoId, int quantidade) throws Exception {
+            String responseJsonSolicitar = driver.perform(post("/resgates/" + clienteId + "/" + ativoId)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .param("codigoAcesso", codigoAcesso)
+                            .param("quantidade", String.valueOf(quantidade)))
+                    .andExpect(status().isCreated())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+
+            ResgateResponseDTO resgateSolicitado = objectMapper.readValue(responseJsonSolicitar, ResgateResponseDTO.class);
+
+            String responseJsonConfirmar = driver.perform(put("/resgates/admin/" + resgateSolicitado.getId() + "/confirmar")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .param("matriculaAdmin", administrador.getMatricula()))
+                    .andExpect(status().isOk())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+
+            return objectMapper.readValue(responseJsonConfirmar, ResgateResponseDTO.class);
         }
     }
 
