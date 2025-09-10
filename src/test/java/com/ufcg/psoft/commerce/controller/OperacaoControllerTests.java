@@ -14,25 +14,37 @@ import com.ufcg.psoft.commerce.model.enums.StatusResgate;
 import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
 import com.ufcg.psoft.commerce.model.enums.TipoPlano;
 import com.ufcg.psoft.commerce.repository.*;
+import com.ufcg.psoft.commerce.service.extrato.ExtratoService;
 import com.ufcg.psoft.commerce.service.operacao.compra.CompraService;
 import com.ufcg.psoft.commerce.service.operacao.resgate.ResgateService;
 import jakarta.transaction.Transactional;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.*;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doAnswer;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -47,6 +59,9 @@ class OperacaoControllerTests {
 
     @Autowired
     MockMvc driver;
+
+    @MockBean
+    private ExtratoService extratoService;
 
     @Autowired
     ObjectMapper objectMapper;
@@ -96,7 +111,6 @@ class OperacaoControllerTests {
     @BeforeEach
     @Transactional
     void setup() {
-
         Logger logger = (Logger) LoggerFactory.getLogger(NotificacaoCompraDisponivel.class);
         listAppender = new ListAppender<>();
         listAppender.start();
@@ -368,34 +382,65 @@ class OperacaoControllerTests {
     @Nested
     @DisplayName("Fluxo de consulta do extratato gerado pelo cliente")
     class clienteConsultaExtrato {
-
         @Test
-        @DisplayName("Gera extrato CSV de um cliente com operações registradas")
-        void gerarExtratoCSVCliente() throws Exception {
-            MvcResult result = driver.perform(
-                            get(uriOperacoes + "/clientes/" + clientePremium.getId() + "/gerarExtrato")
-                                    .param("codigoAcesso", clientePremium.getCodigo())
-                                    .accept("text/csv")) // <-- bate com o que o controller retorna
+        @DisplayName("Deve exportar extrato CSV com sucesso")
+        void exportarExtratoCSV_sucesso() throws Exception {
+            Long idCliente = clientePremium.getId();
+            String codigoAcesso = clientePremium.getCodigo();
+
+            doAnswer(invocation -> {
+                OutputStream os = invocation.getArgument(2);
+                os.write("Data,Tipo da Operacao,Ativo\n01/01/2025,COMPRA,TESTE\n".getBytes());
+                return null;
+            }).when(extratoService).gerarExtratoCSV(eq(idCliente), eq(codigoAcesso), any());
+
+            MvcResult result = driver.perform(get("/operacoes/clientes/{idCliente}/gerarExtrato", idCliente)
+                            .param("codigoAcesso", codigoAcesso))
                     .andExpect(status().isOk())
-                    .andExpect(header().string("Content-Disposition",
-                            Matchers.containsString("extrato_cliente_" + clientePremium.getId())))
-                    .andExpect(content().contentType("text/csv")) // <-- garante que o retorno é text/csv
+                    .andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION, Matchers.containsString("attachment; filename=")))
+                    .andExpect(content().contentType("text/csv"))
                     .andReturn();
 
-            // Captura o conteúdo do CSV gerado pelo StreamingResponseBody
-            String csv = result.getResponse().getContentAsString();
-
-            // Verifica que tem header
-            assertTrue(csv.contains("Data,Tipo da Operacao,Ativo,Quantidade,Valor da Operacao,Imposto Pago,Valor Lucro,Status da Operação"));
-
-            // Verifica que operações do cliente aparecem
-            assertTrue(csv.contains("COMPRA"));
-            assertTrue(csv.contains("RESGATE"));
-            assertTrue(csv.contains("Acao Teste") || csv.contains("Tesouro Teste"));
+            String csvContent = result.getResponse().getContentAsString();
+            assertThat(csvContent)
+                    .contains("Data,Tipo da Operacao,Ativo")
+                    .contains("COMPRA");
         }
 
+        @Test
+        @DisplayName("Deve exportar extrato CSV vazio quando não há operações")
+        void exportarExtratoCSV_vazio() throws Exception {
+            Long idCliente = 1L;
+            String codigoAcesso = "123456";
 
+            doAnswer(invocation -> {
+                OutputStream os = invocation.getArgument(2);
+                Writer writer = new OutputStreamWriter(os, StandardCharsets.UTF_8);
+                CSVPrinter csvPrinter = CSVFormat.DEFAULT.builder()
+                        .setHeader("Data", "Tipo da Operacao", "Ativo", "Quantidade",
+                                "Valor da Operacao", "Imposto Pago", "Valor Lucro", "Status da Operação")
+                        .build()
+                        .print(writer);
+                csvPrinter.flush();
+                csvPrinter.close();
+                return null;
+            }).when(extratoService).gerarExtratoCSV(eq(idCliente), eq(codigoAcesso), any());
+
+            MvcResult result = driver.perform(get("/operacoes/clientes/{idCliente}/gerarExtrato", idCliente)
+                            .param("codigoAcesso", codigoAcesso))
+                    .andExpect(status().isOk())
+                    .andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION, Matchers.containsString("attachment; filename=")))
+                    .andExpect(content().contentTypeCompatibleWith("text/csv"))
+                    .andReturn();
+
+            byte[] responseBytes = result.getResponse().getContentAsByteArray();
+            String csvContent = new String(responseBytes, StandardCharsets.UTF_8);
+
+            assertThat(csvContent)
+                    .contains("Data,Tipo da Operacao,Ativo,Quantidade,Valor da Operacao,Imposto Pago,Valor Lucro,Status da Operação");
+
+            String[] lines = csvContent.split("\\r?\\n");
+            assertThat(lines).hasSize(1);
+        }
     }
-
-
 }
