@@ -384,7 +384,7 @@ class OperacaoControllerTests {
     class clienteConsultaExtrato {
         @Test
         @DisplayName("Deve exportar extrato CSV com sucesso")
-        void exportarExtratoCSV_sucesso() throws Exception {
+        void exportarExtratoCSVSucesso() throws Exception {
             Long idCliente = clientePremium.getId();
             String codigoAcesso = clientePremium.getCodigo();
 
@@ -409,7 +409,7 @@ class OperacaoControllerTests {
 
         @Test
         @DisplayName("Deve exportar extrato CSV vazio quando não há operações")
-        void exportarExtratoCSV_vazio() throws Exception {
+        void exportarExtratoCSVSemOperacoes() throws Exception {
             Long idCliente = 1L;
             String codigoAcesso = "123456";
 
