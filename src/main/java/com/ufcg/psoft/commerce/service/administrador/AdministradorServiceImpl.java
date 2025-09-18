@@ -1,44 +1,42 @@
 package com.ufcg.psoft.commerce.service.administrador;
 
-
 import com.ufcg.psoft.commerce.dto.administrador.AdministradorResponseDTO;
 import com.ufcg.psoft.commerce.dto.administrador.AdministradorPostPutRequestDTO;
 import com.ufcg.psoft.commerce.exception.administrador.AdminJaExisteException;
 import com.ufcg.psoft.commerce.exception.administrador.AdminNaoExisteException;
-import com.ufcg.psoft.commerce.exception.administrador.MatriculaInvalidaException;
-import com.ufcg.psoft.commerce.model.Administrador;
-import com.ufcg.psoft.commerce.model.Endereco;
+import com.ufcg.psoft.commerce.exception.ativo.AtivoIndisponivelException;
+import com.ufcg.psoft.commerce.exception.compra.CompraNaoExisteException;
+import com.ufcg.psoft.commerce.exception.compra.StatusCompraInvalidoException;
+import com.ufcg.psoft.commerce.exception.conta.SaldoInsuficienteException;
+import com.ufcg.psoft.commerce.exception.resgate.ResgateNaoExisteException;
+import com.ufcg.psoft.commerce.model.*;
+import com.ufcg.psoft.commerce.model.enums.StatusResgate;
 import com.ufcg.psoft.commerce.repository.AdministradorRepository;
+import com.ufcg.psoft.commerce.repository.CompraRepository;
 import com.ufcg.psoft.commerce.repository.EnderecoRepository;
 
+import java.math.BigDecimal;
 import java.util.List;
 
-
+import com.ufcg.psoft.commerce.repository.ResgateRepository;
+import com.ufcg.psoft.commerce.service.ativo.AtivoService;
+import com.ufcg.psoft.commerce.service.autenticacao.AutenticacaoService;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class AdministradorServiceImpl implements AdministradorService {
 
-    @Autowired
-    private AdministradorRepository administradorRepository;
+    private final AdministradorRepository administradorRepository;
+    private final ModelMapper modelMapper;
+    private final EnderecoRepository enderecoRepository;
+    private final CompraRepository compraRepository;
+    private final ResgateRepository resgateRepository;
+    private final AtivoService ativoService;
+    private final AutenticacaoService autenticacaoService;
 
-    @Autowired
-    ModelMapper modelMapper;
-
-    @Autowired
-    EnderecoRepository enderecoRepository;
-
-    @Override
-    public Administrador autenticar(String matricula) {
-        Administrador administrador = getAdmin();
-
-        if (!administrador.getMatricula().equals(matricula)) {
-            throw new MatriculaInvalidaException();
-        }
-        return administrador;
-    }
 
     @Override
     public AdministradorResponseDTO criar(AdministradorPostPutRequestDTO administradorPostPutRequestDTO) {
@@ -65,7 +63,7 @@ public class AdministradorServiceImpl implements AdministradorService {
 
     @Override
     public AdministradorResponseDTO atualizarAdmin(AdministradorPostPutRequestDTO administradorPostPutRequestDTO, String matricula) {
-        Administrador admin = autenticar(matricula);
+        Administrador admin = autenticacaoService.autenticarAdmin(matricula);
 
         admin.setNome(administradorPostPutRequestDTO.getNome());
         admin.setCpf(administradorPostPutRequestDTO.getCpf());
@@ -82,14 +80,9 @@ public class AdministradorServiceImpl implements AdministradorService {
 
     @Override
     public void removerAdmin(String matricula) {
-        Administrador admin =  autenticar(matricula);
+        Administrador admin = autenticacaoService.autenticarAdmin(matricula);
 
         administradorRepository.delete(admin);
-    }
-
-    private Administrador getAdmin() {
-        return administradorRepository.findTopBy()
-                .orElseThrow(() -> new AdminNaoExisteException());
     }
 
     @Override
@@ -97,5 +90,47 @@ public class AdministradorServiceImpl implements AdministradorService {
         Administrador admin = administradorRepository.findTopBy()
                 .orElseThrow(AdminNaoExisteException::new);
         return modelMapper.map(admin, AdministradorResponseDTO.class);
+    }
+
+    @Override
+    public void confirmarDisponibilidadeCompra(Long idCompra, String matricula) {
+        autenticacaoService.autenticarAdmin(matricula);
+
+        Compra compra = compraRepository.findById(idCompra)
+                .orElseThrow(CompraNaoExisteException::new);
+
+        Conta conta = compra.getCliente().getConta();
+
+        BigDecimal valorCompra = compra.getAtivo().getCotacao()
+                .multiply(BigDecimal.valueOf(compra.getQuantidade()));
+
+        if (conta.getSaldo().compareTo(valorCompra) < 0) {
+            throw new SaldoInsuficienteException();
+        }
+
+        compra.avancarStatus();
+        compraRepository.save(compra);
+    }
+
+    @Override
+    public void confirmarResgate(Long idResgate, String matricula) {
+        autenticacaoService.autenticarAdmin(matricula);
+
+        Resgate resgate = resgateRepository.findById(idResgate)
+                .orElseThrow(ResgateNaoExisteException::new);
+
+        if (resgate.getStatusResgate() != StatusResgate.SOLICITADO) {
+            throw new StatusCompraInvalidoException();
+        }
+
+        if(Boolean.FALSE.equals(resgate.getAtivo().isDisponivel())){
+            throw new AtivoIndisponivelException();
+        }
+
+        BigDecimal imposto = ativoService.calcularImposto(resgate.getAtivo(), resgate.getLucro());
+        resgate.atribuirImposto(imposto);
+
+        resgate.avancarStatus();
+        resgateRepository.save(resgate);
     }
 }

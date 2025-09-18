@@ -1,17 +1,19 @@
 package com.ufcg.psoft.commerce.service.conta;
 
-import com.ufcg.psoft.commerce.dto.ativo.AtivoResponseDTO;
-import com.ufcg.psoft.commerce.model.Ativo;
+import com.ufcg.psoft.commerce.dto.carteira.AtivoEmCarteiraResponseDTO;
+import com.ufcg.psoft.commerce.dto.compra.CompraResponseDTO;
 import com.ufcg.psoft.commerce.model.Conta;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 public interface ContaService {
 
     Conta criarContaPadrao();
 
-    void adicionarAtivoNaListaDeInteresse(Long id, AtivoResponseDTO ativo);
+    CompraResponseDTO confirmarCompra(Long idCliente, Long idCompra);
 
-    void notificarAtivoDisponivelClientesComInteresse(Ativo ativo);
+    List<AtivoEmCarteiraResponseDTO> visualizarCarteira(Long idCliente);
 
-    void notificarClientesPremiumComInteresse(Ativo ativo);
-
+    void acrecentaSaldoConta(Long idCliente, BigDecimal valor);
 }

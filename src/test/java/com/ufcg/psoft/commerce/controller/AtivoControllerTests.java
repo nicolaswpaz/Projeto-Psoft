@@ -31,9 +31,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @DisplayName("Testes do controlador de Ativos")
-public class AtivoControllerTests {
+class AtivoControllerTests {
 
-    final String URI_ATIVOS = "/ativos";
+    final String uriAtivos = "/ativos";
 
     @Autowired
     MockMvc driver;
@@ -106,7 +106,7 @@ public class AtivoControllerTests {
         void quandoAlteramosNomeDoAtivoValido() throws Exception {
             ativoPostPutRequestDTO.setNome("Ativo de teste alterado");
 
-            String responseJsonString = driver.perform(put(URI_ATIVOS + "/" + ativo.getId())
+            String responseJsonString = driver.perform(put(uriAtivos + "/" + ativo.getId())
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("matriculaAdmin", administrador.getMatricula())
                             .content(objectMapper.writeValueAsString(ativoPostPutRequestDTO)))
@@ -125,7 +125,7 @@ public class AtivoControllerTests {
 
             ativoPostPutRequestDTO.setNome(null);
 
-            String responseJsonString = driver.perform(put(URI_ATIVOS + "/" + ativo.getId())
+            String responseJsonString = driver.perform(put(uriAtivos + "/" + ativo.getId())
                             .contentType(MediaType.APPLICATION_JSON)
                             // Adiciona a matricula do administrador
                             .param("matriculaAdmin", administrador.getMatricula())
@@ -146,7 +146,7 @@ public class AtivoControllerTests {
 
             ativoPostPutRequestDTO.setNome("");
 
-            String responseJsonString = driver.perform(put(URI_ATIVOS + "/" + ativo.getId())
+            String responseJsonString = driver.perform(put(uriAtivos + "/" + ativo.getId())
                             .contentType(MediaType.APPLICATION_JSON)
                             // Adiciona a matricula do administrador
                             .param("matriculaAdmin", administrador.getMatricula())
@@ -188,7 +188,7 @@ public class AtivoControllerTests {
                     .build();
             ativoRepository.saveAll(Arrays.asList(ativo2, ativo3));
 
-            String responseJsonString = driver.perform(get(URI_ATIVOS))
+            String responseJsonString = driver.perform(get(uriAtivos))
                     .andExpect(status().isOk())
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
@@ -203,7 +203,7 @@ public class AtivoControllerTests {
         @DisplayName("Quando buscamos um ativo salvo pelo id")
         void quandoBuscamosPorUmAtivoSalvo() throws Exception {
 
-            String responseJsonString = driver.perform(get(URI_ATIVOS + "/" + ativo.getId()))
+            String responseJsonString = driver.perform(get(uriAtivos + "/" + ativo.getId()))
                     .andExpect(status().isOk())
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
@@ -218,7 +218,7 @@ public class AtivoControllerTests {
         @DisplayName("Quando buscamos um ativo inexistente")
         void quandoBuscamosPorUmAtivoInexistente() throws Exception {
 
-            String responseJsonString = driver.perform(get(URI_ATIVOS + "/" + 999999999)
+            String responseJsonString = driver.perform(get(uriAtivos + "/" + 999999999)
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isBadRequest())
                     .andDo(print())
@@ -239,7 +239,7 @@ public class AtivoControllerTests {
                     .cotacao(BigDecimal.valueOf(75.50))
                     .build();
 
-            String responseJsonString = driver.perform(post(URI_ATIVOS)
+            String responseJsonString = driver.perform(post(uriAtivos)
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("matriculaAdmin", administrador.getMatricula())
                             .content(objectMapper.writeValueAsString(novoAtivoDTO)))
@@ -261,7 +261,7 @@ public class AtivoControllerTests {
             ativoPostPutRequestDTO.setNome("Ativo Principal Alterado");
             ativoPostPutRequestDTO.setCotacao(BigDecimal.valueOf(55.50));
 
-            String responseJsonString = driver.perform(put(URI_ATIVOS + "/" + ativo.getId())
+            String responseJsonString = driver.perform(put(uriAtivos + "/" + ativo.getId())
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("matriculaAdmin", administrador.getMatricula())
                             .content(objectMapper.writeValueAsString(ativoPostPutRequestDTO)))
@@ -281,7 +281,7 @@ public class AtivoControllerTests {
         @Test
         @DisplayName("Quando alteramos o ativo inexistente")
         void quandoAlteramosAtivoInexistente() throws Exception {
-            String responseJsonString = driver.perform(put(URI_ATIVOS + "/" + 99999L)
+            String responseJsonString = driver.perform(put(uriAtivos + "/" + 99999L)
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("matriculaAdmin", administrador.getMatricula())
                             .content(objectMapper.writeValueAsString(ativoPostPutRequestDTO)))
@@ -300,7 +300,7 @@ public class AtivoControllerTests {
             Long ativoId = ativo.getId();
             ativoPostPutRequestDTO.setNome("Ativo admin inválido");
 
-            String responseJsonString = driver.perform(put(URI_ATIVOS + "/" + ativoId)
+            String responseJsonString = driver.perform(put(uriAtivos + "/" + ativoId)
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("matriculaAdmin", "matricula_invalida")
                             .content(objectMapper.writeValueAsString(ativoPostPutRequestDTO)))
@@ -317,7 +317,7 @@ public class AtivoControllerTests {
         @DisplayName("Quando excluímos um ativo salvo")
         void quandoExcluimosAtivoValido() throws Exception {
 
-            String responseJsonString = driver.perform(delete(URI_ATIVOS + "/" + ativo.getId())
+            String responseJsonString = driver.perform(delete(uriAtivos + "/" + ativo.getId())
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("matriculaAdmin", administrador.getMatricula()))
                     .andExpect(status().isNoContent())
@@ -333,7 +333,7 @@ public class AtivoControllerTests {
         @DisplayName("Quando excluímos um ativo inexistente")
         void quandoExcluimosAtivoInexistente() throws Exception {
 
-            String responseJsonString = driver.perform(delete(URI_ATIVOS + "/" + 999999L)
+            String responseJsonString = driver.perform(delete(uriAtivos + "/" + 999999L)
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("matriculaAdmin", administrador.getMatricula()))
                     .andExpect(status().isBadRequest())
@@ -352,7 +352,7 @@ public class AtivoControllerTests {
             String matriculaInvalida = "matricula_fake";
             ativoPostPutRequestDTO.setNome("Alteração com matrícula inválida");
 
-            String responseJsonString = driver.perform(put(URI_ATIVOS + "/" + ativoId)
+            String responseJsonString = driver.perform(put(uriAtivos + "/" + ativoId)
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("matriculaAdmin", matriculaInvalida)
                             .content(objectMapper.writeValueAsString(ativoPostPutRequestDTO)))
@@ -369,7 +369,7 @@ public class AtivoControllerTests {
         @DisplayName("Quando buscamos um ativo salvo pelo id, seu tipo deve ser retornado corretamente")
         void quandoBuscamosUmAtivoSalvoVerificamosOSeuTipo() throws Exception {
 
-            String responseJsonString = driver.perform(get(URI_ATIVOS + "/" + ativo.getId()))
+            String responseJsonString = driver.perform(get(uriAtivos + "/" + ativo.getId()))
                     .andExpect(status().isOk())
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
@@ -400,14 +400,14 @@ public class AtivoControllerTests {
             Long ativoId = ativoIndisponivel.getId();
             String matriculaValida = administrador.getMatricula();
 
-            String responseDisponibilizarAtivo = driver.perform(put(URI_ATIVOS + "/" + ativoId + "/disponibilizar")
+            String responseDisponibilizarAtivo = driver.perform(put(uriAtivos + "/" + ativoId + "/disponibilizar")
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("matriculaAdmin", matriculaValida))
                     .andExpect(status().isOk())
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
 
-            String responseIndisponibilizarAtivo = driver.perform(put(URI_ATIVOS + "/" + ativoId + "/indisponibilizar")
+            String responseIndisponibilizarAtivo = driver.perform(put(uriAtivos + "/" + ativoId + "/indisponibilizar")
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("matriculaAdmin", matriculaValida))
                     .andExpect(status().isOk())
@@ -423,7 +423,7 @@ public class AtivoControllerTests {
         void quandoAlteramosADisponibilidadeDeUmAtivoInexistente() throws Exception {
             long idInvalido = 99992999L;
 
-            String responseDisponibilizarAtivo = driver.perform(put(URI_ATIVOS + "/" + idInvalido + "/disponibilizar")
+            String responseDisponibilizarAtivo = driver.perform(put(uriAtivos + "/" + idInvalido + "/disponibilizar")
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("matriculaAdmin", administrador.getMatricula()))
 
@@ -431,7 +431,7 @@ public class AtivoControllerTests {
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
 
-            String responseIndisponibilizarAtivo = driver.perform(put(URI_ATIVOS + "/" + idInvalido + "/indisponibilizar")
+            String responseIndisponibilizarAtivo = driver.perform(put(uriAtivos + "/" + idInvalido + "/indisponibilizar")
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("matriculaAdmin", administrador.getMatricula()))
                     .andExpect(status().isBadRequest())
@@ -451,14 +451,14 @@ public class AtivoControllerTests {
             Long ativoId = ativo.getId();
             String matriculaInvalida = "matricula_fake";
 
-            String responseDisponibilizarAtivo = driver.perform(put(URI_ATIVOS + "/" + ativoId + "/disponibilizar")
+            String responseDisponibilizarAtivo = driver.perform(put(uriAtivos + "/" + ativoId + "/disponibilizar")
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("matriculaAdmin", matriculaInvalida))
                     .andExpect(status().isBadRequest())
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
 
-            String responseIndisponibilizarAtivo = driver.perform(put(URI_ATIVOS + "/" + ativoId + "/indisponibilizar")
+            String responseIndisponibilizarAtivo = driver.perform(put(uriAtivos + "/" + ativoId + "/indisponibilizar")
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("matriculaAdmin", matriculaInvalida))
                     .andExpect(status().isBadRequest())
@@ -487,7 +487,7 @@ public class AtivoControllerTests {
             Long ativoId = ativoIndisponivel.getId();
             String matriculaValida = administrador.getMatricula();
 
-            driver.perform(put(URI_ATIVOS + "/" + ativoId + "/disponibilizar")
+            driver.perform(put(uriAtivos + "/" + ativoId + "/disponibilizar")
                             .param("matriculaAdmin", matriculaValida))
                     .andExpect(status().isOk());
 
@@ -501,7 +501,7 @@ public class AtivoControllerTests {
             Long ativoId = ativo.getId();
             String matriculaValida = administrador.getMatricula();
 
-            driver.perform(put(URI_ATIVOS + "/" + ativoId + "/indisponibilizar")
+            driver.perform(put(uriAtivos + "/" + ativoId + "/indisponibilizar")
                             .param("matriculaAdmin", matriculaValida))
                     .andExpect(status().isOk());
 
@@ -524,11 +524,11 @@ public class AtivoControllerTests {
             Long ativoId = ativoIndisponivel.getId();
             String matricula = administrador.getMatricula();
 
-            driver.perform(put(URI_ATIVOS + "/" + ativoId + "/disponibilizar")
+            driver.perform(put(uriAtivos + "/" + ativoId + "/disponibilizar")
                             .param("matriculaAdmin", matricula))
                     .andExpect(status().isOk());
 
-            driver.perform(put(URI_ATIVOS + "/" + ativoId + "/disponibilizar")
+            driver.perform(put(uriAtivos + "/" + ativoId + "/disponibilizar")
                             .param("matriculaAdmin", matricula))
                     .andExpect(status().isBadRequest());
         }
@@ -539,11 +539,11 @@ public class AtivoControllerTests {
             Long ativoId = ativo.getId();
             String matricula = administrador.getMatricula();
 
-            driver.perform(put(URI_ATIVOS + "/" + ativoId + "/indisponibilizar")
+            driver.perform(put(uriAtivos + "/" + ativoId + "/indisponibilizar")
                             .param("matriculaAdmin", matricula))
                     .andExpect(status().isOk());
 
-            driver.perform(put(URI_ATIVOS + "/" + ativoId + "/indisponibilizar")
+            driver.perform(put(uriAtivos + "/" + ativoId + "/indisponibilizar")
                             .param("matriculaAdmin", matricula))
                     .andExpect(status().isBadRequest());
         }
@@ -560,7 +560,7 @@ public class AtivoControllerTests {
             BigDecimal novaCotacao = BigDecimal.valueOf(1.10);
 
 
-            String responseJsonString = driver.perform(put(URI_ATIVOS + "/" + ativo.getId() + "/cotacao")
+            String responseJsonString = driver.perform(put(uriAtivos + "/" + ativo.getId() + "/cotacao")
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("matriculaAdmin", administrador.getMatricula())
                             .param("novoValor", String.valueOf(novaCotacao)))
@@ -589,7 +589,7 @@ public class AtivoControllerTests {
                     .build());
             BigDecimal novaCotacao = BigDecimal.valueOf(135.00);
 
-            String responseJsonString = driver.perform(put(URI_ATIVOS + "/" + tesouroAtivo.getId() + "/cotacao")
+            String responseJsonString = driver.perform(put(uriAtivos + "/" + tesouroAtivo.getId() + "/cotacao")
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("matriculaAdmin", administrador.getMatricula())
                             .param("novoValor", String.valueOf(novaCotacao)))
@@ -608,7 +608,7 @@ public class AtivoControllerTests {
 
             BigDecimal novaCotacaoPequenaVariacao = BigDecimal.valueOf(1.005);
 
-            String responseJsonString = driver.perform(put(URI_ATIVOS + "/" + ativo.getId() + "/cotacao")
+            String responseJsonString = driver.perform(put(uriAtivos + "/" + ativo.getId() + "/cotacao")
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("matriculaAdmin", administrador.getMatricula())
                             .param("novoValor", String.valueOf(novaCotacaoPequenaVariacao)))

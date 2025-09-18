@@ -28,9 +28,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @DisplayName("Testes do controlador de Administrador")
-public class AdministradorControllerTests {
+class AdministradorControllerTests {
 
-    final String URI_ADMINISTRADOR = "/administrador";
+    final String uriAdministrador = "/administrador";
 
     @Autowired
     MockMvc driver;
@@ -101,7 +101,7 @@ public class AdministradorControllerTests {
         @Test
         @DisplayName("Quando buscamos o único administrador existente")
         void quandoBuscamosAdministradorExistente() throws Exception {
-            String responseJsonString = driver.perform(get(URI_ADMINISTRADOR)
+            String responseJsonString = driver.perform(get(uriAdministrador)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(administradorPostPutRequestDTO)))
                     .andExpect(status().isOk())
@@ -126,7 +126,7 @@ public class AdministradorControllerTests {
 
             administradorPostPutRequestDTO.setEnderecoDTO(enderecoAlterado);
 
-            String responseJsonString = driver.perform(put(URI_ADMINISTRADOR + "/" + administrador.getMatricula())
+            String responseJsonString = driver.perform(put(uriAdministrador + "/" + administrador.getMatricula())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(administradorPostPutRequestDTO)))
                     .andExpect(status().isOk())
@@ -152,7 +152,7 @@ public class AdministradorControllerTests {
 
             administradorPostPutRequestDTO.setEnderecoDTO(enderecoAlterado);
 
-            String responseJsonString = driver.perform(put(URI_ADMINISTRADOR + "/" + matriculaInvalida)
+            String responseJsonString = driver.perform(put(uriAdministrador + "/" + matriculaInvalida)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(administradorPostPutRequestDTO)))
                     .andExpect(status().isBadRequest())

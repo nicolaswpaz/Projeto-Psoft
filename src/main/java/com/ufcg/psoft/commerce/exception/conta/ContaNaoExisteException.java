@@ -4,6 +4,6 @@ import com.ufcg.psoft.commerce.exception.CommerceException;
 
 public class ContaNaoExisteException extends CommerceException {
     public ContaNaoExisteException() {
-        super("Conta não encontrada");
+        super("Conta nao encontrada");
     }
 }

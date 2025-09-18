@@ -44,7 +44,6 @@ public class AtivoResponseDTO {
     private boolean disponivel;
 
     public AtivoResponseDTO(Ativo ativo){
-
         this.id = ativo.getId();
         this.nome = ativo.getNome();
         this.tipo = ativo.getTipo();

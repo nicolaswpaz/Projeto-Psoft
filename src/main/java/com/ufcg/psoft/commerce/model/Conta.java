@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.List;
+import java.math.BigDecimal;
 
 @Entity
 @Data
@@ -19,9 +19,16 @@ public class Conta {
     private Long id;
 
     @JsonProperty("saldo")
-    private String saldo;
+    private BigDecimal saldo;
 
-    @ManyToMany
-    @JsonProperty("ativosDeInteresse")
-    private List<Ativo> ativosDeInteresse;
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "carteira_id")
+    private Carteira carteira;
+
+    @PrePersist
+    public void prePersist(){
+        if (this.saldo == null){
+            this.saldo = BigDecimal.valueOf(0);
+        }
+    }
 }

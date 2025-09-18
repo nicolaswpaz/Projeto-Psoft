@@ -1,16 +1,14 @@
 package com.ufcg.psoft.commerce.service.cliente;
 
 import com.ufcg.psoft.commerce.dto.ativo.AtivoResponseDTO;
+import com.ufcg.psoft.commerce.dto.carteira.AtivoEmCarteiraResponseDTO;
 import com.ufcg.psoft.commerce.dto.cliente.ClientePostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.cliente.ClienteResponseDTO;
-import com.ufcg.psoft.commerce.model.Cliente;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public interface ClienteService {
-
-    Cliente autenticar(Long id, String codigoAcesso);
-
     ClienteResponseDTO alterar(Long id, String codigoAcesso, ClientePostPutRequestDTO clientePostPutRequestDTO);
 
     ClienteResponseDTO recuperar(Long id, String codigoAcesso);
@@ -18,8 +16,6 @@ public interface ClienteService {
     ClienteResponseDTO criar(ClientePostPutRequestDTO clientePostPutRequestDTO);
 
     void remover(Long id, String codigoAcesso);
-
-    List<ClienteResponseDTO> listarPorNome(String nome, String matriculaAdmin);
 
     List<ClienteResponseDTO> listar(String matriculaAdmin);
 
@@ -30,4 +26,10 @@ public interface ClienteService {
     void marcarInteresseAtivoDisponivel(Long id, String codigoAcesso, Long idAtivo);
 
     AtivoResponseDTO visualizarDetalhesAtivo(Long id, String codigoAcesso, Long idAtivo);
+
+    void confirmarCompraAtivo(Long idCliente, Long idCompra, String codigoAcesso);
+
+    List<AtivoEmCarteiraResponseDTO> visualizarCarteira(Long idCliente, String codigoAcesso);
+
+    void acrecentaSaldoConta(Long idCliente, String codigoAcesso, BigDecimal valor);
 }

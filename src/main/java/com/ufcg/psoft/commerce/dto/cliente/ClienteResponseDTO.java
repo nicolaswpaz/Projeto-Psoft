@@ -11,6 +11,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -31,6 +33,9 @@ public class ClienteResponseDTO {
     @JsonProperty("plano")
     private TipoPlano plano;
 
+    @JsonProperty("saldo")
+    private BigDecimal saldo;
+
     public ClienteResponseDTO(Cliente cliente) {
         this.id = cliente.getId();
         this.nome = cliente.getNome();
@@ -42,5 +47,14 @@ public class ClienteResponseDTO {
         this.plano = cliente.getPlano() != null
                 ? cliente.getPlano()
                 : TipoPlano.NORMAL;
+
+        this.saldo = cliente.getConta() != null && cliente.getConta().getSaldo() != null
+                ? cliente.getConta().getSaldo()
+                : BigDecimal.ZERO;
+    }
+
+
+    public BigDecimal getSaldo() {
+        return saldo != null ? saldo : BigDecimal.ZERO;
     }
 }

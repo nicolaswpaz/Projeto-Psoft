@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import com.ufcg.psoft.commerce.model.enums.TipoPlano;
 
-
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Data
@@ -28,7 +27,7 @@ public class Cliente extends Usuario {
     @Column(nullable = false)
     private String codigo;
 
-    @ManyToOne
+    @OneToOne(cascade = CascadeType.ALL)
     @JsonIgnore
     private Conta conta;
 

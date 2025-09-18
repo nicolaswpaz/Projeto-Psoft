@@ -1,65 +1,45 @@
 package com.ufcg.psoft.commerce.service.cliente;
 
 import com.ufcg.psoft.commerce.dto.ativo.AtivoResponseDTO;
+import com.ufcg.psoft.commerce.dto.carteira.AtivoEmCarteiraResponseDTO;
 import com.ufcg.psoft.commerce.dto.endereco.EnderecoResponseDTO;
 import com.ufcg.psoft.commerce.exception.ativo.AtivoDisponivelException;
 import com.ufcg.psoft.commerce.exception.ativo.AtivoIndisponivelException;
 import com.ufcg.psoft.commerce.exception.cliente.*;
 import com.ufcg.psoft.commerce.exception.cliente.OperacaoInvalidaException;
-import com.ufcg.psoft.commerce.model.Conta;
-import com.ufcg.psoft.commerce.model.Endereco;
+import com.ufcg.psoft.commerce.model.*;
 import com.ufcg.psoft.commerce.model.enums.TipoPlano;
 import com.ufcg.psoft.commerce.model.enums.TipoAtivo;
+import com.ufcg.psoft.commerce.model.enums.TipoInteresse;
 import com.ufcg.psoft.commerce.repository.ClienteRepository;
 import com.ufcg.psoft.commerce.dto.cliente.ClientePostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.cliente.ClienteResponseDTO;
-import com.ufcg.psoft.commerce.model.Cliente;
-import com.ufcg.psoft.commerce.service.administrador.AdministradorService;
 import com.ufcg.psoft.commerce.service.ativo.AtivoService;
+import com.ufcg.psoft.commerce.service.autenticacao.AutenticacaoService;
 import com.ufcg.psoft.commerce.service.conta.ContaService;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import com.ufcg.psoft.commerce.repository.EnderecoRepository;
 
 @Service
+@RequiredArgsConstructor
 public class ClienteServiceImpl implements ClienteService {
 
-    @Autowired
-    ClienteRepository clienteRepository;
+    private final ClienteRepository clienteRepository;
+    private final ModelMapper modelMapper;
+    private final EnderecoRepository enderecoRepository;
+    private final AtivoService ativoService;
+    private final ContaService contaService;
+    private final AutenticacaoService autenticacaoService;
 
-    @Autowired
-    ModelMapper modelMapper;
-
-    @Autowired
-    EnderecoRepository enderecoRepository;
-
-    @Autowired
-    AdministradorService administradorService;
-
-    @Autowired
-    AtivoService ativoService;
-
-    @Autowired
-    ContaService contaService;
-
-    @Override
-    public Cliente autenticar(Long id, String codigoAcesso) {
-        Cliente cliente = clienteRepository.findById(id)
-                .orElseThrow(ClienteNaoExisteException::new);
-
-        if (!cliente.getCodigo().equals(codigoAcesso)) {
-            throw new CodigoDeAcessoInvalidoException();
-        }
-        return cliente;
-    }
 
     @Override
     @Transactional
@@ -81,7 +61,7 @@ public class ClienteServiceImpl implements ClienteService {
     @Override
     @Transactional
     public ClienteResponseDTO alterar(Long id, String codigoAcesso, ClientePostPutRequestDTO clientePostPutRequestDTO) {
-        Cliente cliente = autenticar(id, codigoAcesso);
+        Cliente cliente = autenticacaoService.autenticarCliente(id, codigoAcesso);
 
         cliente.setNome(clientePostPutRequestDTO.getNome());
         cliente.setCpf(clientePostPutRequestDTO.getCpf());
@@ -115,39 +95,29 @@ public class ClienteServiceImpl implements ClienteService {
     @Override
     @Transactional
     public void remover(Long id, String codigoAcesso) {
-        Cliente cliente = autenticar(id, codigoAcesso);
+        Cliente cliente = autenticacaoService.autenticarCliente(id, codigoAcesso);
         clienteRepository.delete(cliente);
     }
 
     @Override
     public ClienteResponseDTO recuperar(Long id, String codigoAcesso) {
-        Cliente cliente = autenticar(id, codigoAcesso);
+        Cliente cliente = autenticacaoService.autenticarCliente(id, codigoAcesso);
         return new ClienteResponseDTO(cliente);
     }
 
     @Override
-    public List<ClienteResponseDTO> listarPorNome(String nome, String matriculaAdmin) {
-        administradorService.autenticar(matriculaAdmin);
-
-        List<Cliente> clientes = clienteRepository.findByNomeContainingIgnoreCase(nome);
-        return clientes.stream()
-                .map(ClienteResponseDTO::new)
-                .collect(Collectors.toList());
-    }
-
-    @Override
     public List<ClienteResponseDTO> listar(String matriculaAdmin) {
-        administradorService.autenticar(matriculaAdmin);
+        autenticacaoService.autenticarAdmin(matriculaAdmin);
 
         List<Cliente> clientes = clienteRepository.findAll();
         return clientes.stream()
                 .map(ClienteResponseDTO::new)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
     public List<AtivoResponseDTO> listarAtivosDisponiveisPorPlano(Long id, String codigoAcesso) {
-        Cliente cliente = autenticar(id, codigoAcesso);
+        Cliente cliente = autenticacaoService.autenticarCliente(id, codigoAcesso);
 
         List<AtivoResponseDTO> ativosFiltrados = new ArrayList<>();
         List<AtivoResponseDTO> ativosDisponiveis = ativoService.listarAtivosDisponiveis();
@@ -167,37 +137,37 @@ public class ClienteServiceImpl implements ClienteService {
 
     @Override
     public void marcarInteresseAtivoIndisponivel(Long id, String codigoAcesso, Long idAtivo) {
-        Cliente cliente = autenticar(id, codigoAcesso);
+        Cliente cliente = autenticacaoService.autenticarCliente(id, codigoAcesso);
 
-        AtivoResponseDTO ativoResponseDTO = ativoService.recuperarDetalhado(idAtivo);
+        Ativo ativo =  modelMapper.map(ativoService.recuperarDetalhado(idAtivo), Ativo.class);
 
-        if (cliente.getPlano() == TipoPlano.NORMAL && ativoResponseDTO.getTipo() != TipoAtivo.TESOURO_DIRETO) {
+        if (cliente.getPlano() == TipoPlano.NORMAL && ativo.getTipo() != TipoAtivo.TESOURO_DIRETO) {
             throw new ClienteNaoPremiumException();
         }
 
-        if(!ativoResponseDTO.isDisponivel()) {
-            contaService.adicionarAtivoNaListaDeInteresse(cliente.getConta().getId(), ativoResponseDTO);
+        if(!Boolean.TRUE.equals(ativo.isDisponivel())) {
+            ativoService.registrarInteresse(cliente, ativo, TipoInteresse.DISPONIBILIDADE);
         }else{
             throw new AtivoDisponivelException();
         }
     }
-    @Transactional
+
     @Override
     public void marcarInteresseAtivoDisponivel(Long id, String codigoAcesso, Long idAtivo) {
-        Cliente cliente = autenticar(id, codigoAcesso);
+        Cliente cliente = autenticacaoService.autenticarCliente(id, codigoAcesso);
 
         if (cliente.getPlano() == TipoPlano.NORMAL) {
             throw new ClienteNaoPremiumException();
         }
 
-        AtivoResponseDTO ativoResponseDTO = ativoService.recuperarDetalhado(idAtivo);
+        Ativo ativo =  modelMapper.map(ativoService.recuperarDetalhado(idAtivo), Ativo.class);
 
-        if(ativoResponseDTO.getTipo() == TipoAtivo.TESOURO_DIRETO){
+        if(ativo.getTipo() == TipoAtivo.TESOURO_DIRETO){
             throw new OperacaoInvalidaException();
         }
 
-        if (ativoResponseDTO.isDisponivel()){
-            contaService.adicionarAtivoNaListaDeInteresse(cliente.getConta().getId(), ativoResponseDTO);
+        if (Boolean.TRUE.equals(ativo.isDisponivel())){
+            ativoService.registrarInteresse(cliente, ativo, TipoInteresse.VARIACAO_COTACAO);
         } else {
             throw new AtivoIndisponivelException();
         }
@@ -205,7 +175,7 @@ public class ClienteServiceImpl implements ClienteService {
 
     @Override
     public AtivoResponseDTO visualizarDetalhesAtivo(Long id, String codigoAcesso, Long idAtivo) {
-        Cliente cliente = autenticar(id, codigoAcesso);
+        Cliente cliente = autenticacaoService.autenticarCliente(id, codigoAcesso);
 
         AtivoResponseDTO ativo = ativoService.recuperarDetalhado(idAtivo);
 
@@ -215,4 +185,42 @@ public class ClienteServiceImpl implements ClienteService {
 
         return ativo;
     }
+
+    @Override
+    public void confirmarCompraAtivo(Long idCliente, Long idCompra, String codigoAcesso) {
+        Cliente cliente = clienteRepository.findById(idCliente)
+                .orElseThrow(ClienteNaoExisteException::new);
+
+        if (!cliente.getCodigo().equals(codigoAcesso)) {
+            throw new CodigoDeAcessoInvalidoException();
+        }
+
+        contaService.confirmarCompra(idCliente, idCompra);
+    }
+
+    @Override
+    public List<AtivoEmCarteiraResponseDTO> visualizarCarteira(Long idCliente, String codigoAcesso) {
+        Cliente cliente = clienteRepository.findById(idCliente)
+                .orElseThrow(ClienteNaoExisteException::new);
+
+        if (!cliente.getCodigo().equals(codigoAcesso)) {
+            throw new CodigoDeAcessoInvalidoException();
+        }
+
+        return contaService.visualizarCarteira(idCliente);
+    }
+
+    @Override
+    public void acrecentaSaldoConta(Long idCliente, String codigoAcesso, BigDecimal valor) {
+        Cliente cliente = clienteRepository.findById(idCliente)
+                .orElseThrow(ClienteNaoExisteException::new);
+
+        if (!cliente.getCodigo().equals(codigoAcesso)) {
+            throw new CodigoDeAcessoInvalidoException();
+        }
+
+        contaService.acrecentaSaldoConta(idCliente, valor);
+    }
+
+
 }
